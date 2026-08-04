@@ -106,7 +106,7 @@ function icon(name) {
   return map[name] || "•";
 }
 
-function toast(message, type = "info", title = "CAHAYA ACADEMY") {
+function toast(message, type = "info", title = "IZZUDDIN ACADEMY") {
   const root = qs("#toastRoot");
   const el = document.createElement("div");
   el.className = `toast ${type}`;
@@ -204,23 +204,23 @@ function renderAuth() {
       <section class="auth-shell">
         <div class="auth-hero">
           <div class="auth-brand">
-            <img src="assets/logofi.png" alt="Logo">
-            <div><strong>CAHAYA ACADEMY</strong><span>Pesantren Cahaya Fajrul Islam</span></div>
+            <img src="assets/logo-izzuddin.png" alt="Logo Izzuddin Academy">
+            <div><strong>IZZUDDIN ACADEMY</strong><span>Digital Learning Platform</span></div>
           </div>
           <div class="auth-copy">
-            <span class="eyebrow">Holistic Learning Experience</span>
-            <h1>Belajar. Bertumbuh. <span>Bercahaya.</span></h1>
+            <span class="eyebrow">Modern Learning Experience</span>
+            <h1>Belajar. Bertumbuh. <span>Bermakna.</span></h1>
             <p>Satu ruang belajar untuk mengikuti kelas langsung, menonton tayangan ulang, mengakses materi, berdiskusi, mengerjakan tugas, dan memantau perkembangan belajar.</p>
             <div class="auth-features">
-              <div class="auth-feature"><b>Live & Replay</b><span>Belajar langsung atau lanjutkan pada waktu yang tepat.</span></div>
+              <div class="auth-feature"><b>Live & Replay</b><span>Siaran langsung dan tayangan ulang tersaji dalam satu ruang belajar.</span></div>
               <div class="auth-feature"><b>Terukur</b><span>Presensi, progres, tugas, dan kuis tersimpan rapi.</span></div>
-              <div class="auth-feature"><b>Terhubung</b><span>Pengajar dan peserta bertemu dalam satu ekosistem.</span></div>
+              <div class="auth-feature"><b>Terhubung</b><span>Pengajar dan peserta bertemu dalam satu ekosistem digital.</span></div>
             </div>
           </div>
         </div>
         <div class="auth-panel">
           <div class="auth-box">
-            <div class="mobile-logo"><img src="assets/logofi.png" alt="Logo"><div><b>CAHAYA ACADEMY</b><span>Pesantren Cahaya Fajrul Islam</span></div></div>
+            <div class="mobile-logo"><img src="assets/logo-izzuddin.png" alt="Logo Izzuddin Academy"><div><b>IZZUDDIN ACADEMY</b><span>Digital Learning Platform</span></div></div>
             <div class="auth-kicker">Bismillāhirraḥmānirraḥīm</div>
             <h2>Selamat datang</h2>
             <p>Masuk menggunakan akun yang telah diberikan oleh administrator.</p>
@@ -232,15 +232,12 @@ function renderAuth() {
               </div>
               <div class="form-group">
                 <label class="form-label">Kata sandi</label>
-                <div class="input-icon-wrap"><span class="input-icon">▣</span><input id="loginPassword" class="form-control" type="password" autocomplete="current-password" required placeholder="••••••••"><button type="button" class="input-action" id="togglePassword">${icon("eye")}</button></div>
+                <div class="input-icon-wrap"><span class="input-icon">▣</span><input id="loginPassword" class="form-control" type="password" autocomplete="current-password" required placeholder="••••••••"><button type="button" class="input-action" id="togglePassword" aria-label="Tampilkan atau sembunyikan kata sandi">${icon("eye")}</button></div>
               </div>
               <button class="btn btn-primary btn-lg btn-block" id="loginButton" type="submit">Masuk ke Ruang Belajar ${icon("arrow")}</button>
             </form>
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:18px">
-              <button class="link-btn" id="forgotPassword">Lupa kata sandi?</button>
-              <a class="link-btn" href="setup.html">Aktivasi admin</a>
-            </div>
-            <div class="auth-footer">© 2026 CAHAYA ACADEMY · Pesantren Cahaya Fajrul Islam</div>
+            <div class="auth-help-row"><button class="link-btn" id="forgotPassword">Lupa kata sandi?</button></div>
+            <div class="auth-footer">© 2026 IZZUDDIN ACADEMY</div>
           </div>
         </div>
       </section>
@@ -303,9 +300,18 @@ function roleNavigation(role) {
     { id: "reports", label: "Laporan Belajar", icon: "report" },
     { id: "announcements", label: "Pengumuman", icon: "announce" }
   ] : [
+    { id: "reports", label: "Progres Saya", icon: "report" },
     { id: "announcements", label: "Pengumuman", icon: "announce" }
   ];
   return [...common, ...management, { id: "settings", label: "Pengaturan", icon: "settings" }];
+}
+
+function mobileNavigation(role) {
+  const all = roleNavigation(role);
+  const preferred = role === "student"
+    ? ["dashboard", "classes", "schedule", "assignments", "reports"]
+    : ["dashboard", "classes", "schedule", "assignments", "announcements"];
+  return preferred.map((id) => all.find((item) => item.id === id)).filter(Boolean);
 }
 
 function renderShell() {
@@ -313,11 +319,12 @@ function renderShell() {
   const root = qs("#appRoot");
   root.classList.remove("hidden");
   const nav = roleNavigation(state.profile.role);
+  const mobileNav = mobileNavigation(state.profile.role);
   root.innerHTML = `
     <div class="app-shell">
       <div class="sidebar-overlay" id="sidebarOverlay"></div>
       <aside class="sidebar">
-        <div class="sidebar-brand"><img src="assets/logofi.png" alt="Logo"><div><strong>CAHAYA ACADEMY</strong><span>Pesantren Cahaya Fajrul Islam</span></div></div>
+        <div class="sidebar-brand"><img src="assets/logo-izzuddin.png" alt="Logo Izzuddin Academy"><div><strong>IZZUDDIN ACADEMY</strong><span>Digital Learning Platform</span></div></div>
         <div class="sidebar-year"><b>Tahun Ajaran ${escapeHtml(appConfig.academicYear)}</b><span>Learning Management System</span></div>
         <nav class="sidebar-nav">
           <div class="nav-section-label">Ruang Belajar</div>
@@ -331,17 +338,20 @@ function renderShell() {
       <main class="main-area">
         <header class="topbar">
           <div class="topbar-left">
-            <button class="icon-btn mobile-menu" id="mobileMenu">${icon("menu")}</button>
-            <div class="page-title"><small>CAHAYA Learning Space</small><h1 id="topPageTitle">Beranda</h1></div>
+            <button class="icon-btn mobile-menu" id="mobileMenu" aria-label="Buka menu">${icon("menu")}</button>
+            <div class="page-title"><small>Izzuddin Learning Space</small><h1 id="topPageTitle">Beranda</h1></div>
           </div>
           <div class="topbar-right">
             <div class="topbar-search"><span>${icon("search")}</span><input id="globalSearch" placeholder="Cari kelas, pertemuan, atau tugas..."></div>
-            <button class="icon-btn" id="quickAnnouncement" title="Pengumuman">${icon("bell")}</button>
+            <button class="icon-btn" id="quickAnnouncement" title="Pengumuman" aria-label="Pengumuman">${icon("bell")}</button>
             <div class="topbar-profile"><div class="avatar">${initials(state.profile.name)}</div><div class="profile-copy"><b>${escapeHtml(state.profile.name)}</b><span>${escapeHtml(roleLabel(state.profile.role))}</span></div></div>
           </div>
         </header>
         <div id="pageContent" class="page-content"></div>
       </main>
+      <nav class="mobile-bottom-nav" aria-label="Navigasi utama">
+        ${mobileNav.map((item) => `<button class="bottom-nav-item" data-route="${item.id}"><span>${icon(item.icon)}</span><b>${escapeHtml(item.label.replace(" Saya", ""))}</b></button>`).join("")}
+      </nav>
     </div>`;
 
   qsa("[data-route]").forEach((button) => button.addEventListener("click", () => navigate(button.dataset.route)));
@@ -368,8 +378,8 @@ function navigate(name, ...params) {
 }
 
 function setActiveNav(name) {
-  qsa(".nav-item").forEach((el) => el.classList.toggle("active", el.dataset.route === name));
-  qs("#topPageTitle").textContent = routeTitles[name] || "CAHAYA ACADEMY";
+  qsa(".nav-item, .bottom-nav-item").forEach((el) => el.classList.toggle("active", el.dataset.route === name));
+  qs("#topPageTitle").textContent = routeTitles[name] || "Izzuddin Academy";
 }
 
 async function route() {
@@ -445,7 +455,7 @@ async function renderDashboard() {
     <section class="hero-card card">
       <div class="hero-content">
         <span class="eyebrow">${escapeHtml(greeting)}, ${escapeHtml(state.profile.name.split(" ")[0])}</span>
-        <h2>${state.profile.role === "student" ? "Teruskan langkah belajar dan tumbuhkan cahaya dalam diri." : "Kelola pembelajaran yang hidup, terukur, dan penuh makna."}</h2>
+        <h2>${state.profile.role === "student" ? "Teruskan langkah belajar dan jaga konsistensi dan progres belajar Anda." : "Kelola pembelajaran yang hidup, terukur, dan penuh makna."}</h2>
         <p>${heroPrimary ? `${meetingStatus(heroPrimary) === "live" ? "Kelas sedang berlangsung" : meetingStatus(heroPrimary) === "upcoming" ? "Pertemuan terdekat" : "Tayangan terbaru"}: ${escapeHtml(heroPrimary.title)} — ${escapeHtml(heroPrimary.classTitle)}.` : "Belum ada pertemuan terjadwal. Mulailah dengan membuat kelas dan pertemuan pertama."}</p>
         <div class="hero-actions">
           ${heroPrimary ? `<button class="btn btn-primary" data-open-meeting="${heroPrimary.classId}|${heroPrimary.id}">${meetingStatus(heroPrimary) === "live" ? "Masuk Kelas Sekarang" : meetingStatus(heroPrimary) === "upcoming" ? "Lihat Jadwal" : "Tonton Tayangan"} ${icon("arrow")}</button>` : ""}
@@ -534,7 +544,7 @@ function classCard(course) {
         <h3>${escapeHtml(course.title)}</h3>
       </div>
       <div class="class-body">
-        <p>${escapeHtml(course.description || "Ruang belajar CAHAYA ACADEMY.")}</p>
+        <p>${escapeHtml(course.description || "Ruang belajar IZZUDDIN ACADEMY.")}</p>
         <div class="class-meta"><span>${escapeHtml(course.teacherName || "Belum ditentukan")}</span><span>${course.status === "draft" ? "Draf" : "Aktif"}</span></div>
         <div style="display:flex;gap:8px;margin-top:14px">
           <button class="btn btn-primary btn-sm" style="flex:1" data-open-class="${course.id}">Buka Kelas</button>
@@ -681,7 +691,7 @@ function renderMeetingList(meetings) {
     const date = meeting.startAt ? new Date(meeting.startAt) : null;
     return `<article class="meeting-card">
       <div class="meeting-date"><b>${date ? String(date.getDate()).padStart(2,"0") : "--"}</b><span>${date ? formatDate(meeting.startAt,{month:"short",year:undefined}) : "Jadwal"}</span></div>
-      <div class="meeting-copy"><h4>${escapeHtml(meeting.title)}</h4><p>${escapeHtml(meeting.description || "Pertemuan pembelajaran CAHAYA ACADEMY.")}</p><div class="meeting-meta"><span>${escapeHtml(meeting.classTitle || "")}</span><span>${formatDateTime(meeting.startAt)}</span><span>${meeting.youtubeId ? "Video tersedia" : "Video belum dipasang"}</span></div></div>
+      <div class="meeting-copy"><h4>${escapeHtml(meeting.title)}</h4><p>${escapeHtml(meeting.description || "Pertemuan pembelajaran IZZUDDIN ACADEMY.")}</p><div class="meeting-meta"><span>${escapeHtml(meeting.classTitle || "")}</span><span>${formatDateTime(meeting.startAt)}</span><span>${meeting.youtubeId ? "Video tersedia" : "Video belum dipasang"}</span></div></div>
       <div class="list-actions">${meetingBadge(meetingStatus(meeting))}<button class="btn btn-primary btn-sm" data-open-meeting="${meeting.classId}|${meeting.id}">${meetingStatus(meeting) === "upcoming" ? "Detail" : "Buka"}</button></div>
     </article>`;
   }).join("");
@@ -934,7 +944,7 @@ async function renderClassDetail(classId) {
   qs("#pageContent").innerHTML = `
     <div class="page-actions" style="margin-bottom:14px"><button class="btn btn-ghost btn-sm" id="backToClasses">${icon("back")} Kembali</button></div>
     <section class="class-hero ${escapeHtml(course.accent || "blue")}">
-      <div class="class-hero-content"><span class="eyebrow" style="background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.14)">${escapeHtml(course.category || "Kelas")}</span><h2>${escapeHtml(course.title)}</h2><p>${escapeHtml(course.description || "Ruang pembelajaran CAHAYA ACADEMY.")}</p><div class="class-hero-meta"><span>Pengajar: ${escapeHtml(course.teacherName || "Belum ditentukan")}</span><span>${modules.length} modul</span><span>${meetings.length} pertemuan</span><span>${members.length || 0} peserta</span></div></div>
+      <div class="class-hero-content"><span class="eyebrow" style="background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.14)">${escapeHtml(course.category || "Kelas")}</span><h2>${escapeHtml(course.title)}</h2><p>${escapeHtml(course.description || "Ruang pembelajaran IZZUDDIN ACADEMY.")}</p><div class="class-hero-meta"><span>Pengajar: ${escapeHtml(course.teacherName || "Belum ditentukan")}</span><span>${modules.length} modul</span><span>${meetings.length} pertemuan</span><span>${members.length || 0} peserta</span></div></div>
     </section>
 
     <div class="page-head" style="margin-top:24px;margin-bottom:15px">
@@ -1094,8 +1104,21 @@ async function renderMeetingRoom(classId, meetingId) {
     <div class="room-layout">
       <div class="stack">
         <section class="video-shell">
-          <div class="video-ratio">${meeting.youtubeId ? `<div id="youtube-player"></div>` : `<div class="video-placeholder"><div><b>Video belum tersedia</b><span>Pengajar belum memasang link YouTube untuk pertemuan ini.</span></div></div>`}</div>
-          <div class="room-info"><div class="room-title-row"><div><h2>${escapeHtml(meeting.title)}</h2><p>${escapeHtml(course.title)} · ${formatDateTime(meeting.startAt)} · ${escapeHtml(course.teacherName || "Pengajar CAHAYA")}</p></div>${meetingBadge(status)}</div>${meeting.description ? `<p>${escapeHtml(meeting.description)}</p>` : ""}</div>
+          <div class="video-ratio clean-video-frame" id="cleanVideoFrame">
+            ${meeting.youtubeId ? `
+              <div id="youtube-player" class="clean-video-stage"></div>
+              <button class="clean-video-cover" id="cleanVideoStart" type="button" aria-label="Putar video pembelajaran" style="--video-thumb:url('https://i.ytimg.com/vi/${encodeURIComponent(meeting.youtubeId)}/hqdefault.jpg')">
+                <span class="clean-video-brand"><img src="assets/logo-izzuddin.png" alt=""><b>IZZUDDIN ACADEMY</b></span>
+                <span class="clean-play-orb">${icon("play")}</span>
+                <span class="clean-video-label">${status === "live" ? "Tonton Siaran Langsung" : "Putar Tayangan Pembelajaran"}</span>
+              </button>
+              <div class="clean-video-loading hidden" id="cleanVideoLoading"><span class="clean-spinner"></span><b>Menyiapkan tayangan...</b></div>
+              <div class="clean-video-finished hidden" id="cleanVideoFinished"><img src="assets/logo-izzuddin.png" alt=""><b>Pembelajaran selesai</b><span>Progres menonton telah disimpan.</span><button class="btn btn-primary btn-sm" id="cleanVideoReplay" type="button">${icon("play")} Putar Ulang</button></div>
+              <div class="clean-video-error hidden" id="cleanVideoError"><b>Tayangan belum dapat diputar</b><span>Pastikan siaran sudah dimulai dan fitur embedding YouTube diizinkan.</span><button class="btn btn-secondary btn-sm" id="cleanVideoRetry" type="button">Coba Lagi</button></div>
+            ` : `<div class="video-placeholder"><div><b>Video belum tersedia</b><span>Pengajar belum memasang link YouTube untuk pertemuan ini.</span></div></div>`}
+          </div>
+          ${meeting.youtubeId ? `<div class="clean-player-bar"><button class="clean-toggle" id="cleanVideoToggle" type="button" disabled aria-label="Putar atau jeda video"><span>${icon("play")}</span><b>Putar</b></button><span>Tayangan diputar langsung di Izzuddin Academy</span></div>` : ""}
+          <div class="room-info"><div class="room-title-row"><div><h2>${escapeHtml(meeting.title)}</h2><p>${escapeHtml(course.title)} · ${formatDateTime(meeting.startAt)} · ${escapeHtml(course.teacherName || "Pengajar Izzuddin")}</p></div>${meetingBadge(status)}</div>${meeting.description ? `<p>${escapeHtml(meeting.description)}</p>` : ""}</div>
         </section>
 
         <section class="card card-pad">
@@ -1201,24 +1224,129 @@ async function markAttendance(classId, meetingId, mode) {
 }
 
 async function setupYouTubePlayer(classId, meetingId, videoId) {
-  const YT = await loadYouTubeApi();
-  state.player = new YT.Player("youtube-player", {
-    videoId,
-    playerVars: { rel: 0, modestbranding: 1, playsinline: 1, enablejsapi: 1 },
-    events: {
-      onReady: async (event) => {
-        state.playerReady = true;
-        const progress = await getValue(`watchProgress/${classId}/${meetingId}/${state.user.uid}`);
-        if (progress?.lastPosition && Number(progress.lastPosition) > 10) {
-          try { event.target.seekTo(Number(progress.lastPosition), true); } catch (_) {}
-        }
-        startWatchTimers(classId, meetingId);
-      },
-      onStateChange: (event) => {
-        state.playing = event.data === YT.PlayerState.PLAYING;
-        if (event.data === YT.PlayerState.ENDED) saveWatchProgress(classId, meetingId, true);
-      }
+  const startButton = qs("#cleanVideoStart");
+  const loading = qs("#cleanVideoLoading");
+  const finished = qs("#cleanVideoFinished");
+  const errorBox = qs("#cleanVideoError");
+  const toggle = qs("#cleanVideoToggle");
+  const replay = qs("#cleanVideoReplay");
+  const retry = qs("#cleanVideoRetry");
+  let creating = false;
+
+  const updateToggle = (isPlaying) => {
+    if (!toggle) return;
+    toggle.disabled = !state.playerReady;
+    toggle.innerHTML = `<span>${isPlaying ? "❚❚" : icon("play")}</span><b>${isPlaying ? "Jeda" : "Putar"}</b>`;
+  };
+
+  const resetStage = () => {
+    try { state.player?.destroy?.(); } catch (_) {}
+    state.player = null;
+    state.playerReady = false;
+    state.playing = false;
+    const frame = qs("#cleanVideoFrame");
+    let stage = qs("#youtube-player");
+    if (!stage && frame) {
+      stage = document.createElement("div");
+      stage.id = "youtube-player";
+      stage.className = "clean-video-stage";
+      frame.prepend(stage);
+    } else if (stage && stage.tagName === "IFRAME") {
+      const replacement = document.createElement("div");
+      replacement.id = "youtube-player";
+      replacement.className = "clean-video-stage";
+      stage.replaceWith(replacement);
+      stage = replacement;
+    } else if (stage) {
+      stage.innerHTML = "";
+      stage.className = "clean-video-stage";
     }
+    updateToggle(false);
+  };
+
+  const showError = () => {
+    resetStage();
+    loading?.classList.add("hidden");
+    startButton?.classList.add("is-hidden");
+    finished?.classList.add("hidden");
+    errorBox?.classList.remove("hidden");
+  };
+
+  const showFinished = async () => {
+    loading?.classList.add("hidden");
+    errorBox?.classList.add("hidden");
+    finished?.classList.remove("hidden");
+    await saveWatchProgress(classId, meetingId, true);
+    resetStage();
+    finished?.classList.remove("hidden");
+  };
+
+  const beginPlayback = async ({ restart = false } = {}) => {
+    if (creating) return;
+    creating = true;
+    startButton?.classList.add("is-hidden");
+    finished?.classList.add("hidden");
+    errorBox?.classList.add("hidden");
+    loading?.classList.remove("hidden");
+    resetStage();
+    try {
+      const [YT, progress] = await Promise.all([
+        loadYouTubeApi(),
+        getValue(`watchProgress/${classId}/${meetingId}/${state.user.uid}`)
+      ]);
+      const playerVars = {
+        autoplay: 1,
+        controls: 0,
+        rel: 0,
+        playsinline: 1,
+        enablejsapi: 1,
+        disablekb: 1,
+        fs: 0,
+        iv_load_policy: 3,
+        cc_load_policy: 0,
+        modestbranding: 1
+      };
+      if (location.protocol === "https:" || location.protocol === "http:") playerVars.origin = location.origin;
+      const resumeAt = restart ? 0 : Number(progress?.lastPosition || 0);
+      if (resumeAt > 10) playerVars.start = Math.floor(resumeAt);
+
+      state.player = new YT.Player("youtube-player", {
+        host: "https://www.youtube-nocookie.com",
+        videoId,
+        playerVars,
+        events: {
+          onReady: (event) => {
+            state.playerReady = true;
+            loading?.classList.add("hidden");
+            updateToggle(false);
+            startWatchTimers(classId, meetingId);
+            try { event.target.playVideo(); } catch (_) {}
+          },
+          onStateChange: (event) => {
+            state.playing = event.data === YT.PlayerState.PLAYING;
+            updateToggle(state.playing);
+            if (event.data === YT.PlayerState.ENDED) showFinished();
+          },
+          onError: () => showError()
+        }
+      });
+    } catch (error) {
+      console.warn("Gagal memuat pemutar YouTube", error);
+      showError();
+    } finally {
+      creating = false;
+    }
+  };
+
+  startButton?.addEventListener("click", () => beginPlayback());
+  replay?.addEventListener("click", () => beginPlayback({ restart: true }));
+  retry?.addEventListener("click", () => beginPlayback());
+  toggle?.addEventListener("click", () => {
+    if (!state.playerReady || !state.player) return;
+    try {
+      if (state.playing) state.player.pauseVideo();
+      else state.player.playVideo();
+    } catch (_) {}
   });
 }
 
@@ -1335,7 +1463,7 @@ async function renderSettings() {
     <div class="page-head"><div><h2>Pengaturan</h2><p>Perbarui profil, keamanan akun, dan preferensi tampilan LMS.</p></div></div>
     <div class="grid grid-sidebar">
       <section class="card"><div class="card-head"><div><h3>Profil Pengguna</h3><p>Informasi yang tampil di dalam kelas dan diskusi.</p></div></div><div class="card-body"><form id="profileForm" class="form-grid"><div class="form-group full"><label class="form-label">Nama lengkap</label><input id="profileName" class="form-control" value="${escapeHtml(state.profile.name || "")}"></div><div class="form-group"><label class="form-label">Email</label><input class="form-control" value="${escapeHtml(state.profile.email || state.user.email || "")}" disabled></div><div class="form-group"><label class="form-label">Peran</label><input class="form-control" value="${escapeHtml(roleLabel(state.profile.role))}" disabled></div><div class="form-group full"><button class="btn btn-primary" type="submit">Simpan Profil</button></div></form></div></section>
-      <aside class="stack"><section class="card"><div class="card-head"><div><h3>Keamanan Akun</h3><p>Ganti kata sandi secara berkala.</p></div></div><div class="card-body"><button class="btn btn-secondary btn-block" id="changePassword">${icon("lock")} Ganti Kata Sandi</button></div></section><section class="card card-pad"><div class="notice notice-info"><b>Firebase Project</b><br>cahayaacademy-f8787<br><br><b>Database</b><br>Realtime Database</div></section></aside>
+      <aside class="stack"><section class="card"><div class="card-head"><div><h3>Keamanan Akun</h3><p>Ganti kata sandi secara berkala.</p></div></div><div class="card-body"><button class="btn btn-secondary btn-block" id="changePassword">${icon("lock")} Ganti Kata Sandi</button></div></section><section class="card card-pad brand-note"><img src="assets/logo-izzuddin.png" alt="Logo Izzuddin Academy"><div><b>Izzuddin Academy</b><span>Learning Management System</span></div></section></aside>
     </div>`;
   qs("#profileForm")?.addEventListener("submit", async (event) => { event.preventDefault(); const name = qs("#profileName").value.trim(); if (!name) return toast("Nama tidak boleh kosong.", "warning"); const now = Date.now(); await updateValues({ [`users/${state.user.uid}/name`]: name, [`users/${state.user.uid}/updatedAt`]: now, [`publicProfiles/${state.user.uid}/name`]: name, [`publicProfiles/${state.user.uid}/updatedAt`]: now }); state.profile.name = name; renderShell(); route(); toast("Profil berhasil diperbarui.", "success"); });
   qs("#changePassword")?.addEventListener("click", openPasswordForm);
@@ -1374,14 +1502,9 @@ onAuthStateChanged(auth, async (user) => {
   try {
     const profile = await getProfile(user.uid);
     if (!profile) {
-      const ownerUid = await getValue("system/ownerUid");
-      if (!ownerUid) {
-        window.location.href = "./setup.html";
-        return;
-      }
       await signOut(auth);
       renderAuth();
-      toast("Akun Authentication sudah ada, tetapi profil LMS belum dibuat oleh administrator.", "warning");
+      toast("Akun belum terdaftar sebagai pengguna Izzuddin Academy. Hubungi administrator.", "warning");
       hideLoader();
       return;
     }

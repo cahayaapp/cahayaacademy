@@ -5,34 +5,34 @@
     "system": {
       "ownerUid": {
         ".read": "auth != null",
-        ".write": "auth != null && (!data.exists() || root.child('users').child(auth.uid).child('role').val() === 'admin')",
+        ".write": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin'",
         ".validate": "newData.isString()"
       },
       "initialized": {
         ".read": "auth != null",
-        ".write": "auth != null && (root.child('system').child('ownerUid').val() === auth.uid || root.child('users').child(auth.uid).child('role').val() === 'admin')"
+        ".write": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin'"
       },
       "initializedAt": {
         ".read": "auth != null",
-        ".write": "auth != null && (root.child('system').child('ownerUid').val() === auth.uid || root.child('users').child(auth.uid).child('role').val() === 'admin')"
+        ".write": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin'"
       },
       "settings": {
         ".read": "auth != null",
-        ".write": "auth != null && (root.child('system').child('ownerUid').val() === auth.uid || root.child('users').child(auth.uid).child('role').val() === 'admin')"
+        ".write": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin'"
       }
     },
     "users": {
       ".read": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin'",
       "$uid": {
         ".read": "auth != null && (auth.uid === $uid || root.child('users').child(auth.uid).child('role').val() === 'admin')",
-        ".write": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || (auth.uid === $uid && root.child('system').child('ownerUid').val() === auth.uid && !data.exists()))",
+        ".write": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || (auth.uid === $uid && data.exists() && newData.child('role').val() === data.child('role').val() && newData.child('email').val() === data.child('email').val() && newData.child('status').val() === data.child('status').val()))",
         ".validate": "newData.hasChildren(['name','email','role','status']) && newData.child('name').isString() && newData.child('email').isString() && (newData.child('role').val() === 'admin' || newData.child('role').val() === 'teacher' || newData.child('role').val() === 'student') && (newData.child('status').val() === 'active' || newData.child('status').val() === 'inactive')"
       }
     },
     "publicProfiles": {
       ".read": "auth != null",
       "$uid": {
-        ".write": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || (auth.uid === $uid && root.child('system').child('ownerUid').val() === auth.uid && !data.exists()) || (auth.uid === $uid && newData.child('role').val() === data.child('role').val()))",
+        ".write": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || (auth.uid === $uid && data.exists() && newData.child('role').val() === data.child('role').val()))",
         ".validate": "newData.hasChildren(['name','role']) && newData.child('name').isString() && (newData.child('role').val() === 'admin' || newData.child('role').val() === 'teacher' || newData.child('role').val() === 'student')"
       }
     },

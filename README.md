@@ -1,90 +1,58 @@
-# CAHAYA ACADEMY
+# IZZUDDIN ACADEMY LMS — v2.0.0
 
-Learning Management System berbasis **Firebase Authentication**, **Firebase Realtime Database**, dan **YouTube Embed** untuk Pesantren Cahaya Fajrul Islam.
+Learning Management System berbasis Firebase Authentication, Firebase Realtime Database, dan YouTube Embed.
 
-## Fitur yang sudah tersedia
+## Pembaruan utama
+
+- Identitas aplikasi sepenuhnya diubah menjadi **Izzuddin Academy**.
+- Paket langsung menggunakan akun dan database yang sudah aktif.
+- YouTube menggunakan **Clean Player Mode**: video baru dimuat setelah tombol putar ditekan, kontrol bawaan disembunyikan, mode privasi YouTube digunakan, dan layar akhir segera diganti agar rekomendasi tidak tampil.
+- Navigasi bawah khusus mobile seperti aplikasi LMS modern.
+- Tampilan halaman masuk, dashboard, kelas, ruang belajar, tabel, modal, dan kartu diperhalus untuk desktop maupun ponsel.
+- PWA dan cache diperbarui ke versi 2.0.0.
+
+## Fitur utama
 
 - Login email dan kata sandi.
-- Aktivasi administrator pertama.
 - Peran administrator, pengajar, dan peserta.
-- Pembuatan akun pengguna tanpa mengeluarkan sesi administrator.
-- Pengelolaan kelas dan akses peserta.
-- Modul pembelajaran.
-- Jadwal YouTube Live dan tayangan ulang.
-- Materi pendamping berbasis tautan.
-- Presensi otomatis ketika ruang pertemuan dibuka.
-- Pencatatan durasi aktif dan progres video melalui YouTube IFrame Player API.
-- Catatan pribadi yang tersimpan otomatis.
-- Diskusi per pertemuan.
-- Kuis pilihan ganda formatif.
-- Tugas, pengumpulan jawaban, nilai, dan umpan balik.
-- Laporan kelas serta ekspor CSV.
-- Pengumuman.
-- PWA dasar dan tampilan responsif.
+- Pengelolaan pengguna, kelas, modul, dan peserta kelas.
+- YouTube Live dan tayangan ulang dalam halaman LMS.
+- Presensi, durasi aktif, progres video, catatan, diskusi, kuis, tugas, nilai, laporan, dan pengumuman.
+- Tampilan responsif untuk desktop, tablet, dan ponsel.
+
+## Cara memperbarui aplikasi yang sudah aktif
+
+1. Cadangkan repository atau folder versi sebelumnya.
+2. Ganti seluruh file aplikasi lama dengan isi paket ini.
+3. Pertahankan project Firebase yang sama; konfigurasi sudah tersedia di `js/firebase-config.js`.
+4. Bila Security Rules sebelumnya sudah terpasang dan berjalan, tidak perlu membuat akun administrator ulang.
+5. Setelah upload, lakukan hard refresh atau hapus cache situs sekali agar Service Worker versi lama terganti.
+
+## Deploy Firebase Hosting
+
+```bash
+firebase deploy --only hosting
+```
+
+Untuk memperbarui Rules sekaligus:
+
+```bash
+firebase deploy --only database,hosting
+```
+
+## Deploy GitHub Pages
+
+Upload seluruh isi folder ke root repository, lalu gunakan GitHub Pages dari branch `main` dan folder `/root`. Pastikan domain GitHub Pages telah dimasukkan ke Firebase Authentication → Authorized domains.
+
+## Catatan YouTube Clean Player
+
+Clean Player Mode menghilangkan kontrol bawaan, memuat video hanya setelah peserta menekan tombol putar, memakai `youtube-nocookie.com`, dan mengganti layar segera setelah video berakhir. Karena sumber tetap YouTube, identitas atau pesan bawaan YouTube masih dapat muncul pada kondisi tertentu, misalnya ketika pemilik video menonaktifkan embedding atau ketika YouTube menampilkan pesan kesalahan.
 
 ## Struktur utama
 
 - `index.html` — aplikasi utama.
-- `setup.html` — aktivasi administrator pertama.
-- `js/firebase-config.js` — konfigurasi Firebase project.
+- `js/app.js` — logika LMS dan Clean Player Mode.
+- `js/firebase-config.js` — konfigurasi Firebase.
 - `database.rules.json` — Security Rules Realtime Database.
-- `css/app.css` — seluruh desain responsif.
-- `assets/logofi.png` — logo aplikasi.
-
-## Aktivasi
-
-Baca `LANGKAH-AKTIVASI.txt` dan ikuti urutannya.
-
-## Deploy dengan GitHub Pages
-
-1. Buat repository baru.
-2. Upload seluruh isi folder paket ini ke root repository.
-3. Buka **Settings → Pages**.
-4. Pilih **Deploy from a branch**, branch `main`, folder `/root`.
-5. Tambahkan domain GitHub Pages ke Firebase Authentication → Settings → Authorized domains.
-6. Buka `https://alamat-anda/setup.html` untuk mengaktifkan administrator pertama.
-
-## Deploy dengan Firebase Hosting
-
-```bash
-npm install -g firebase-tools
-firebase login
-firebase deploy --only database,hosting
-```
-
-Project default di `.firebaserc` sudah diarahkan ke `cahayaacademy-f8787`.
-
-## Struktur data
-
-```text
-system
-users
-publicProfiles
-classes
-teacherClasses
-userClasses
-classMembers
-modules
-meetings
-assignments
-submissions
-attendance
-watchProgress
-notes
-discussions
-quizzes
-quizResults
-announcements
-```
-
-## Catatan keamanan
-
-- Jangan menggunakan Test Mode.
-- Pasang `database.rules.json` sebelum menjalankan `setup.html`.
-- Halaman setup hanya dapat mengklaim pemilik ketika `system/ownerUid` masih kosong.
-- Kuis pada versi ini adalah kuis formatif client-side. Untuk ujian resmi, kunci jawaban dan proses penilaian perlu dipindahkan ke Cloud Functions atau server tepercaya.
-- Materi saat ini menggunakan tautan eksternal. Firebase Storage dapat ditambahkan pada tahap berikutnya.
-
-## Logo
-
-Logo yang ada dalam paket merupakan placeholder. Ganti `assets/logofi.png`, `assets/icon-192.png`, dan `assets/icon-512.png` dengan logo resmi tanpa mengubah nama filenya.
+- `css/app.css` — desain desktop dan mobile.
+- `assets/logo-izzuddin.png` — logo aplikasi.

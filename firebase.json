@@ -9,7 +9,6 @@
       ".firebaserc",
       "database.rules.json",
       "README.md",
-      "LANGKAH-AKTIVASI.txt",
       "**/.*",
       "**/node_modules/**"
     ],

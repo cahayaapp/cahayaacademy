@@ -1,14 +1,15 @@
 {
-  "name": "CAHAYA ACADEMY",
-  "short_name": "CAHAYA LMS",
-  "description": "Learning Management System Pesantren Cahaya Fajrul Islam",
+  "name": "Izzuddin Academy",
+  "short_name": "Izzuddin",
+  "description": "Digital Learning Platform Izzuddin Academy",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#eef5fb",
-  "theme_color": "#103d78",
+  "orientation": "any",
+  "background_color": "#f2f6fa",
+  "theme_color": "#102f55",
   "icons": [
-    {"src":"assets/icon-192.png","sizes":"192x192","type":"image/png"},
-    {"src":"assets/icon-512.png","sizes":"512x512","type":"image/png"}
+    {"src":"assets/icon-192.png","sizes":"192x192","type":"image/png","purpose":"any maskable"},
+    {"src":"assets/icon-512.png","sizes":"512x512","type":"image/png","purpose":"any maskable"}
   ]
 }

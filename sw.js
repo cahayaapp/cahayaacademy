@@ -1,16 +1,14 @@
-const CACHE_NAME = "cahaya-academy-v1.0.0";
+const CACHE_NAME = "izzuddin-academy-v2.0.0";
 const APP_ASSETS = [
   "./",
   "./index.html",
-  "./setup.html",
   "./css/app.css",
   "./js/app.js",
-  "./js/setup.js",
   "./js/firebase.js",
   "./js/firebase-config.js",
   "./js/store.js",
   "./js/utils.js",
-  "./assets/logofi.png",
+  "./assets/logo-izzuddin.png",
   "./assets/icon-192.png",
   "./assets/icon-512.png",
   "./manifest.webmanifest"

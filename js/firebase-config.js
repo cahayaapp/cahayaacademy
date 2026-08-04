@@ -9,9 +9,9 @@ export const firebaseConfig = {
 };
 
 export const appConfig = {
-  appName: "CAHAYA ACADEMY",
-  institution: "Pesantren Cahaya Fajrul Islam",
-  tagline: "Belajar, Bertumbuh, dan Menebar Cahaya",
+  appName: "IZZUDDIN ACADEMY",
+  institution: "Digital Learning Platform",
+  tagline: "Belajar Terarah, Bertumbuh Bermakna",
   academicYear: "2026/2027",
   timezone: "Asia/Jakarta",
   watchHeartbeatSeconds: 30,
