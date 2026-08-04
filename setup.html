@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#103d78">
+  <title>Aktivasi Admin — CAHAYA ACADEMY</title>
+  <link rel="icon" href="assets/logofi.png">
+  <link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+  <main class="setup-page">
+    <section class="setup-shell">
+      <header class="setup-head">
+        <div class="setup-brand">
+          <img src="assets/logofi.png" alt="Logo">
+          <div><strong>CAHAYA ACADEMY</strong><div style="font-size:.65rem;color:rgba(255,255,255,.65);margin-top:4px">Pesantren Cahaya Fajrul Islam</div></div>
+        </div>
+        <h1>Aktivasi Administrator Pertama</h1>
+        <p>Halaman ini dipakai satu kali untuk membuat pemilik LMS. Setelah berhasil, akun berikutnya dibuat melalui menu Pengguna di dalam aplikasi.</p>
+      </header>
+      <div class="setup-body">
+        <div class="setup-steps">
+          <div class="setup-step active">1. Aktifkan Email/Password</div>
+          <div class="setup-step">2. Buat administrator</div>
+          <div class="setup-step">3. Masuk ke LMS</div>
+        </div>
+
+        <div id="setupMessage" class="notice notice-info" style="margin-bottom:18px">
+          Pastikan Authentication → Sign-in method → Email/Password sudah aktif di Firebase Console.
+        </div>
+
+        <form id="setupForm" class="form-grid">
+          <div class="form-group full">
+            <label class="form-label">Nama administrator <span class="required">*</span></label>
+            <input class="form-control" id="setupName" required placeholder="Contoh: Multazam Zakaria">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Email <span class="required">*</span></label>
+            <input class="form-control" id="setupEmail" type="email" required placeholder="admin@cahayaacademy.id">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Kata sandi <span class="required">*</span></label>
+            <input class="form-control" id="setupPassword" type="password" minlength="8" required placeholder="Minimal 8 karakter">
+          </div>
+          <div class="form-group full">
+            <button class="btn btn-primary btn-lg btn-block" id="setupButton" type="submit">Aktifkan Administrator</button>
+          </div>
+        </form>
+
+        <div class="notice notice-warning" style="margin-top:20px">
+          Jalankan aktivasi sebelum alamat LMS dibagikan kepada peserta. Sistem hanya mengizinkan satu akun pertama mengklaim peran pemilik.
+        </div>
+      </div>
+    </section>
+  </main>
+  <div id="toastRoot" class="toast-stack"></div>
+  <script type="module" src="js/setup.js"></script>
+</body>
+</html>
