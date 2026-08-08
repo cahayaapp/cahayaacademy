@@ -206,6 +206,29 @@
           ".validate": "!newData.exists() || (newData.isString() && newData.val().length <= 950000)"
         }
       }
+    },
+    "supportChats": {
+      "$uid": {
+        ".read": "auth != null && (auth.uid === $uid || root.child('users').child(auth.uid).child('role').val() === 'admin')",
+        "messages": {
+          "$messageId": {
+            ".write": "auth != null && (auth.uid === $uid || root.child('users').child(auth.uid).child('role').val() === 'admin') && newData.exists() && newData.child('senderUid').val() === auth.uid && ((auth.uid === $uid && newData.child('senderRole').val() === 'student') || (root.child('users').child(auth.uid).child('role').val() === 'admin' && newData.child('senderRole').val() === 'admin'))",
+            ".validate": "newData.hasChildren(['senderUid','senderRole','senderName','body','createdAt']) && newData.child('senderName').isString() && newData.child('body').isString() && newData.child('body').val().length > 0 && newData.child('body').val().length <= 3000 && newData.child('createdAt').isNumber()"
+          },
+          ".indexOn": [
+            "createdAt"
+          ]
+        },
+        "reads": {
+          "student": {
+            ".write": "auth != null && auth.uid === $uid && newData.isNumber()"
+          },
+          "admin": {
+            ".write": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin' && newData.isNumber()"
+          }
+        }
+      },
+      ".read": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin'"
     }
   }
 }

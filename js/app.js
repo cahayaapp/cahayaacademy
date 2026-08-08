@@ -85,7 +85,8 @@ const state = {
   registrationInProgress: false,
   globalUnsubscribers: [],
   pendingPayments: 0,
-  paymentSettings: null
+  paymentSettings: null,
+  chatUnread: 0
 };
 
 const routeTitles = {
@@ -96,6 +97,7 @@ const routeTitles = {
   assignments: "Tugas",
   users: "Pengguna",
   payments: "Pembayaran",
+  chat: "Live Chat",
   reports: "Laporan Belajar",
   announcements: "Pengumuman",
   settings: "Pengaturan",
@@ -110,7 +112,7 @@ function icon(name) {
     video: "▣", book: "▤", quiz: "?", discuss: "✦", plus: "+", search: "⌕",
     menu: "☰", bell: "♢", logout: "↪", edit: "✎", trash: "×", back: "←",
     calendar: "◫", clock: "◷", check: "✓", upload: "⇧", download: "⇩",
-    chart: "▥", lock: "▣", mail: "@", eye: "◉", arrow: "→"
+    chart: "▥", lock: "▣", mail: "@", chat: "✉", eye: "◉", arrow: "→"
   };
   return map[name] || "•";
 }
@@ -169,6 +171,29 @@ function normalizeWhatsapp(value = "") {
   if (digits.startsWith("0")) digits = `62${digits.slice(1)}`;
   if (!digits.startsWith("62") && digits) digits = `62${digits}`;
   return digits;
+}
+
+async function copyText(value, successMessage = "Berhasil disalin.") {
+  const text = String(value ?? "").trim();
+  if (!text) return toast("Belum ada data yang dapat disalin.", "warning");
+  try {
+    if (navigator.clipboard?.writeText && window.isSecureContext) {
+      await navigator.clipboard.writeText(text);
+    } else {
+      const area = document.createElement("textarea");
+      area.value = text;
+      area.setAttribute("readonly", "");
+      area.style.position = "fixed";
+      area.style.opacity = "0";
+      document.body.appendChild(area);
+      area.select();
+      if (!document.execCommand("copy")) throw new Error("Clipboard tidak tersedia.");
+      area.remove();
+    }
+    toast(successMessage, "success");
+  } catch (_) {
+    toast("Tidak dapat menyalin otomatis. Tekan dan tahan teks lalu pilih Salin.", "warning");
+  }
 }
 
 async function compressPaymentProof(file, maxSide = 1400, quality = 0.72) {
@@ -462,6 +487,7 @@ function roleNavigation(role) {
     { id: "assignments", label: "Tugas", icon: "tasks" }
   ];
   const management = role === "admin" ? [
+    { id: "chat", label: "Live Chat", icon: "chat" },
     { id: "payments", label: "Pembayaran", icon: "upload" },
     { id: "users", label: "Pengguna", icon: "users" },
     { id: "reports", label: "Laporan Belajar", icon: "report" },
@@ -470,6 +496,7 @@ function roleNavigation(role) {
     { id: "reports", label: "Laporan Belajar", icon: "report" },
     { id: "announcements", label: "Pengumuman", icon: "announce" }
   ] : [
+    { id: "chat", label: "Live Chat", icon: "chat" },
     { id: "reports", label: "Progres Saya", icon: "report" },
     { id: "announcements", label: "Pengumuman", icon: "announce" }
   ];
@@ -479,9 +506,9 @@ function roleNavigation(role) {
 function mobileNavigation(role) {
   const all = roleNavigation(role);
   const preferred = role === "student"
-    ? ["dashboard", "catalog", "classes", "assignments", "reports"]
+    ? ["dashboard", "catalog", "classes", "chat", "assignments"]
     : role === "admin"
-      ? ["dashboard", "classes", "schedule", "payments", "announcements"]
+      ? ["dashboard", "classes", "chat", "payments", "announcements"]
       : ["dashboard", "classes", "schedule", "assignments", "announcements"];
   return preferred.map((id) => all.find((item) => item.id === id)).filter(Boolean);
 }
@@ -500,7 +527,7 @@ function renderShell() {
         <div class="sidebar-year"><b>Tahun Ajaran ${escapeHtml(appConfig.academicYear)}</b><span>Learning Management System</span></div>
         <nav class="sidebar-nav">
           <div class="nav-section-label">Ruang Belajar</div>
-          ${nav.map((item, index) => `${index === (state.profile.role === "student" ? 5 : 4) ? '<div class="nav-section-label">Manajemen</div>' : ""}<button class="nav-item" data-route="${item.id}"><span class="nav-icon">${icon(item.icon)}</span><span class="nav-label">${escapeHtml(item.label)}</span>${item.id === "payments" ? `<span class="nav-count hidden">0</span>` : ""}</button>`).join("")}
+          ${nav.map((item, index) => `${index === (state.profile.role === "student" ? 5 : 4) ? '<div class="nav-section-label">Manajemen</div>' : ""}<button class="nav-item" data-route="${item.id}"><span class="nav-icon">${icon(item.icon)}</span><span class="nav-label">${escapeHtml(item.label)}</span>${item.id === "payments" ? `<span class="nav-count hidden" data-payment-count>0</span>` : item.id === "chat" ? `<span class="nav-count hidden" data-chat-count>0</span>` : ""}</button>`).join("")}
         </nav>
         <div class="sidebar-footer">
           <div class="sidebar-user"><div class="avatar">${initials(state.profile.name)}</div><div><b>${escapeHtml(state.profile.name)}</b><span>${escapeHtml(roleLabel(state.profile.role))}</span></div></div>
@@ -535,7 +562,9 @@ function renderShell() {
   qs("#mobileMenu")?.addEventListener("click", () => document.body.classList.toggle("sidebar-open"));
   qs("#sidebarOverlay")?.addEventListener("click", () => document.body.classList.remove("sidebar-open"));
   qs("#quickAnnouncement")?.addEventListener("click", () => navigate(state.profile.role === "admin" ? "payments" : "announcements"));
+  clearGlobalSubscriptions();
   initPaymentNotificationWatcher();
+  initChatNotificationWatcher();
   qs("#globalSearch")?.addEventListener("input", debounce((event) => globalSearch(event.target.value), 350));
 }
 
@@ -571,6 +600,7 @@ async function route() {
     else if (name === "assignments") await renderAssignments();
     else if (name === "users" && state.profile.role === "admin") await renderUsers();
     else if (name === "payments" && state.profile.role === "admin") await renderPayments();
+    else if (name === "chat" && (state.profile.role === "admin" || state.profile.role === "student")) await renderChat(params[0] || "");
     else if (name === "reports") await renderReports();
     else if (name === "announcements") await renderAnnouncements();
     else if (name === "settings") await renderSettings();
@@ -661,7 +691,6 @@ function flattenPaymentRequests(data = {}) {
 }
 
 function initPaymentNotificationWatcher() {
-  clearGlobalSubscriptions();
   if (state.profile?.role !== "admin") return;
   const unsubscribe = subscribe("paymentRequests", (data) => {
     const pending = flattenPaymentRequests(data).filter((item) => item.status === "pending").length;
@@ -672,10 +701,179 @@ function initPaymentNotificationWatcher() {
       dot.textContent = pending > 99 ? "99+" : String(pending);
       dot.classList.toggle("hidden", pending === 0);
     }
-    qsa('[data-route="payments"] .nav-count').forEach((el) => { el.textContent = pending; el.classList.toggle("hidden", pending === 0); });
+    qsa('[data-payment-count]').forEach((el) => { el.textContent = pending; el.classList.toggle("hidden", pending === 0); });
     if (pending > previous && previous > 0) toast("Ada bukti pembayaran baru yang perlu diperiksa.", "info", "Pembayaran Baru");
   });
   state.globalUnsubscribers.push(unsubscribe);
+}
+
+
+function chatMessages(chat = {}) {
+  return objectToArray(chat?.messages || {}).sort((a,b) => Number(a.createdAt || 0) - Number(b.createdAt || 0));
+}
+
+function chatLastMessage(chat = {}) {
+  const messages = chatMessages(chat);
+  return messages[messages.length - 1] || null;
+}
+
+function chatUnreadCount(chat = {}, viewerRole = "student") {
+  const readAt = Number(chat?.reads?.[viewerRole] || 0);
+  const otherRole = viewerRole === "admin" ? "student" : "admin";
+  return chatMessages(chat).filter((message) => message.senderRole === otherRole && Number(message.createdAt || 0) > readAt).length;
+}
+
+function initChatNotificationWatcher() {
+  if (!state.user || !state.profile || !["admin","student"].includes(state.profile.role)) return;
+  const path = state.profile.role === "admin" ? "supportChats" : `supportChats/${state.user.uid}`;
+  const unsubscribe = subscribe(path, (data) => {
+    let unread = 0;
+    if (state.profile.role === "admin") {
+      Object.values(data || {}).forEach((chat) => { unread += chatUnreadCount(chat || {}, "admin"); });
+    } else {
+      unread = chatUnreadCount(data || {}, "student");
+    }
+    state.chatUnread = unread;
+    qsa("[data-chat-count]").forEach((el) => {
+      el.textContent = unread > 99 ? "99+" : String(unread);
+      el.classList.toggle("hidden", unread === 0);
+    });
+  });
+  state.globalUnsubscribers.push(unsubscribe);
+}
+
+function chatTime(value) {
+  if (!value) return "";
+  const date = new Date(Number(value));
+  const today = new Date();
+  const sameDay = date.toDateString() === today.toDateString();
+  return sameDay ? date.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" }) : formatShortDate(Number(value));
+}
+
+function renderChatMessages(messages = [], studentUid = "") {
+  if (!messages.length) return `<div class="chat-empty"><div>✉</div><b>Mulai percakapan</b><span>Tulis pesan di bawah. Pesan akan muncul secara realtime.</span></div>`;
+  return messages.map((message) => {
+    const mine = message.senderUid === state.user.uid;
+    return `<div class="chat-message-row ${mine ? "mine" : "theirs"}"><div class="chat-bubble"><div class="chat-bubble-head"><b>${escapeHtml(message.senderName || (mine ? state.profile.name : "Izzuddin Academy"))}</b><span>${escapeHtml(chatTime(message.createdAt))}</span></div><p>${escapeHtml(message.body || "").replace(/\n/g,"<br>")}</p></div></div>`;
+  }).join("");
+}
+
+async function markChatRead(studentUid) {
+  if (!studentUid || !state.profile) return;
+  const role = state.profile.role === "admin" ? "admin" : "student";
+  try { await setValue(`supportChats/${studentUid}/reads/${role}`, Date.now()); } catch (_) {}
+}
+
+async function sendChatMessage(studentUid, input, button) {
+  const body = input?.value.trim();
+  if (!body || !studentUid) return;
+  if (body.length > 3000) return toast("Pesan maksimal 3.000 karakter.", "warning");
+  const original = button?.textContent || "Kirim";
+  if (button) { button.disabled = true; button.textContent = "Mengirim..."; }
+  try {
+    await pushValue(`supportChats/${studentUid}/messages`, {
+      senderUid: state.user.uid,
+      senderRole: state.profile.role,
+      senderName: state.profile.name,
+      body,
+      createdAt: Date.now()
+    });
+    input.value = "";
+    await markChatRead(studentUid);
+  } catch (error) {
+    toast(friendlyError(error), "error");
+  } finally {
+    if (button) { button.disabled = false; button.textContent = original; }
+    input?.focus();
+  }
+}
+
+function chatConversationShell(student, messages = [], adminMode = false) {
+  const title = adminMode ? (student?.name || "Peserta") : "Admin Izzuddin Academy";
+  const subtitle = adminMode ? `${student?.email || ""}${student?.phone ? ` · ${student.phone}` : ""}` : "Tim Izzuddin Academy";
+  return `<section class="chat-conversation-card">
+    <header class="chat-conversation-head">${adminMode ? `<button class="icon-btn chat-mobile-back" id="chatBack">←</button>` : ""}<div class="avatar">${initials(title)}</div><div><b>${escapeHtml(title)}</b><span>${escapeHtml(subtitle)}</span></div>${adminMode && student?.phone ? `<a class="btn btn-ghost btn-sm chat-wa" href="https://wa.me/${normalizeWhatsapp(student.phone)}" target="_blank" rel="noopener">WhatsApp</a>` : ""}</header>
+    <div class="chat-messages" id="chatMessages">${renderChatMessages(messages, student?.uid || state.user.uid)}</div>
+    <form class="chat-composer" id="chatComposer"><textarea id="chatInput" class="form-control" rows="1" maxlength="3000" placeholder="Tulis pesan..."></textarea><button class="btn btn-primary" id="chatSend" type="submit">Kirim</button></form>
+  </section>`;
+}
+
+function scrollChatToBottom() {
+  requestAnimationFrame(() => {
+    const box = qs("#chatMessages");
+    if (box) box.scrollTop = box.scrollHeight;
+  });
+}
+
+async function renderChat(selectedUid = "") {
+  if (state.profile.role === "student") {
+    qs("#pageContent").innerHTML = `<div class="page-head"><div><h2>Live Chat</h2><p>Hubungi admin Izzuddin Academy langsung dari ruang belajar Anda.</p></div></div><div id="studentChatHost">${chatConversationShell(null, [], false)}</div>`;
+    const uid = state.user.uid;
+    const bindComposer = () => {
+      const form = qs("#chatComposer");
+      if (!form || form.dataset.bound) return;
+      form.dataset.bound = "1";
+      form.addEventListener("submit", (event) => { event.preventDefault(); sendChatMessage(uid, qs("#chatInput"), qs("#chatSend")); });
+    };
+    bindComposer();
+    const unsubscribe = subscribe(`supportChats/${uid}`, async (chat) => {
+      const messages = chatMessages(chat || {});
+      const box = qs("#chatMessages");
+      if (box) box.innerHTML = renderChatMessages(messages, uid);
+      bindComposer();
+      scrollChatToBottom();
+      const newestAdmin = messages.filter((m) => m.senderRole === "admin").at(-1);
+      if (newestAdmin && Number(newestAdmin.createdAt || 0) > Number(chat?.reads?.student || 0)) await markChatRead(uid);
+    });
+    state.unsubscribers.push(unsubscribe);
+    scrollChatToBottom();
+    return;
+  }
+
+  let usersData = {};
+  let chatsData = {};
+  qs("#pageContent").innerHTML = `<div class="page-head"><div><h2>Live Chat</h2><p>Percakapan realtime dengan peserta Izzuddin Academy.</p></div></div><div id="adminChatHost" class="chat-layout"></div>`;
+
+  const refresh = () => {
+    const students = objectToArray(usersData || {}).map((item) => ({ ...item, uid: item.id })).filter((u) => u.role === "student" && u.status !== "inactive");
+    const rows = students.map((student) => {
+      const chat = chatsData?.[student.uid] || {};
+      const last = chatLastMessage(chat);
+      const unread = chatUnreadCount(chat, "admin");
+      return { student, chat, last, unread, lastAt: Number(last?.createdAt || 0) };
+    }).sort((a,b) => (b.unread > 0) - (a.unread > 0) || b.lastAt - a.lastAt || String(a.student.name || "").localeCompare(String(b.student.name || ""), "id"));
+    const selected = rows.find((row) => row.student.uid === selectedUid) || (selectedUid ? null : rows.find((row) => row.unread > 0 || row.lastAt > 0)) || null;
+    const host = qs("#adminChatHost");
+    if (!host) return;
+    host.innerHTML = `<aside class="chat-list-card ${selectedUid ? "mobile-hidden" : ""}"><div class="chat-list-search"><input class="form-control" id="chatSearch" placeholder="Cari peserta..."></div><div class="chat-list" id="chatList">${renderAdminChatRows(rows, selected?.student.uid || "")}</div></aside><div class="chat-conversation-host ${selectedUid ? "mobile-active" : ""}">${selected ? chatConversationShell(selected.student, chatMessages(selected.chat), true) : `<section class="chat-conversation-card"><div class="chat-empty"><div>✉</div><b>Pilih peserta</b><span>Pilih percakapan di sebelah kiri untuk mulai membalas.</span></div></section>`}</div>`;
+    bindAdminChatList(rows);
+    if (selected) {
+      bindAdminChatComposer(selected.student.uid);
+      const newestStudent = chatMessages(selected.chat).filter((m) => m.senderRole === "student").at(-1);
+      if (newestStudent && Number(newestStudent.createdAt || 0) > Number(selected.chat?.reads?.admin || 0)) markChatRead(selected.student.uid);
+      scrollChatToBottom();
+    }
+  };
+
+  function renderAdminChatRows(rows, activeUid) { return rows.map(({ student, last, unread }) => `<button class="chat-list-item ${student.uid === activeUid ? "active" : ""}" data-chat-user="${student.uid}" data-chat-name="${escapeHtml((student.name || "").toLowerCase())}"><div class="avatar">${initials(student.name)}</div><div class="chat-list-copy"><div><b>${escapeHtml(student.name || "Peserta")}</b><span>${escapeHtml(chatTime(last?.createdAt))}</span></div><p>${escapeHtml(last?.body ? last.body.slice(0,70) : "Belum ada pesan")}</p></div>${unread ? `<em>${unread > 99 ? "99+" : unread}</em>` : ""}</button>`).join("") || `<div class="chat-empty small"><b>Belum ada peserta</b><span>Peserta yang terdaftar akan muncul di sini.</span></div>`; }
+
+  function bindAdminChatList(rows) {
+    qsa("[data-chat-user]").forEach((button) => button.addEventListener("click", () => navigate("chat", button.dataset.chatUser)));
+    qs("#chatSearch")?.addEventListener("input", (event) => {
+      const term = event.target.value.trim().toLowerCase();
+      qsa("[data-chat-user]").forEach((item) => item.classList.toggle("hidden", term && !item.dataset.chatName.includes(term)));
+    });
+  }
+
+  function bindAdminChatComposer(uid) {
+    qs("#chatBack")?.addEventListener("click", () => navigate("chat"));
+    const form = qs("#chatComposer");
+    if (form) form.addEventListener("submit", (event) => { event.preventDefault(); sendChatMessage(uid, qs("#chatInput"), qs("#chatSend")); });
+  }
+
+  const unsubUsers = subscribe("users", (data) => { usersData = data || {}; refresh(); });
+  const unsubChats = subscribe("supportChats", (data) => { chatsData = data || {}; refresh(); });
+  state.unsubscribers.push(unsubUsers, unsubChats);
 }
 
 function catalogCard(course, enrolled = false, request = null) {
@@ -699,7 +897,7 @@ async function renderCatalog() {
     getValue(`paymentRequests/${state.user.uid}`, {})
   ]);
   qs("#pageContent").innerHTML = `
-    <section class="catalog-hero"><div><span class="eyebrow">Katalog Izzuddin Academy</span><h2>Pilih kelas yang membantu Anda bertumbuh.</h2><p>Mulai dari kelas gratis atau daftar kelas premium melalui transfer dan verifikasi sederhana.</p></div><div class="catalog-hero-stat"><b>${classes.length}</b><span>Kelas tersedia</span></div></section>
+    <section class="catalog-hero"><div><span class="eyebrow">Katalog Izzuddin Academy</span><h2>Pilih kelas yang membantu Anda bertumbuh.</h2><p>Mulai dari kelas gratis atau daftar kelas premium melalui transfer dan persetujuan admin.</p></div><div class="catalog-hero-stat"><b>${classes.length}</b><span>Kelas tersedia</span></div></section>
     <div class="page-head"><div><h2>Jelajahi Kelas</h2><p>Setelah terdaftar, kelas dapat diakses dari menu Kelas Saya.</p></div></div>
     <div class="filter-row"><input class="form-control" id="catalogSearch" placeholder="Cari kelas atau pengajar..."><select class="form-control" id="catalogAccess"><option value="">Semua kelas</option><option value="free">Gratis</option><option value="paid">Berbayar</option></select></div>
     <section id="catalogGrid" class="class-grid">${classes.map((course) => catalogCard(course, Boolean(memberships?.[course.id]), requests?.[course.id])).join("") || emptyState("Belum ada kelas", "Katalog kelas akan segera tersedia.")}</section>`;
@@ -746,13 +944,13 @@ function bindCatalogActions(classes, memberships, requests) {
 
 async function openPaymentForm(course, existing = null) {
   const settings = await loadPaymentSettings();
-  const body = `<div class="payment-summary"><div><span>Kelas yang dipilih</span><b>${escapeHtml(course.title)}</b></div><strong>${formatRupiah(course.price || 0)}</strong></div>
-    <div class="bank-card"><span>Transfer pembayaran ke</span><h3>${escapeHtml(settings.bankName || "Rekening pembayaran belum diatur")}</h3><b>${escapeHtml(settings.accountNumber || "—")}</b><p>a.n. ${escapeHtml(settings.accountHolder || "Izzuddin Academy")}</p></div>
+  const body = `<div class="payment-summary"><div><span>Kelas yang dipilih</span><b>${escapeHtml(course.title)}</b></div><div class="payment-amount-copy"><strong>${formatRupiah(course.price || 0)}</strong><button type="button" class="copy-chip" data-copy-value="${Number(course.price || 0)}" data-copy-message="Nominal pembayaran berhasil disalin.">Salin nominal</button></div></div>
+    <div class="bank-card"><span>Transfer pembayaran ke</span><h3>${escapeHtml(settings.bankName || "Rekening pembayaran belum diatur")}</h3><div class="bank-account-copy"><b>${escapeHtml(settings.accountNumber || "—")}</b><button type="button" class="copy-chip light" data-copy-value="${escapeHtml(settings.accountNumber || "")}" data-copy-message="Nomor rekening berhasil disalin.">Salin no. rek</button></div><p>a.n. ${escapeHtml(settings.accountHolder || "Izzuddin Academy")}</p></div>
     ${settings.instructions ? `<div class="notice notice-info">${escapeHtml(settings.instructions)}</div>` : ""}
-    <form class="form-grid" id="paymentForm"><div class="form-group full"><label class="form-label">Bukti transfer <span class="required">*</span></label><input id="paymentProof" class="form-control" type="file" accept="image/jpeg,image/png,image/webp" required><div class="form-help">Format JPG, PNG, atau WEBP. Gambar dikompres otomatis agar tetap ringan.</div></div><div class="form-group full"><label class="form-label">Catatan untuk admin</label><textarea id="paymentNote" class="form-control" placeholder="Contoh: Transfer atas nama ...">${escapeHtml(existing?.note || "")}</textarea></div></form>
-    <div class="privacy-note"><b>Verifikasi sederhana</b><span>Bukti langsung masuk ke notifikasi admin. Setelah unggahan berhasil, WhatsApp dibuka dengan pesan siap kirim. Saat admin menyetujui, kelas otomatis terbuka.</span></div>`;
+    <form class="form-grid" id="paymentForm"><div class="form-group full"><label class="form-label">Bukti transfer <span class="required">*</span></label><input id="paymentProof" class="form-control" type="file" accept="image/jpeg,image/png,image/webp" required><div class="form-help">Format JPG, PNG, atau WEBP. Gambar dikompres otomatis agar tetap ringan.</div></div><div class="form-group full"><label class="form-label">Catatan untuk admin</label><textarea id="paymentNote" class="form-control" placeholder="Contoh: Transfer atas nama ...">${escapeHtml(existing?.note || "")}</textarea></div></form>`;
   const modal = openModal({ title: "Daftar Kelas Berbayar", subtitle: "Transfer, unggah bukti, lalu tunggu persetujuan admin.", body, size: "sm", footer: `<button class="btn btn-ghost" data-close-footer>Batal</button><button class="btn btn-primary" id="submitPayment">Kirim Bukti Transfer</button>` });
   modal.querySelector("[data-close-footer]")?.addEventListener("click", closeModal);
+  modal.querySelectorAll("[data-copy-value]").forEach((button) => button.addEventListener("click", () => copyText(button.dataset.copyValue, button.dataset.copyMessage)));
   modal.querySelector("#submitPayment")?.addEventListener("click", async () => {
     const file = modal.querySelector("#paymentProof").files?.[0];
     if (!file) return toast("Pilih bukti transfer terlebih dahulu.", "warning");
@@ -797,16 +995,35 @@ async function openPaymentForm(course, existing = null) {
 }
 
 async function renderPayments() {
-  const requests = flattenPaymentRequests(await getValue("paymentRequests", {}));
-  const pending = requests.filter((item) => item.status === "pending").length;
-  qs("#pageContent").innerHTML = `<div class="page-head"><div><h2>Verifikasi Pembayaran</h2><p>Periksa bukti transfer. Persetujuan langsung membuka akses kelas peserta.</p></div><div class="page-actions"><span class="badge badge-upcoming">${pending} menunggu</span></div></div><div class="pill-row" id="paymentFilters"><button class="pill active" data-payment-status="">Semua</button><button class="pill" data-payment-status="pending">Menunggu</button><button class="pill" data-payment-status="approved">Disetujui</button><button class="pill" data-payment-status="rejected">Ditolak</button></div><section id="paymentList" class="stack" style="margin-top:16px">${renderPaymentRows(requests)}</section>`;
+  let requestData = {};
+  let userData = {};
+  let activeStatus = "";
+  qs("#pageContent").innerHTML = `<div class="page-head"><div><h2>Verifikasi Pembayaran</h2><p>Periksa bukti transfer. Persetujuan langsung membuka akses kelas peserta.</p></div><div class="page-actions"><span class="badge badge-upcoming" id="pendingPaymentBadge">0 menunggu</span></div></div><div class="pill-row" id="paymentFilters"><button class="pill active" data-payment-status="">Semua</button><button class="pill" data-payment-status="pending">Menunggu</button><button class="pill" data-payment-status="approved">Disetujui</button><button class="pill" data-payment-status="rejected">Ditolak</button></div><section id="paymentList" class="stack" style="margin-top:16px"></section>`;
+
+  const refresh = () => {
+    const requests = flattenPaymentRequests(requestData).map((item) => {
+      const current = userData?.[item.studentUid] || {};
+      return { ...item, studentName: current.name || item.studentName, studentEmail: current.email || item.studentEmail, studentPhone: current.phone ?? item.studentPhone };
+    });
+    const pending = requests.filter((item) => item.status === "pending").length;
+    const badge = qs("#pendingPaymentBadge");
+    if (badge) badge.textContent = `${pending} menunggu`;
+    const list = qs("#paymentList");
+    if (!list) return;
+    const filtered = activeStatus ? requests.filter((item) => item.status === activeStatus) : requests;
+    list.innerHTML = renderPaymentRows(filtered);
+    bindPaymentActions(requests);
+  };
+
   qsa("[data-payment-status]").forEach((button) => button.addEventListener("click", () => {
     qsa("[data-payment-status]").forEach((item) => item.classList.toggle("active", item === button));
-    const status = button.dataset.paymentStatus;
-    qs("#paymentList").innerHTML = renderPaymentRows(status ? requests.filter((item) => item.status === status) : requests);
-    bindPaymentActions(requests);
+    activeStatus = button.dataset.paymentStatus;
+    refresh();
   }));
-  bindPaymentActions(requests);
+
+  const unsubRequests = subscribe("paymentRequests", (data) => { requestData = data || {}; refresh(); });
+  const unsubUsers = subscribe("users", (data) => { userData = data || {}; refresh(); });
+  state.unsubscribers.push(unsubRequests, unsubUsers);
 }
 
 function renderPaymentRows(requests) {
@@ -850,7 +1067,6 @@ function bindPaymentActions(requests) {
         [`userNotifications/${studentUid}/payment-${classId}`]: { title: "Pembayaran disetujui", body: `Kelas ${item.classTitle} sudah dapat diakses.`, route: `class/${classId}`, read: false, createdAt: now }
       });
       toast("Pembayaran disetujui dan kelas telah dibuka.", "success");
-      renderPayments();
     } catch (error) { button.disabled = false; toast(friendlyError(error), "error"); }
   }));
   qsa("[data-reject-payment]").forEach((button) => button.addEventListener("click", async () => {
@@ -865,7 +1081,6 @@ function bindPaymentActions(requests) {
       [`paymentRequests/${studentUid}/${classId}/updatedAt`]: Date.now()
     });
     toast("Permintaan pembayaran ditandai perlu diperbaiki.", "success");
-    renderPayments();
   }));
 }
 
@@ -1074,36 +1289,45 @@ function openGradeForm(classId, taskId, studentUid, submission, task) {
 }
 
 async function renderUsers() {
-  const users = await getAllUsers();
+  let users = [];
   qs("#pageContent").innerHTML = `
     <div class="page-head">
-      <div><h2>Pengguna</h2><p>Buat akun pengajar dan peserta, atur peran, status, serta akses kelas.</p></div>
+      <div><h2>Pengguna</h2><p>Data profil peserta diperbarui realtime saat mereka menyimpan perubahan akun.</p></div>
       <div class="page-actions"><button class="btn btn-primary" id="createUser">${icon("plus")} Buat Akun</button></div>
     </div>
-    <div class="filter-row"><input class="form-control" id="userSearch" placeholder="Cari nama atau email..."><select class="form-control" id="userRole"><option value="">Semua peran</option><option value="admin">Administrator</option><option value="teacher">Pengajar</option><option value="student">Peserta</option></select></div>
-    <div class="table-wrap"><table><thead><tr><th>Pengguna</th><th>Peran</th><th>Status</th><th>Dibuat</th><th>Aksi</th></tr></thead><tbody id="userTableBody">${renderUserRows(users)}</tbody></table></div>`;
+    <div class="filter-row"><input class="form-control" id="userSearch" placeholder="Cari nama, email, atau WhatsApp..."><select class="form-control" id="userRole"><option value="">Semua peran</option><option value="admin">Administrator</option><option value="teacher">Pengajar</option><option value="student">Peserta</option></select></div>
+    <div class="table-wrap"><table><thead><tr><th>Pengguna</th><th>WhatsApp</th><th>Peran</th><th>Status</th><th>Diperbarui</th><th>Aksi</th></tr></thead><tbody id="userTableBody"><tr><td colspan="6" class="text-center muted">Memuat pengguna...</td></tr></tbody></table></div>`;
 
   const apply = () => {
-    const term = qs("#userSearch").value.trim().toLowerCase();
-    const role = qs("#userRole").value;
-    const filtered = users.filter((u) => (!term || `${u.name} ${u.email}`.toLowerCase().includes(term)) && (!role || u.role === role));
-    qs("#userTableBody").innerHTML = renderUserRows(filtered);
+    const search = qs("#userSearch");
+    const roleSelect = qs("#userRole");
+    const body = qs("#userTableBody");
+    if (!search || !roleSelect || !body) return;
+    const term = search.value.trim().toLowerCase();
+    const role = roleSelect.value;
+    const filtered = users.filter((u) => (!term || `${u.name || ""} ${u.email || ""} ${u.phone || ""}`.toLowerCase().includes(term)) && (!role || u.role === role));
+    body.innerHTML = renderUserRows(filtered);
     bindUserRowActions(filtered);
   };
   qs("#userSearch")?.addEventListener("input", apply);
   qs("#userRole")?.addEventListener("change", apply);
   qs("#createUser")?.addEventListener("click", () => openUserForm());
-  bindUserRowActions(users);
+  const unsubscribe = subscribe("users", (data) => {
+    users = objectToArray(data || {}).map((item) => ({ ...item, uid: item.id })).sort((a,b) => String(a.name || "").localeCompare(String(b.name || ""), "id"));
+    apply();
+  });
+  state.unsubscribers.push(unsubscribe);
 }
 
 function renderUserRows(users) {
   return users.map((user) => `<tr>
     <td><div class="table-user"><div class="avatar">${initials(user.name)}</div><div><b>${escapeHtml(user.name)}</b><span>${escapeHtml(user.email || "")}</span></div></div></td>
+    <td>${user.phone ? `<a class="table-phone" href="https://wa.me/${normalizeWhatsapp(user.phone)}" target="_blank" rel="noopener">${escapeHtml(user.phone)}</a>` : `<span class="muted">—</span>`}</td>
     <td><span class="badge badge-${user.role}">${escapeHtml(roleLabel(user.role))}</span></td>
     <td><span class="badge ${user.status === "inactive" ? "badge-live" : "badge-replay"}">${user.status === "inactive" ? "Nonaktif" : "Aktif"}</span></td>
-    <td>${formatShortDate(user.createdAt)}</td>
+    <td>${formatShortDate(user.updatedAt || user.createdAt)}</td>
     <td><div class="table-actions"><button class="btn btn-secondary btn-sm" data-user-access="${user.uid}">Akses Kelas</button><button class="icon-btn" data-edit-user="${user.uid}">${icon("edit")}</button></div></td>
-  </tr>`).join("") || `<tr><td colspan="5" class="text-center muted">Tidak ada pengguna.</td></tr>`;
+  </tr>`).join("") || `<tr><td colspan="6" class="text-center muted">Tidak ada pengguna.</td></tr>`;
 }
 
 function bindUserRowActions(users) {
@@ -1127,6 +1351,7 @@ function openUserForm(user = null) {
   const body = `<form id="userForm" class="form-grid">
     <div class="form-group full"><label class="form-label">Nama lengkap <span class="required">*</span></label><input id="userName" class="form-control" required value="${escapeHtml(user?.name || "")}"></div>
     <div class="form-group"><label class="form-label">Email <span class="required">*</span></label><input id="userEmail" class="form-control" type="email" required value="${escapeHtml(user?.email || "")}" ${user ? "disabled" : ""}></div>
+    <div class="form-group"><label class="form-label">Nomor WhatsApp</label><input id="userPhone" class="form-control" type="tel" value="${escapeHtml(user?.phone || "")}" placeholder="08xxxxxxxxxx"></div>
     <div class="form-group"><label class="form-label">Peran</label><select id="userRoleSelect" class="form-control"><option value="student" ${user?.role === "student" ? "selected" : ""}>Peserta</option><option value="teacher" ${user?.role === "teacher" ? "selected" : ""}>Pengajar</option><option value="admin" ${user?.role === "admin" ? "selected" : ""}>Administrator</option></select></div>
     ${user ? "" : `<div class="form-group"><label class="form-label">Kata sandi awal <span class="required">*</span></label><input id="userPassword" class="form-control" type="password" minlength="8" required placeholder="Minimal 8 karakter"></div>`}
     <div class="form-group"><label class="form-label">Status</label><select id="userStatus" class="form-control"><option value="active" ${(user?.status || "active") === "active" ? "selected" : ""}>Aktif</option><option value="inactive" ${user?.status === "inactive" ? "selected" : ""}>Nonaktif</option></select></div>
@@ -1136,6 +1361,7 @@ function openUserForm(user = null) {
   modal.querySelector("#saveUser")?.addEventListener("click", async () => {
     const name = modal.querySelector("#userName").value.trim();
     const email = modal.querySelector("#userEmail").value.trim().toLowerCase();
+    const phone = modal.querySelector("#userPhone").value.trim();
     const role = modal.querySelector("#userRoleSelect").value;
     const status = modal.querySelector("#userStatus").value;
     if (!name || !email) { toast("Nama dan email wajib diisi.", "warning"); return; }
@@ -1149,11 +1375,25 @@ function openUserForm(user = null) {
         userUid = (await createAuthUser(email, password)).uid;
       }
       const now = Date.now();
-      const updates = {};
-      updates[`users/${userUid}`] = { name, email, role, status, createdAt: user?.createdAt || now, createdBy: user?.createdBy || state.user.uid, updatedAt: now };
-      updates[`publicProfiles/${userUid}`] = { name, role, avatar: user?.avatar || "", updatedAt: now };
+      const updates = {
+        [`users/${userUid}/name`]: name,
+        [`users/${userUid}/email`]: email,
+        [`users/${userUid}/phone`]: phone,
+        [`users/${userUid}/role`]: role,
+        [`users/${userUid}/status`]: status,
+        [`users/${userUid}/updatedAt`]: now,
+        [`publicProfiles/${userUid}/name`]: name,
+        [`publicProfiles/${userUid}/role`]: role,
+        [`publicProfiles/${userUid}/avatar`]: user?.avatar || "",
+        [`publicProfiles/${userUid}/updatedAt`]: now
+      };
+      if (!user) {
+        updates[`users/${userUid}/createdAt`] = now;
+        updates[`users/${userUid}/createdBy`] = state.user.uid;
+        updates[`users/${userUid}/registrationSource`] = "admin";
+      }
       await updateValues(updates);
-      closeModal(); toast("Akun berhasil disimpan.", "success"); renderUsers();
+      closeModal(); toast("Akun berhasil disimpan.", "success");
     } catch (error) {
       toast(friendlyError(error), "error");
       button.disabled = false; button.textContent = "Simpan";

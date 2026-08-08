@@ -1,24 +1,15 @@
-LANGKAH UPDATE IZZUDDIN ACADEMY LMS v3.0.0
+LANGKAH UPDATE IZZUDDIN ACADEMY LMS v4.0.0
 
-1. Cadangkan repository/folder LMS versi sebelumnya.
-2. Ganti seluruh file lama dengan seluruh isi paket ini.
-3. Buka Firebase Console > Realtime Database > Rules.
-4. Salin seluruh isi database.rules.json, tempel, lalu klik Publish.
-5. Pastikan Authentication > Sign-in method > Email/Password tetap aktif.
-6. Pastikan domain izzuddin.online dan www.izzuddin.online tercantum pada Authentication > Settings > Authorized domains.
-7. Login sebagai administrator, buka Pengaturan, lalu isi:
-   - nama bank
-   - nomor rekening
-   - nama pemilik rekening
-   - nomor WhatsApp admin
-   - petunjuk pembayaran
-8. Buat/edit kelas dan pilih Gratis atau Berbayar. Untuk kelas berbayar, isi harga.
-9. Saat membuat video, pilih sumber YouTube atau Google Drive lalu tempel tautannya.
-10. Setelah upload ke GitHub, lakukan hard refresh sekali agar cache versi lama terganti.
+1. Ganti seluruh file website lama dengan isi paket v4.0.0.
+2. Di Firebase Console buka Realtime Database > Rules.
+3. Ganti Rules dengan isi file database.rules.json dari paket ini, lalu Publish.
+4. Pastikan Authentication > Email/Password masih aktif dan domain izzuddin.online sudah berada di Authorized domains.
+5. Bila memakai GitHub Pages, unggah semua file termasuk sw.js agar cache versi lama dibersihkan.
+6. Setelah deployment, lakukan hard refresh sekali pada perangkat admin dan peserta.
 
-CATATAN
-- Bukti pembayaran berupa JPG/PNG/WEBP dan dikompres otomatis.
-- Bukti disimpan privat pada Realtime Database; Firebase Storage tidak diperlukan.
-- Notifikasi pembayaran muncul di menu Pembayaran admin.
-- Setelah bukti berhasil diunggah, WhatsApp peserta dibuka dengan pesan kepada admin yang sudah siap dikirim.
-- Persetujuan admin otomatis membuka kelas berbayar.
+Pembaruan utama:
+- Profil/nama/WhatsApp peserta tampil realtime di admin.
+- Admin dapat melihat dan mengedit WhatsApp tanpa menghapus data profil lain.
+- Tombol salin nomor rekening dan nominal pada pembayaran.
+- Live Chat realtime peserta ↔ admin dengan indikator pesan belum dibaca.
+- Blok teks “Verifikasi sederhana” pada halaman pembayaran dihapus.
