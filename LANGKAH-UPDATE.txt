@@ -1,0 +1,24 @@
+LANGKAH UPDATE IZZUDDIN ACADEMY LMS v3.0.0
+
+1. Cadangkan repository/folder LMS versi sebelumnya.
+2. Ganti seluruh file lama dengan seluruh isi paket ini.
+3. Buka Firebase Console > Realtime Database > Rules.
+4. Salin seluruh isi database.rules.json, tempel, lalu klik Publish.
+5. Pastikan Authentication > Sign-in method > Email/Password tetap aktif.
+6. Pastikan domain izzuddin.online dan www.izzuddin.online tercantum pada Authentication > Settings > Authorized domains.
+7. Login sebagai administrator, buka Pengaturan, lalu isi:
+   - nama bank
+   - nomor rekening
+   - nama pemilik rekening
+   - nomor WhatsApp admin
+   - petunjuk pembayaran
+8. Buat/edit kelas dan pilih Gratis atau Berbayar. Untuk kelas berbayar, isi harga.
+9. Saat membuat video, pilih sumber YouTube atau Google Drive lalu tempel tautannya.
+10. Setelah upload ke GitHub, lakukan hard refresh sekali agar cache versi lama terganti.
+
+CATATAN
+- Bukti pembayaran berupa JPG/PNG/WEBP dan dikompres otomatis.
+- Bukti disimpan privat pada Realtime Database; Firebase Storage tidak diperlukan.
+- Notifikasi pembayaran muncul di menu Pembayaran admin.
+- Setelah bukti berhasil diunggah, WhatsApp peserta dibuka dengan pesan kepada admin yang sudah siap dikirim.
+- Persetujuan admin otomatis membuka kelas berbayar.

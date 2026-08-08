@@ -68,6 +68,14 @@ export async function getMyClasses(uid, role) {
   return values.filter(Boolean).sort((a, b) => Number(b.createdAt || 0) - Number(a.createdAt || 0));
 }
 
+
+export async function getAllClasses() {
+  const classes = objectToArray(await getValue("classes", {}));
+  return classes
+    .filter((item) => (item.status || "active") === "active")
+    .sort((a, b) => Number(b.createdAt || 0) - Number(a.createdAt || 0));
+}
+
 export async function getMeetings(classId) {
   return objectToArray(await getValue(`meetings/${classId}`, {}))
     .sort((a, b) => new Date(a.startAt || 0) - new Date(b.startAt || 0));

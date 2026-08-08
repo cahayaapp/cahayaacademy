@@ -1,58 +1,37 @@
-# IZZUDDIN ACADEMY LMS — v2.0.0
+# IZZUDDIN ACADEMY LMS — v3.0.0
 
-Learning Management System berbasis Firebase Authentication, Firebase Realtime Database, dan YouTube Embed.
+Pembaruan LMS dengan pendaftaran mandiri, katalog kelas gratis/berbayar, pembayaran transfer, video YouTube/Google Drive, dan tampilan mobile yang diperkuat.
 
-## Pembaruan utama
+## Fitur baru
 
-- Identitas aplikasi sepenuhnya diubah menjadi **Izzuddin Academy**.
-- Paket langsung menggunakan akun dan database yang sudah aktif.
-- YouTube menggunakan **Clean Player Mode**: video baru dimuat setelah tombol putar ditekan, kontrol bawaan disembunyikan, mode privasi YouTube digunakan, dan layar akhir segera diganti agar rekomendasi tidak tampil.
-- Navigasi bawah khusus mobile seperti aplikasi LMS modern.
-- Tampilan halaman masuk, dashboard, kelas, ruang belajar, tabel, modal, dan kartu diperhalus untuk desktop maupun ponsel.
-- PWA dan cache diperbarui ke versi 2.0.0.
+- Tab Masuk dan Daftar pada halaman awal.
+- Akun pelajar dibuat mandiri dan langsung diarahkan ke katalog kelas.
+- Admin memilih kelas Gratis atau Berbayar serta menentukan harga.
+- Kelas gratis dapat diikuti langsung.
+- Kelas berbayar: transfer, unggah bukti, notifikasi admin, WhatsApp siap kirim, verifikasi, lalu akses terbuka otomatis.
+- Bukti transfer dikompres sebagai gambar dan disimpan privat di Realtime Database; tidak memerlukan Firebase Storage.
+- Sumber video utama dan materi pendamping dapat memakai YouTube atau Google Drive.
+- Clean Player YouTube menutup tampilan jeda/akhir agar rekomendasi tidak mengganggu.
+- Antarmuka hanya memakai istilah Video Pembelajaran, tanpa istilah siaran langsung atau tayangan ulang.
+- Frame video mobile mengikuti lebar layar dan tidak membutuhkan geser horizontal.
+- Seluruh halaman aktivasi awal telah dihapus.
 
-## Fitur utama
+## Pembaruan situs aktif
 
-- Login email dan kata sandi.
-- Peran administrator, pengajar, dan peserta.
-- Pengelolaan pengguna, kelas, modul, dan peserta kelas.
-- YouTube Live dan tayangan ulang dalam halaman LMS.
-- Presensi, durasi aktif, progres video, catatan, diskusi, kuis, tugas, nilai, laporan, dan pengumuman.
-- Tampilan responsif untuk desktop, tablet, dan ponsel.
+1. Cadangkan repository lama.
+2. Ganti seluruh file lama dengan isi paket ini.
+3. Publish isi `database.rules.json` pada Realtime Database Rules.
+4. Login sebagai admin, buka Pengaturan, lalu isi rekening dan nomor WhatsApp admin.
+5. Upload ke GitHub Pages atau Firebase Hosting dan lakukan hard refresh sekali.
 
-## Cara memperbarui aplikasi yang sudah aktif
-
-1. Cadangkan repository atau folder versi sebelumnya.
-2. Ganti seluruh file aplikasi lama dengan isi paket ini.
-3. Pertahankan project Firebase yang sama; konfigurasi sudah tersedia di `js/firebase-config.js`.
-4. Bila Security Rules sebelumnya sudah terpasang dan berjalan, tidak perlu membuat akun administrator ulang.
-5. Setelah upload, lakukan hard refresh atau hapus cache situs sekali agar Service Worker versi lama terganti.
-
-## Deploy Firebase Hosting
-
-```bash
-firebase deploy --only hosting
-```
-
-Untuk memperbarui Rules sekaligus:
+## Firebase CLI
 
 ```bash
 firebase deploy --only database,hosting
 ```
 
-## Deploy GitHub Pages
+Untuk GitHub Pages, upload seluruh isi folder ke root repository. Pastikan domain produksi sudah masuk Firebase Authentication → Authorized domains.
 
-Upload seluruh isi folder ke root repository, lalu gunakan GitHub Pages dari branch `main` dan folder `/root`. Pastikan domain GitHub Pages telah dimasukkan ke Firebase Authentication → Authorized domains.
+## Catatan privasi
 
-## Catatan YouTube Clean Player
-
-Clean Player Mode menghilangkan kontrol bawaan, memuat video hanya setelah peserta menekan tombol putar, memakai `youtube-nocookie.com`, dan mengganti layar segera setelah video berakhir. Karena sumber tetap YouTube, identitas atau pesan bawaan YouTube masih dapat muncul pada kondisi tertentu, misalnya ketika pemilik video menonaktifkan embedding atau ketika YouTube menampilkan pesan kesalahan.
-
-## Struktur utama
-
-- `index.html` — aplikasi utama.
-- `js/app.js` — logika LMS dan Clean Player Mode.
-- `js/firebase-config.js` — konfigurasi Firebase.
-- `database.rules.json` — Security Rules Realtime Database.
-- `css/app.css` — desain desktop dan mobile.
-- `assets/logo-izzuddin.png` — logo aplikasi.
+YouTube sebaiknya Unlisted dan embedding aktif. Google Drive sebaiknya Viewer serta download, print, dan copy dinonaktifkan. Pembatasan layanan pihak ketiga bukan DRM absolut.

@@ -10,12 +10,19 @@
       "database.rules.json",
       "README.md",
       "**/.*",
-      "**/node_modules/**"
+      "**/node_modules/**",
+      "*.zip",
+      "*.sha256"
     ],
     "headers": [
       {
         "source": "**/*.@(js|css|html|json|webmanifest)",
-        "headers": [{ "key": "Cache-Control", "value": "no-cache" }]
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "no-cache"
+          }
+        ]
       }
     ]
   }

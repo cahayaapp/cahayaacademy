@@ -11,8 +11,10 @@ export function escapeHtml(value = "") {
 }
 
 export function safeUrl(value = "") {
+  const raw = String(value || "").trim();
+  if (/^data:image\/(?:jpeg|png|webp);base64,[a-z0-9+/=]+$/i.test(raw)) return raw;
   try {
-    const url = new URL(String(value), window.location.origin);
+    const url = new URL(raw, window.location.origin);
     if (["http:", "https:", "mailto:", "tel:"].includes(url.protocol)) return url.href;
   } catch (_) {}
   return "#";
@@ -106,6 +108,24 @@ export function youtubeId(input = "") {
   }
 }
 
+
+export function googleDriveId(input = "") {
+  const value = String(input).trim();
+  if (/^[A-Za-z0-9_-]{20,}$/.test(value)) return value;
+  try {
+    const url = new URL(value);
+    const pathMatch = url.pathname.match(/\/file\/d\/([^/]+)/) || url.pathname.match(/\/d\/([^/]+)/);
+    return pathMatch?.[1] || url.searchParams.get("id") || "";
+  } catch (_) {
+    return "";
+  }
+}
+
+export function googleDrivePreviewUrl(input = "") {
+  const id = googleDriveId(input);
+  return id ? `https://drive.google.com/file/d/${encodeURIComponent(id)}/preview` : "";
+}
+
 export function meetingStatus(meeting = {}) {
   if (meeting.status === "draft") return "draft";
   if (meeting.status === "live") return "live";
@@ -121,9 +141,9 @@ export function meetingStatus(meeting = {}) {
 
 export function statusLabel(status) {
   const labels = {
-    live: "Sedang Live",
-    upcoming: "Akan Datang",
-    replay: "Tayangan Ulang",
+    live: "Video Tersedia",
+    upcoming: "Terjadwal",
+    replay: "Video Tersedia",
     draft: "Draf",
     published: "Terbit",
     active: "Aktif",
