@@ -1,4 +1,4 @@
-# IZZUDDIN ACADEMY LMS — v4.2.0
+# IZZUDDIN ACADEMY LMS — v4.3.0
 
 Pembaruan LMS dengan pendaftaran mandiri, katalog kelas gratis/berbayar, pembayaran transfer, video YouTube/Google Drive, dan tampilan mobile yang diperkuat.
 
@@ -37,9 +37,19 @@ Untuk GitHub Pages, upload seluruh isi folder ke root repository. Pastikan domai
 YouTube sebaiknya Unlisted dan embedding aktif. Google Drive sebaiknya Viewer serta download, print, dan copy dinonaktifkan. Pembatasan layanan pihak ketiga bukan DRM absolut.
 
 
-## Pembaruan v4.2.0
+## Pembaruan v4.3.0
 - Sinkronisasi profil peserta realtime ke halaman admin.
 - Tombol salin nomor rekening dan nominal pembayaran.
 - Live Chat realtime antara peserta dan admin.
 - Informasi “Verifikasi sederhana” di formulir pembayaran dihapus.
 - Rules Realtime Database ditambah untuk `supportChats`.
+
+
+## Pembaruan v4.3.0
+- Mobile: Live Chat hanya tampil sebagai tombol mengambang di kanan bawah, tepat di atas bottom navigation.
+- Live Chat di topbar mobile, sidebar/drawer mobile, dan bottom navigation dihapus.
+- Notifikasi tetap tampil di samping avatar pengguna pada layar kecil.
+- Ikon Live Chat diperbarui menjadi ikon percakapan/telepon berbentuk bubble.
+- Tombol chat mengambang otomatis hilang ketika ruang chat dibuka agar tombol Kirim tidak tertutup.
+- Bottom navigation menyesuaikan otomatis menjadi 4 kolom.
+- CSS escape dari build sebelumnya dibersihkan agar aturan responsif terbaca konsisten.

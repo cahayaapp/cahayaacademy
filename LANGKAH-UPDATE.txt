@@ -1,4 +1,4 @@
-IZZUDDIN ACADEMY LMS v4.2.0
+IZZUDDIN ACADEMY LMS v4.3.0
 
 UPDATE KHUSUS NAVIGASI DESKTOP & MOBILE
 
@@ -18,3 +18,11 @@ FITUR V4 SEBELUMNYA TETAP ADA
 - Copy nomor rekening dan nominal pembayaran.
 - Live Chat realtime member-admin.
 - Pembayaran transfer + bukti + approval admin.
+
+
+PENYEMPURNAAN v4.3.0
+- Mobile: Live Chat hanya melalui tombol hijau mengambang kanan bawah.
+- Live Chat di samping profil/topbar dan bottom menu dihapus.
+- Notifikasi tetap di samping foto/avatar user.
+- Tombol Kirim chat tidak lagi tertutup tombol mengambang.
+- Tidak ada perubahan database rules.

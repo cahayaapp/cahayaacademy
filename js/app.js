@@ -124,7 +124,7 @@ function icon(name) {
     video: "▣", book: "▤", quiz: "?", discuss: "✦", plus: "+", search: "⌕",
     menu: "☰", bell: "♢", logout: "↪", edit: "✎", trash: "×", back: "←",
     calendar: "◫", clock: "◷", check: "✓", upload: "⇧", download: "⇩",
-    chart: "▥", lock: "▣", mail: "@", chat: "✉", eye: "◉", arrow: "→"
+    chart: "▥", lock: "▣", mail: "@", chat: `<svg class="support-chat-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.2 11.6a8.1 8.1 0 0 1-11.9 7.1L4 20l1.3-4.1A8.1 8.1 0 1 1 20.2 11.6Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 8.2c.2-.4.4-.4.7-.4h.5c.2 0 .4.1.5.4l.8 1.8c.1.3.1.5-.1.7l-.6.8c-.2.2-.1.4 0 .6.5.9 1.2 1.7 2.1 2.2.2.1.4.2.6 0l.9-1c.2-.2.4-.3.7-.1l1.8.8c.3.1.4.3.4.5 0 .4-.2 1.2-.8 1.7-.6.5-1.3.8-2.2.6-1.1-.2-2.8-.8-4.5-2.4-1.4-1.3-2.3-2.9-2.6-4-.2-.9.1-1.6.5-2.2.4-.5.8-.7 1.3-.7Z" fill="currentColor"/></svg>`, eye: "◉", arrow: "→"
   };
   return map[name] || "•";
 }
@@ -550,9 +550,9 @@ function mobileNavigation(role) {
   const r = normalizeRole(role);
   const all = roleNavigation(r);
   const preferred = r === "student"
-    ? ["dashboard", "catalog", "classes", "chat", "assignments"]
+    ? ["dashboard", "catalog", "classes", "assignments"]
     : r === "admin"
-      ? ["dashboard", "classes", "chat", "payments", "announcements"]
+      ? ["dashboard", "classes", "payments", "announcements"]
       : ["dashboard", "classes", "schedule", "assignments", "announcements"];
   return preferred.map((id) => all.find((item) => item.id === id)).filter(Boolean);
 }
@@ -582,7 +582,7 @@ function renderShell() {
         <div class="sidebar-year"><b>Tahun Ajaran ${escapeHtml(appConfig.academicYear)}</b><span>Learning Management System</span></div>
         ${chatEnabled ? `<button class="desktop-chat-shortcut" data-route="chat"><span class="desktop-chat-shortcut-icon">${icon("chat")}</span><span><b>${role === "admin" ? "Live Chat Peserta" : "Live Chat Admin"}</b><small>${role === "admin" ? "Balas pesan peserta" : "Hubungi tim Izzuddin Academy"}</small></span><em class="hidden" data-chat-count>0</em></button>` : ""}
         <nav class="sidebar-nav">
-          ${groups.map((group) => `<div class="nav-group"><div class="nav-section-label">${escapeHtml(group.label)}</div>${group.items.map(navButton).join("")}</div>`).join("")}
+          ${groups.map((group) => `<div class="nav-group${group.items.every((item) => item.id === "chat") ? " nav-group-chat-only" : ""}"><div class="nav-section-label">${escapeHtml(group.label)}</div>${group.items.map(navButton).join("")}</div>`).join("")}
         </nav>
         <div class="sidebar-footer">
           <div class="sidebar-user"><div class="avatar">${initials(state.profile.name)}</div><div><b>${escapeHtml(state.profile.name)}</b><span>${escapeHtml(roleLabel(role))}</span></div></div>
@@ -604,8 +604,8 @@ function renderShell() {
         </header>
         <div id="pageContent" class="page-content"></div>
       </main>
-      <nav class="mobile-bottom-nav" aria-label="Navigasi utama">
-        ${mobileNav.map((item) => `<button class="bottom-nav-item" data-route="${item.id}"><span>${icon(item.icon)}</span><b>${escapeHtml(item.label.replace(" Saya", "").replace(" Admin", "").replace(" Peserta", ""))}</b>${item.id === "chat" ? `<em class="bottom-chat-count hidden" data-chat-count>0</em>` : ""}</button>`).join("")}
+      <nav class="mobile-bottom-nav" aria-label="Navigasi utama" style="--mobile-nav-count:${mobileNav.length}">
+        ${mobileNav.map((item) => `<button class="bottom-nav-item" data-route="${item.id}"><span>${icon(item.icon)}</span><b>${escapeHtml(item.label.replace(" Saya", "").replace(" Admin", "").replace(" Peserta", ""))}</b></button>`).join("")}
       </nav>
       ${chatEnabled ? `<button class="chat-fab" data-route="chat" aria-label="Buka Live Chat"><span>${icon("chat")}</span><b>Chat</b><em class="hidden" data-chat-count>0</em></button>` : ""}
     </div>`;
@@ -638,6 +638,7 @@ function navigate(name, ...params) {
 
 function setActiveNav(name) {
   qsa(".nav-item, .bottom-nav-item").forEach((el) => el.classList.toggle("active", el.dataset.route === name));
+  document.body.classList.toggle("chat-route-active", name === "chat");
   qs("#topPageTitle").textContent = routeTitles[name] || "Izzuddin Academy";
 }
 
@@ -808,7 +809,7 @@ function chatTime(value) {
 }
 
 function renderChatMessages(messages = [], studentUid = "") {
-  if (!messages.length) return `<div class="chat-empty"><div>✉</div><b>Mulai percakapan</b><span>Tulis pesan di bawah. Pesan akan muncul secara realtime.</span></div>`;
+  if (!messages.length) return `<div class="chat-empty"><div>${icon("chat")}</div><b>Mulai percakapan</b><span>Tulis pesan di bawah. Pesan akan muncul secara realtime.</span></div>`;
   return messages.map((message) => {
     const mine = message.senderUid === state.user.uid;
     return `<div class="chat-message-row ${mine ? "mine" : "theirs"}"><div class="chat-bubble"><div class="chat-bubble-head"><b>${escapeHtml(message.senderName || (mine ? state.profile.name : "Izzuddin Academy"))}</b><span>${escapeHtml(chatTime(message.createdAt))}</span></div><p>${escapeHtml(message.body || "").replace(/\n/g,"<br>")}</p></div></div>`;
@@ -2088,7 +2089,7 @@ window.addEventListener("visibilitychange", () => {
 if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
   window.addEventListener("load", async () => {
     try {
-      const registration = await navigator.serviceWorker.register("./sw.js?v=4.2.0", { updateViaCache: "none" });
+      const registration = await navigator.serviceWorker.register("./sw.js?v=4.3.0", { updateViaCache: "none" });
       registration.update().catch(() => {});
     } catch (_) {}
   });

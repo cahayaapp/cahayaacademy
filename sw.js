@@ -1,9 +1,9 @@
-const CACHE_NAME = "izzuddin-academy-v4.2.0";
+const CACHE_NAME = "izzuddin-academy-v4.3.0";
 const APP_ASSETS = [
   "./",
   "./index.html",
-  "./css/app.css?v=4.2.0",
-  "./js/app.js?v=4.2.0",
+  "./css/app.css?v=4.3.0",
+  "./js/app.js?v=4.3.0",
   "./js/firebase.js",
   "./js/firebase-config.js",
   "./js/store.js",

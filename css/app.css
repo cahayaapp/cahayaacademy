@@ -988,11 +988,181 @@ html, body { max-width: 100%; overflow-x: hidden; }
 @media (max-width: 560px) {
   .chat-fab { bottom:82px; right:11px; width:47px; min-width:47px; height:47px; border-radius:16px; }
 }
-\n\n/* Izzuddin Academy v4.2 — verified desktop/mobile navigation */\n.nav-group { display:block; }\n.desktop-chat-shortcut {\n  position:relative;\n  width:calc(100% - 28px);\n  min-height:58px;\n  display:grid;\n  grid-template-columns:36px minmax(0,1fr) auto;\n  align-items:center;\n  gap:10px;\n  margin:0 14px 6px;\n  padding:9px 10px;\n  border:1px solid rgba(90,235,224,.19);\n  border-radius:15px;\n  color:#fff;\n  background:linear-gradient(135deg,rgba(32,183,176,.24),rgba(32,135,196,.18));\n  text-align:left;\n  cursor:pointer;\n  box-shadow:inset 0 1px 0 rgba(255,255,255,.05);\n}\n.desktop-chat-shortcut:hover { background:linear-gradient(135deg,rgba(32,183,176,.34),rgba(32,135,196,.26)); }\n.desktop-chat-shortcut-icon { width:36px; height:36px; display:grid; place-items:center; border-radius:11px; background:rgba(255,255,255,.11); font-size:1rem; }\n.desktop-chat-shortcut b { display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:.68rem; }\n.desktop-chat-shortcut small { display:block; margin-top:3px; overflow:hidden; color:rgba(255,255,255,.55); font-size:.53rem; text-overflow:ellipsis; white-space:nowrap; }\n.desktop-chat-shortcut em { min-width:22px; height:22px; display:grid; place-items:center; padding:0 5px; border-radius:999px; color:#fff; background:#e95461; font-size:.52rem; font-style:normal; font-weight:900; }\n.topbar-chat-pill {\n  position:relative;\n  min-height:40px;\n  display:inline-flex;\n  align-items:center;\n  gap:8px;\n  padding:0 13px;\n  border:1px solid #d8eeee;\n  border-radius:12px;\n  color:var(--primary-dark);\n  background:#eef8f8;\n  font-size:.66rem;\n  font-weight:800;\n  cursor:pointer;\n}\n.topbar-chat-pill:hover { background:#e2f4f3; }\n.topbar-chat-pill em { position:absolute; top:-6px; right:-6px; min-width:19px; height:19px; display:grid; place-items:center; padding:0 4px; border:2px solid #fff; border-radius:999px; color:#fff; background:#e95461; font-size:.48rem; font-style:normal; font-weight:900; }\n.sidebar-nav { overscroll-behavior:contain; }\n.chat-fab { display:none; }\n\n/* Desktop guarantee: navigation and chat are always exposed without horizontal scrolling. */\n@media (min-width: 921px) {\n  .sidebar { transform:none !important; }\n  .sidebar-overlay, .mobile-menu, .mobile-bottom-nav { display:none !important; }\n  .desktop-chat-shortcut, .topbar-chat-pill { display:grid; }\n  .topbar-chat-pill { display:inline-flex; }\n  .main-area { margin-left:var(--sidebar-width); }\n  .page-content { max-width:100%; overflow-x:clip; }\n  .chat-layout { grid-template-columns:minmax(300px,360px) minmax(0,1fr); }\n}\n\n/* Tablet/mobile guarantee: drawer + bottom navigation + floating chat. */\n@media (max-width: 920px) {\n  .desktop-chat-shortcut { display:none; }\n  .topbar-chat-pill b { display:none; }\n  .topbar-chat-pill { width:40px; min-width:40px; padding:0; justify-content:center; }\n  .chat-fab { display:flex; right:13px; bottom:86px; min-width:50px; width:50px; height:50px; padding:0; border-radius:17px; }\n  .chat-fab b { display:none; }\n  .sidebar-nav { padding-bottom:calc(90px + env(safe-area-inset-bottom)); }\n}\n@media (max-width: 680px) {\n  .topbar-chat-pill { display:none; }\n  .chat-fab { bottom:82px; right:11px; width:47px; min-width:47px; height:47px; border-radius:16px; }\n  .mobile-bottom-nav { max-width:calc(100vw - 20px); overflow:hidden; }\n  .bottom-nav-item { min-width:0; }\n  .chat-conversation-card { width:100%; min-width:0; }\n}\n@media (max-width: 390px) {\n  .chat-fab { bottom:80px; }\n}\n
+
+
+/* Izzuddin Academy v4.2 — verified desktop/mobile navigation */
+.nav-group { display:block; }
+.desktop-chat-shortcut {
+  position:relative;
+  width:calc(100% - 28px);
+  min-height:58px;
+  display:grid;
+  grid-template-columns:36px minmax(0,1fr) auto;
+  align-items:center;
+  gap:10px;
+  margin:0 14px 6px;
+  padding:9px 10px;
+  border:1px solid rgba(90,235,224,.19);
+  border-radius:15px;
+  color:#fff;
+  background:linear-gradient(135deg,rgba(32,183,176,.24),rgba(32,135,196,.18));
+  text-align:left;
+  cursor:pointer;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.05);
+}
+.desktop-chat-shortcut:hover { background:linear-gradient(135deg,rgba(32,183,176,.34),rgba(32,135,196,.26)); }
+.desktop-chat-shortcut-icon { width:36px; height:36px; display:grid; place-items:center; border-radius:11px; background:rgba(255,255,255,.11); font-size:1rem; }
+.desktop-chat-shortcut b { display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:.68rem; }
+.desktop-chat-shortcut small { display:block; margin-top:3px; overflow:hidden; color:rgba(255,255,255,.55); font-size:.53rem; text-overflow:ellipsis; white-space:nowrap; }
+.desktop-chat-shortcut em { min-width:22px; height:22px; display:grid; place-items:center; padding:0 5px; border-radius:999px; color:#fff; background:#e95461; font-size:.52rem; font-style:normal; font-weight:900; }
+.topbar-chat-pill {
+  position:relative;
+  min-height:40px;
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding:0 13px;
+  border:1px solid #d8eeee;
+  border-radius:12px;
+  color:var(--primary-dark);
+  background:#eef8f8;
+  font-size:.66rem;
+  font-weight:800;
+  cursor:pointer;
+}
+.topbar-chat-pill:hover { background:#e2f4f3; }
+.topbar-chat-pill em { position:absolute; top:-6px; right:-6px; min-width:19px; height:19px; display:grid; place-items:center; padding:0 4px; border:2px solid #fff; border-radius:999px; color:#fff; background:#e95461; font-size:.48rem; font-style:normal; font-weight:900; }
+.sidebar-nav { overscroll-behavior:contain; }
+.chat-fab { display:none; }
+
+/* Desktop guarantee: navigation and chat are always exposed without horizontal scrolling. */
+@media (min-width: 921px) {
+  .sidebar { transform:none !important; }
+  .sidebar-overlay, .mobile-menu, .mobile-bottom-nav { display:none !important; }
+  .desktop-chat-shortcut, .topbar-chat-pill { display:grid; }
+  .topbar-chat-pill { display:inline-flex; }
+  .main-area { margin-left:var(--sidebar-width); }
+  .page-content { max-width:100%; overflow-x:clip; }
+  .chat-layout { grid-template-columns:minmax(300px,360px) minmax(0,1fr); }
+}
+
+/* Tablet/mobile guarantee: drawer + bottom navigation + floating chat. */
+@media (max-width: 920px) {
+  .desktop-chat-shortcut { display:none; }
+  .topbar-chat-pill b { display:none; }
+  .topbar-chat-pill { width:40px; min-width:40px; padding:0; justify-content:center; }
+  .chat-fab { display:flex; right:13px; bottom:86px; min-width:50px; width:50px; height:50px; padding:0; border-radius:17px; }
+  .chat-fab b { display:none; }
+  .sidebar-nav { padding-bottom:calc(90px + env(safe-area-inset-bottom)); }
+}
+@media (max-width: 680px) {
+  .topbar-chat-pill { display:none; }
+  .chat-fab { bottom:82px; right:11px; width:47px; min-width:47px; height:47px; border-radius:16px; }
+  .mobile-bottom-nav { max-width:calc(100vw - 20px); overflow:hidden; }
+  .bottom-nav-item { min-width:0; }
+  .chat-conversation-card { width:100%; min-width:0; }
+}
+@media (max-width: 390px) {
+  .chat-fab { bottom:80px; }
+}
+
 @media (min-width: 921px) and (max-width: 1180px) {
   .topbar { padding-inline:18px; gap:12px; }
   .topbar-search { width:min(220px,24vw); }
   .topbar-profile .profile-copy { display:none; }
   .topbar-chat-pill { width:40px; min-width:40px; padding:0; justify-content:center; }
   .topbar-chat-pill b { display:none; }
+}
+
+
+/* Izzuddin Academy v4.3 — mobile chat placement & safe composer */
+.support-chat-icon {
+  width: 1.12em;
+  height: 1.12em;
+  display: block;
+  overflow: visible;
+}
+.nav-icon .support-chat-icon,
+.desktop-chat-shortcut-icon .support-chat-icon { width: 18px; height: 18px; }
+.topbar-chat-pill .support-chat-icon { width: 18px; height: 18px; }
+.chat-fab .support-chat-icon { width: 25px; height: 25px; }
+.chat-empty .support-chat-icon { width: 25px; height: 25px; }
+
+/* Floating chat is mobile/tablet only. Desktop uses sidebar/topbar entry. */
+@media (min-width: 921px) {
+  .chat-fab { display: none !important; }
+}
+
+@media (max-width: 920px) {
+  /* Mobile has one chat entry only: floating button above bottom navigation. */
+  .topbar-chat-pill,
+  .desktop-chat-shortcut,
+  .nav-group-chat-only { display: none !important; }
+
+  /* Notification stays next to the user avatar. */
+  .notification-button { display: inline-grid !important; flex: 0 0 auto; }
+
+  .mobile-bottom-nav {
+    grid-template-columns: repeat(var(--mobile-nav-count, 4), minmax(0,1fr));
+  }
+
+  .chat-fab {
+    display: flex !important;
+    right: max(14px, env(safe-area-inset-right));
+    bottom: calc(84px + env(safe-area-inset-bottom));
+    width: 50px;
+    min-width: 50px;
+    height: 50px;
+    padding: 0;
+    border-radius: 50%;
+    background: linear-gradient(145deg,#12a875,#079769);
+    box-shadow: 0 13px 30px rgba(7,151,105,.32);
+  }
+  .chat-fab b { display: none; }
+  .chat-fab span { display: grid; place-items: center; }
+
+  /* Once the chat page is open, remove the floating shortcut so it cannot cover Send. */
+  body.chat-route-active .chat-fab { display: none !important; }
+
+  /* Composer stays fully visible above the bottom navigation on phones/tablets. */
+  .chat-conversation-card { max-width: 100%; }
+  .chat-composer {
+    position: sticky;
+    bottom: 0;
+    z-index: 7;
+    width: 100%;
+    padding-right: 10px;
+  }
+  .chat-composer textarea { min-width: 0; width: 100%; }
+  .chat-composer .btn { position: relative; z-index: 1; flex: 0 0 auto; }
+}
+
+@media (max-width: 680px) {
+  .topbar-right { gap: 8px; }
+  .topbar-profile { padding: 4px; }
+  .topbar-profile .avatar { width: 34px; height: 34px; }
+  .notification-button { width: 38px; height: 38px; }
+  .chat-fab {
+    right: max(13px, env(safe-area-inset-right));
+    bottom: calc(82px + env(safe-area-inset-bottom));
+    width: 48px;
+    min-width: 48px;
+    height: 48px;
+  }
+  .chat-composer {
+    grid-template-columns: minmax(0,1fr) auto;
+    gap: 8px;
+    padding: 9px 9px calc(9px + env(safe-area-inset-bottom));
+  }
+  .chat-composer .btn {
+    min-width: 72px;
+    padding-inline: 12px;
+  }
+}
+
+@media (max-width: 390px) {
+  /* Older rule hid all icon buttons; keep the notification visible. */
+  .topbar-right .notification-button { display: inline-grid !important; }
+  .chat-fab { bottom: calc(80px + env(safe-area-inset-bottom)); }
+  .chat-composer .btn { min-width: 66px; padding-inline: 10px; }
 }
