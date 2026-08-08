@@ -967,3 +967,32 @@ html, body { max-width: 100%; overflow-x: hidden; }
   .chat-composer { grid-template-columns:minmax(0,1fr) auto; padding:9px; }
   .chat-composer .btn { padding-inline:13px; }
 }
+
+
+/* Izzuddin Academy v4.1 — chat visibility & cache refresh */
+.nav-item[data-route="chat"] { position:relative; }
+.nav-item[data-route="chat"] .nav-icon { color:#fff; background:rgba(79,223,212,.18); box-shadow:inset 0 0 0 1px rgba(79,223,212,.18); }
+.topbar-chat-button { position:relative; color:var(--primary-dark); background:#eef8f8; border-color:#d8eeee; }
+.topbar-chat-button .notification-dot { top:-5px; right:-5px; min-width:18px; height:18px; padding:0 4px; display:grid; place-items:center; border:2px solid #fff; border-radius:999px; color:#fff; background:#e95461; font-size:.5rem; font-weight:900; }
+.chat-fab { position:fixed; right:22px; bottom:22px; z-index:96; min-width:112px; height:50px; display:flex; align-items:center; justify-content:center; gap:8px; padding:0 15px; border:0; border-radius:17px; color:#fff; background:linear-gradient(135deg,#0e6170,#148b86); box-shadow:0 14px 34px rgba(14,97,112,.30); cursor:pointer; }
+.chat-fab span { font-size:1rem; }
+.chat-fab b { font-size:.69rem; }
+.chat-fab em { position:absolute; top:-7px; right:-7px; min-width:22px; height:22px; display:grid; place-items:center; padding:0 5px; border:2px solid #fff; border-radius:999px; color:#fff; background:#e95461; font-size:.52rem; font-style:normal; font-weight:900; }
+.bottom-nav-item { position:relative; }
+.bottom-chat-count { position:absolute; top:2px; right:16%; min-width:17px; height:17px; display:grid; place-items:center; padding:0 4px; border:2px solid #fff; border-radius:999px; color:#fff; background:#e95461; font-size:.45rem; font-style:normal; font-weight:900; }
+@media (max-width: 900px) {
+  .chat-fab { right:13px; bottom:86px; min-width:50px; width:50px; height:50px; padding:0; border-radius:17px; }
+  .chat-fab b { display:none; }
+  .chat-fab span { font-size:1.08rem; }
+}
+@media (max-width: 560px) {
+  .chat-fab { bottom:82px; right:11px; width:47px; min-width:47px; height:47px; border-radius:16px; }
+}
+\n\n/* Izzuddin Academy v4.2 — verified desktop/mobile navigation */\n.nav-group { display:block; }\n.desktop-chat-shortcut {\n  position:relative;\n  width:calc(100% - 28px);\n  min-height:58px;\n  display:grid;\n  grid-template-columns:36px minmax(0,1fr) auto;\n  align-items:center;\n  gap:10px;\n  margin:0 14px 6px;\n  padding:9px 10px;\n  border:1px solid rgba(90,235,224,.19);\n  border-radius:15px;\n  color:#fff;\n  background:linear-gradient(135deg,rgba(32,183,176,.24),rgba(32,135,196,.18));\n  text-align:left;\n  cursor:pointer;\n  box-shadow:inset 0 1px 0 rgba(255,255,255,.05);\n}\n.desktop-chat-shortcut:hover { background:linear-gradient(135deg,rgba(32,183,176,.34),rgba(32,135,196,.26)); }\n.desktop-chat-shortcut-icon { width:36px; height:36px; display:grid; place-items:center; border-radius:11px; background:rgba(255,255,255,.11); font-size:1rem; }\n.desktop-chat-shortcut b { display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:.68rem; }\n.desktop-chat-shortcut small { display:block; margin-top:3px; overflow:hidden; color:rgba(255,255,255,.55); font-size:.53rem; text-overflow:ellipsis; white-space:nowrap; }\n.desktop-chat-shortcut em { min-width:22px; height:22px; display:grid; place-items:center; padding:0 5px; border-radius:999px; color:#fff; background:#e95461; font-size:.52rem; font-style:normal; font-weight:900; }\n.topbar-chat-pill {\n  position:relative;\n  min-height:40px;\n  display:inline-flex;\n  align-items:center;\n  gap:8px;\n  padding:0 13px;\n  border:1px solid #d8eeee;\n  border-radius:12px;\n  color:var(--primary-dark);\n  background:#eef8f8;\n  font-size:.66rem;\n  font-weight:800;\n  cursor:pointer;\n}\n.topbar-chat-pill:hover { background:#e2f4f3; }\n.topbar-chat-pill em { position:absolute; top:-6px; right:-6px; min-width:19px; height:19px; display:grid; place-items:center; padding:0 4px; border:2px solid #fff; border-radius:999px; color:#fff; background:#e95461; font-size:.48rem; font-style:normal; font-weight:900; }\n.sidebar-nav { overscroll-behavior:contain; }\n.chat-fab { display:none; }\n\n/* Desktop guarantee: navigation and chat are always exposed without horizontal scrolling. */\n@media (min-width: 921px) {\n  .sidebar { transform:none !important; }\n  .sidebar-overlay, .mobile-menu, .mobile-bottom-nav { display:none !important; }\n  .desktop-chat-shortcut, .topbar-chat-pill { display:grid; }\n  .topbar-chat-pill { display:inline-flex; }\n  .main-area { margin-left:var(--sidebar-width); }\n  .page-content { max-width:100%; overflow-x:clip; }\n  .chat-layout { grid-template-columns:minmax(300px,360px) minmax(0,1fr); }\n}\n\n/* Tablet/mobile guarantee: drawer + bottom navigation + floating chat. */\n@media (max-width: 920px) {\n  .desktop-chat-shortcut { display:none; }\n  .topbar-chat-pill b { display:none; }\n  .topbar-chat-pill { width:40px; min-width:40px; padding:0; justify-content:center; }\n  .chat-fab { display:flex; right:13px; bottom:86px; min-width:50px; width:50px; height:50px; padding:0; border-radius:17px; }\n  .chat-fab b { display:none; }\n  .sidebar-nav { padding-bottom:calc(90px + env(safe-area-inset-bottom)); }\n}\n@media (max-width: 680px) {\n  .topbar-chat-pill { display:none; }\n  .chat-fab { bottom:82px; right:11px; width:47px; min-width:47px; height:47px; border-radius:16px; }\n  .mobile-bottom-nav { max-width:calc(100vw - 20px); overflow:hidden; }\n  .bottom-nav-item { min-width:0; }\n  .chat-conversation-card { width:100%; min-width:0; }\n}\n@media (max-width: 390px) {\n  .chat-fab { bottom:80px; }\n}\n
+@media (min-width: 921px) and (max-width: 1180px) {
+  .topbar { padding-inline:18px; gap:12px; }
+  .topbar-search { width:min(220px,24vw); }
+  .topbar-profile .profile-copy { display:none; }
+  .topbar-chat-pill { width:40px; min-width:40px; padding:0; justify-content:center; }
+  .topbar-chat-pill b { display:none; }
+}

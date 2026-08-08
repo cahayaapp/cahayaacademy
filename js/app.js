@@ -89,6 +89,18 @@ const state = {
   chatUnread: 0
 };
 
+function normalizeRole(role = "") {
+  const value = String(role || "").trim().toLowerCase();
+  if (["student", "member", "peserta", "siswa", "santri"].includes(value)) return "student";
+  if (["admin", "administrator"].includes(value)) return "admin";
+  if (["teacher", "pengajar", "guru", "tutor"].includes(value)) return "teacher";
+  return value || "student";
+}
+
+function isStudentRole(role = state.profile?.role) { return normalizeRole(role) === "student"; }
+function isAdminRole(role = state.profile?.role) { return normalizeRole(role) === "admin"; }
+function canUseSupportChat(role = state.profile?.role) { return ["student", "admin"].includes(normalizeRole(role)); }
+
 const routeTitles = {
   dashboard: "Beranda",
   catalog: "Jelajahi Kelas",
@@ -478,59 +490,102 @@ async function handleRegistration(event) {
   }
 }
 
+function navigationGroups(role) {
+  const r = normalizeRole(role);
+  if (r === "admin") return [
+    { label: "Ruang Belajar", items: [
+      { id: "dashboard", label: "Beranda", icon: "home" },
+      { id: "classes", label: "Kelas", icon: "classes" },
+      { id: "schedule", label: "Video", icon: "video" },
+      { id: "assignments", label: "Tugas", icon: "tasks" }
+    ]},
+    { label: "Komunikasi", items: [
+      { id: "chat", label: "Live Chat Peserta", icon: "chat" }
+    ]},
+    { label: "Manajemen", items: [
+      { id: "payments", label: "Pembayaran", icon: "upload" },
+      { id: "users", label: "Pengguna", icon: "users" },
+      { id: "reports", label: "Laporan Belajar", icon: "report" },
+      { id: "announcements", label: "Pengumuman", icon: "announce" },
+      { id: "settings", label: "Pengaturan", icon: "settings" }
+    ]}
+  ];
+  if (r === "teacher") return [
+    { label: "Ruang Belajar", items: [
+      { id: "dashboard", label: "Beranda", icon: "home" },
+      { id: "classes", label: "Kelas Saya", icon: "classes" },
+      { id: "schedule", label: "Video", icon: "video" },
+      { id: "assignments", label: "Tugas", icon: "tasks" }
+    ]},
+    { label: "Manajemen", items: [
+      { id: "reports", label: "Laporan Belajar", icon: "report" },
+      { id: "announcements", label: "Pengumuman", icon: "announce" },
+      { id: "settings", label: "Pengaturan", icon: "settings" }
+    ]}
+  ];
+  return [
+    { label: "Ruang Belajar", items: [
+      { id: "dashboard", label: "Beranda", icon: "home" },
+      { id: "catalog", label: "Jelajahi Kelas", icon: "search" },
+      { id: "classes", label: "Kelas Saya", icon: "classes" },
+      { id: "schedule", label: "Video", icon: "video" },
+      { id: "assignments", label: "Tugas", icon: "tasks" }
+    ]},
+    { label: "Bantuan", items: [
+      { id: "chat", label: "Live Chat Admin", icon: "chat" }
+    ]},
+    { label: "Akun", items: [
+      { id: "reports", label: "Progres Saya", icon: "report" },
+      { id: "announcements", label: "Pengumuman", icon: "announce" },
+      { id: "settings", label: "Pengaturan", icon: "settings" }
+    ]}
+  ];
+}
+
 function roleNavigation(role) {
-  const common = [
-    { id: "dashboard", label: "Beranda", icon: "home" },
-    ...(role === "student" ? [{ id: "catalog", label: "Jelajahi Kelas", icon: "search" }] : []),
-    { id: "classes", label: "Kelas Saya", icon: "classes" },
-    { id: "schedule", label: "Video", icon: "video" },
-    { id: "assignments", label: "Tugas", icon: "tasks" }
-  ];
-  const management = role === "admin" ? [
-    { id: "chat", label: "Live Chat", icon: "chat" },
-    { id: "payments", label: "Pembayaran", icon: "upload" },
-    { id: "users", label: "Pengguna", icon: "users" },
-    { id: "reports", label: "Laporan Belajar", icon: "report" },
-    { id: "announcements", label: "Pengumuman", icon: "announce" }
-  ] : role === "teacher" ? [
-    { id: "reports", label: "Laporan Belajar", icon: "report" },
-    { id: "announcements", label: "Pengumuman", icon: "announce" }
-  ] : [
-    { id: "chat", label: "Live Chat", icon: "chat" },
-    { id: "reports", label: "Progres Saya", icon: "report" },
-    { id: "announcements", label: "Pengumuman", icon: "announce" }
-  ];
-  return [...common, ...management, { id: "settings", label: "Pengaturan", icon: "settings" }];
+  return navigationGroups(role).flatMap((group) => group.items);
 }
 
 function mobileNavigation(role) {
-  const all = roleNavigation(role);
-  const preferred = role === "student"
+  const r = normalizeRole(role);
+  const all = roleNavigation(r);
+  const preferred = r === "student"
     ? ["dashboard", "catalog", "classes", "chat", "assignments"]
-    : role === "admin"
+    : r === "admin"
       ? ["dashboard", "classes", "chat", "payments", "announcements"]
       : ["dashboard", "classes", "schedule", "assignments", "announcements"];
   return preferred.map((id) => all.find((item) => item.id === id)).filter(Boolean);
+}
+
+function navButton(item) {
+  const count = item.id === "payments"
+    ? `<span class="nav-count hidden" data-payment-count>0</span>`
+    : item.id === "chat"
+      ? `<span class="nav-count hidden" data-chat-count>0</span>`
+      : "";
+  return `<button class="nav-item" data-route="${item.id}"><span class="nav-icon">${icon(item.icon)}</span><span class="nav-label">${escapeHtml(item.label)}</span>${count}</button>`;
 }
 
 function renderShell() {
   qs("#authRoot").classList.add("hidden");
   const root = qs("#appRoot");
   root.classList.remove("hidden");
-  const nav = roleNavigation(state.profile.role);
-  const mobileNav = mobileNavigation(state.profile.role);
+  const role = normalizeRole(state.profile.role);
+  const groups = navigationGroups(role);
+  const mobileNav = mobileNavigation(role);
+  const chatEnabled = canUseSupportChat(role);
   root.innerHTML = `
-    <div class="app-shell">
+    <div class="app-shell" data-app-role="${role}">
       <div class="sidebar-overlay" id="sidebarOverlay"></div>
       <aside class="sidebar">
         <div class="sidebar-brand"><img src="assets/logo-izzuddin.png" alt="Logo Izzuddin Academy"><div><strong>IZZUDDIN ACADEMY</strong><span>Digital Learning Platform</span></div></div>
         <div class="sidebar-year"><b>Tahun Ajaran ${escapeHtml(appConfig.academicYear)}</b><span>Learning Management System</span></div>
+        ${chatEnabled ? `<button class="desktop-chat-shortcut" data-route="chat"><span class="desktop-chat-shortcut-icon">${icon("chat")}</span><span><b>${role === "admin" ? "Live Chat Peserta" : "Live Chat Admin"}</b><small>${role === "admin" ? "Balas pesan peserta" : "Hubungi tim Izzuddin Academy"}</small></span><em class="hidden" data-chat-count>0</em></button>` : ""}
         <nav class="sidebar-nav">
-          <div class="nav-section-label">Ruang Belajar</div>
-          ${nav.map((item, index) => `${index === (state.profile.role === "student" ? 5 : 4) ? '<div class="nav-section-label">Manajemen</div>' : ""}<button class="nav-item" data-route="${item.id}"><span class="nav-icon">${icon(item.icon)}</span><span class="nav-label">${escapeHtml(item.label)}</span>${item.id === "payments" ? `<span class="nav-count hidden" data-payment-count>0</span>` : item.id === "chat" ? `<span class="nav-count hidden" data-chat-count>0</span>` : ""}</button>`).join("")}
+          ${groups.map((group) => `<div class="nav-group"><div class="nav-section-label">${escapeHtml(group.label)}</div>${group.items.map(navButton).join("")}</div>`).join("")}
         </nav>
         <div class="sidebar-footer">
-          <div class="sidebar-user"><div class="avatar">${initials(state.profile.name)}</div><div><b>${escapeHtml(state.profile.name)}</b><span>${escapeHtml(roleLabel(state.profile.role))}</span></div></div>
+          <div class="sidebar-user"><div class="avatar">${initials(state.profile.name)}</div><div><b>${escapeHtml(state.profile.name)}</b><span>${escapeHtml(roleLabel(role))}</span></div></div>
           <button id="logoutButton" class="btn btn-ghost sidebar-logout">${icon("logout")} Keluar</button>
         </div>
       </aside>
@@ -542,15 +597,17 @@ function renderShell() {
           </div>
           <div class="topbar-right">
             <div class="topbar-search"><span>${icon("search")}</span><input id="globalSearch" placeholder="Cari kelas, video, atau tugas..."></div>
+            ${chatEnabled ? `<button class="topbar-chat-pill" data-route="chat" title="Live Chat" aria-label="Buka Live Chat"><span>${icon("chat")}</span><b>Live Chat</b><em class="hidden" data-chat-count>0</em></button>` : ""}
             <button class="icon-btn notification-button" id="quickAnnouncement" title="Notifikasi" aria-label="Notifikasi">${icon("bell")}<span id="notificationDot" class="notification-dot hidden">0</span></button>
-            <div class="topbar-profile"><div class="avatar">${initials(state.profile.name)}</div><div class="profile-copy"><b>${escapeHtml(state.profile.name)}</b><span>${escapeHtml(roleLabel(state.profile.role))}</span></div></div>
+            <div class="topbar-profile"><div class="avatar">${initials(state.profile.name)}</div><div class="profile-copy"><b>${escapeHtml(state.profile.name)}</b><span>${escapeHtml(roleLabel(role))}</span></div></div>
           </div>
         </header>
         <div id="pageContent" class="page-content"></div>
       </main>
       <nav class="mobile-bottom-nav" aria-label="Navigasi utama">
-        ${mobileNav.map((item) => `<button class="bottom-nav-item" data-route="${item.id}"><span>${icon(item.icon)}</span><b>${escapeHtml(item.label.replace(" Saya", ""))}</b></button>`).join("")}
+        ${mobileNav.map((item) => `<button class="bottom-nav-item" data-route="${item.id}"><span>${icon(item.icon)}</span><b>${escapeHtml(item.label.replace(" Saya", "").replace(" Admin", "").replace(" Peserta", ""))}</b>${item.id === "chat" ? `<em class="bottom-chat-count hidden" data-chat-count>0</em>` : ""}</button>`).join("")}
       </nav>
+      ${chatEnabled ? `<button class="chat-fab" data-route="chat" aria-label="Buka Live Chat"><span>${icon("chat")}</span><b>Chat</b><em class="hidden" data-chat-count>0</em></button>` : ""}
     </div>`;
 
   qsa("[data-route]").forEach((button) => button.addEventListener("click", () => navigate(button.dataset.route)));
@@ -561,7 +618,7 @@ function renderShell() {
   });
   qs("#mobileMenu")?.addEventListener("click", () => document.body.classList.toggle("sidebar-open"));
   qs("#sidebarOverlay")?.addEventListener("click", () => document.body.classList.remove("sidebar-open"));
-  qs("#quickAnnouncement")?.addEventListener("click", () => navigate(state.profile.role === "admin" ? "payments" : "announcements"));
+  qs("#quickAnnouncement")?.addEventListener("click", () => navigate(isAdminRole() ? "payments" : "announcements"));
   clearGlobalSubscriptions();
   initPaymentNotificationWatcher();
   initChatNotificationWatcher();
@@ -594,19 +651,19 @@ async function route() {
   page.innerHTML = `<div class="empty-state"><div class="empty-icon">◌</div><h3>Menyiapkan halaman...</h3></div>`;
   try {
     if (name === "dashboard") await renderDashboard();
-    else if (name === "catalog" && state.profile.role === "student") await renderCatalog();
+    else if (name === "catalog" && isStudentRole()) await renderCatalog();
     else if (name === "classes") await renderClasses();
     else if (name === "schedule") await renderSchedule();
     else if (name === "assignments") await renderAssignments();
-    else if (name === "users" && state.profile.role === "admin") await renderUsers();
-    else if (name === "payments" && state.profile.role === "admin") await renderPayments();
-    else if (name === "chat" && (state.profile.role === "admin" || state.profile.role === "student")) await renderChat(params[0] || "");
+    else if (name === "users" && isAdminRole()) await renderUsers();
+    else if (name === "payments" && isAdminRole()) await renderPayments();
+    else if (name === "chat" && canUseSupportChat()) await renderChat(params[0] || "");
     else if (name === "reports") await renderReports();
     else if (name === "announcements") await renderAnnouncements();
     else if (name === "settings") await renderSettings();
     else if (name === "class" && params[0]) await renderClassDetail(params[0]);
     else if (name === "meeting" && params[0] && params[1]) await renderMeetingRoom(params[0], params[1]);
-    else navigate(state.profile.role === "student" ? "catalog" : "dashboard");
+    else navigate(isStudentRole() ? "catalog" : "dashboard");
   } catch (error) {
     console.error(error);
     page.innerHTML = `<div class="card"><div class="empty-state"><div class="empty-icon">!</div><h3>Halaman tidak dapat dimuat</h3><p>${escapeHtml(friendlyError(error))}</p><button class="btn btn-primary" onclick="location.reload()">Muat Ulang</button></div></div>`;
@@ -638,10 +695,10 @@ async function renderDashboard() {
   const scheduledVideos = allMeetings.filter((item) => videoAvailability(item).key === "upcoming").sort((a,b) => new Date(a.startAt || 0) - new Date(b.startAt || 0));
   const pendingTasks = allAssignments.filter((item) => !item.dueAt || new Date(item.dueAt).getTime() >= Date.now());
   const announcements = sortByDate(objectToArray(await getValue("announcements", {})), "createdAt")
-    .filter((item) => state.profile.role === "admin" || !item.target || item.target === "all" || item.target === state.profile.role)
+    .filter((item) => isAdminRole() || !item.target || item.target === "all" || item.target === state.profile.role)
     .slice(0, 4);
   let studentProgress = 0;
-  if (state.profile.role === "student") {
+  if (isStudentRole()) {
     let total = 0, count = 0;
     for (const meeting of allMeetings) {
       const item = await getValue(`watchProgress/${meeting.classId}/${meeting.id}/${state.user.uid}`);
@@ -652,9 +709,9 @@ async function renderDashboard() {
   const heroPrimary = scheduledVideos[0] || availableVideos[0];
   const greeting = new Date().getHours() < 11 ? "Selamat pagi" : new Date().getHours() < 15 ? "Selamat siang" : new Date().getHours() < 19 ? "Selamat sore" : "Selamat malam";
   qs("#pageContent").innerHTML = `
-    <section class="hero-card card"><div class="hero-content"><span class="eyebrow">${escapeHtml(greeting)}, ${escapeHtml(state.profile.name.split(" ")[0])}</span><h2>${state.profile.role === "student" ? "Temukan kelas yang tepat dan lanjutkan progres belajar Anda." : "Kelola pembelajaran yang rapi, terukur, dan bermakna."}</h2><p>${heroPrimary ? `${videoAvailability(heroPrimary).label}: ${escapeHtml(heroPrimary.title)} — ${escapeHtml(heroPrimary.classTitle)}.` : "Belum ada video pembelajaran pada kelas Anda."}</p><div class="hero-actions">${heroPrimary ? `<button class="btn btn-primary" data-open-meeting="${heroPrimary.classId}|${heroPrimary.id}">Buka Video ${icon("arrow")}</button>` : ""}<button class="btn btn-secondary" data-route-action="${state.profile.role === "student" ? "catalog" : "classes"}">${state.profile.role === "student" ? "Jelajahi Kelas" : "Lihat Semua Kelas"}</button></div></div><div class="hero-side"><div class="hero-mini"><span>Kelas diikuti</span><b>${state.classes.length}</b></div><div class="hero-mini"><span>${state.profile.role === "student" ? "Rata-rata progres" : "Video tersedia"}</span><b>${state.profile.role === "student" ? `${studentProgress}%` : availableVideos.length}</b></div></div></section>
+    <section class="hero-card card"><div class="hero-content"><span class="eyebrow">${escapeHtml(greeting)}, ${escapeHtml(state.profile.name.split(" ")[0])}</span><h2>${isStudentRole() ? "Temukan kelas yang tepat dan lanjutkan progres belajar Anda." : "Kelola pembelajaran yang rapi, terukur, dan bermakna."}</h2><p>${heroPrimary ? `${videoAvailability(heroPrimary).label}: ${escapeHtml(heroPrimary.title)} — ${escapeHtml(heroPrimary.classTitle)}.` : "Belum ada video pembelajaran pada kelas Anda."}</p><div class="hero-actions">${heroPrimary ? `<button class="btn btn-primary" data-open-meeting="${heroPrimary.classId}|${heroPrimary.id}">Buka Video ${icon("arrow")}</button>` : ""}<button class="btn btn-secondary" data-route-action="${isStudentRole() ? "catalog" : "classes"}">${isStudentRole() ? "Jelajahi Kelas" : "Lihat Semua Kelas"}</button></div></div><div class="hero-side"><div class="hero-mini"><span>Kelas diikuti</span><b>${state.classes.length}</b></div><div class="hero-mini"><span>${isStudentRole() ? "Rata-rata progres" : "Video tersedia"}</span><b>${isStudentRole() ? `${studentProgress}%` : availableVideos.length}</b></div></div></section>
     <section class="stats-grid"><article class="stat-card"><div class="stat-icon">${icon("classes")}</div><div class="stat-value">${state.classes.length}</div><div class="stat-label">Kelas dalam ruang belajar</div></article><article class="stat-card"><div class="stat-icon">${icon("video")}</div><div class="stat-value">${availableVideos.length}</div><div class="stat-label">Video tersedia</div></article><article class="stat-card"><div class="stat-icon">${icon("calendar")}</div><div class="stat-value">${scheduledVideos.length}</div><div class="stat-label">Video terjadwal</div></article><article class="stat-card"><div class="stat-icon">${icon("tasks")}</div><div class="stat-value">${pendingTasks.length}</div><div class="stat-label">Tugas aktif</div></article></section>
-    <div class="grid grid-sidebar" style="margin-top:18px"><section class="card"><div class="card-head"><div><h3>Video Pembelajaran</h3><p>Video terbaru dan yang telah dijadwalkan.</p></div><button class="link-btn" data-route-action="schedule">Lihat semua</button></div><div class="card-body"><div class="list">${[...scheduledVideos, ...availableVideos].slice(0,6).map((meeting) => `<div class="list-item"><div class="list-icon">${icon("video")}</div><div class="list-copy"><b>${escapeHtml(meeting.title)}</b><span>${escapeHtml(meeting.classTitle)} · ${meeting.startAt ? formatDateTime(meeting.startAt) : "Dapat diputar kapan saja"}</span></div><div class="list-actions"><span class="badge badge-${videoAvailability(meeting).key}">${videoAvailability(meeting).label}</span><button class="btn btn-primary btn-sm" data-open-meeting="${meeting.classId}|${meeting.id}">Buka</button></div></div>`).join("") || emptyState("Belum ada video", "Video pembelajaran akan tampil di sini.")}</div></div></section><aside class="stack"><section class="card"><div class="card-head"><div><h3>Pengumuman</h3><p>Informasi terbaru untuk seluruh pengguna.</p></div></div><div class="card-body"><div class="list">${announcements.map((item) => `<div class="list-item"><div class="list-icon">${icon("announce")}</div><div class="list-copy"><b>${escapeHtml(item.title)}</b><span>${escapeHtml(item.body || "").slice(0,90)}${String(item.body || "").length > 90 ? "…" : ""}</span></div></div>`).join("") || emptyState("Belum ada pengumuman", "Informasi penting akan tampil di sini.")}</div></div></section><section class="card card-pad"><div class="section-title" style="margin-top:0"><div><h3>Akses Cepat</h3><p>Menu yang sering digunakan.</p></div></div><div class="grid grid-2" style="gap:10px"><button class="btn btn-secondary" data-route-action="${state.profile.role === "student" ? "catalog" : "classes"}">${icon("classes")} Kelas</button><button class="btn btn-secondary" data-route-action="assignments">${icon("tasks")} Tugas</button><button class="btn btn-secondary" data-route-action="schedule">${icon("video")} Video</button><button class="btn btn-secondary" data-route-action="settings">${icon("settings")} Profil</button></div></section></aside></div>`;
+    <div class="grid grid-sidebar" style="margin-top:18px"><section class="card"><div class="card-head"><div><h3>Video Pembelajaran</h3><p>Video terbaru dan yang telah dijadwalkan.</p></div><button class="link-btn" data-route-action="schedule">Lihat semua</button></div><div class="card-body"><div class="list">${[...scheduledVideos, ...availableVideos].slice(0,6).map((meeting) => `<div class="list-item"><div class="list-icon">${icon("video")}</div><div class="list-copy"><b>${escapeHtml(meeting.title)}</b><span>${escapeHtml(meeting.classTitle)} · ${meeting.startAt ? formatDateTime(meeting.startAt) : "Dapat diputar kapan saja"}</span></div><div class="list-actions"><span class="badge badge-${videoAvailability(meeting).key}">${videoAvailability(meeting).label}</span><button class="btn btn-primary btn-sm" data-open-meeting="${meeting.classId}|${meeting.id}">Buka</button></div></div>`).join("") || emptyState("Belum ada video", "Video pembelajaran akan tampil di sini.")}</div></div></section><aside class="stack"><section class="card"><div class="card-head"><div><h3>Pengumuman</h3><p>Informasi terbaru untuk seluruh pengguna.</p></div></div><div class="card-body"><div class="list">${announcements.map((item) => `<div class="list-item"><div class="list-icon">${icon("announce")}</div><div class="list-copy"><b>${escapeHtml(item.title)}</b><span>${escapeHtml(item.body || "").slice(0,90)}${String(item.body || "").length > 90 ? "…" : ""}</span></div></div>`).join("") || emptyState("Belum ada pengumuman", "Informasi penting akan tampil di sini.")}</div></div></section><section class="card card-pad"><div class="section-title" style="margin-top:0"><div><h3>Akses Cepat</h3><p>Menu yang sering digunakan.</p></div></div><div class="grid grid-2" style="gap:10px"><button class="btn btn-secondary" data-route-action="${isStudentRole() ? "catalog" : "classes"}">${icon("classes")} Kelas</button><button class="btn btn-secondary" data-route-action="assignments">${icon("tasks")} Tugas</button><button class="btn btn-secondary" data-route-action="schedule">${icon("video")} Video</button><button class="btn btn-secondary" data-route-action="settings">${icon("settings")} Profil</button></div></section></aside></div>`;
   bindCommonPageActions();
 }
 
@@ -724,11 +781,11 @@ function chatUnreadCount(chat = {}, viewerRole = "student") {
 }
 
 function initChatNotificationWatcher() {
-  if (!state.user || !state.profile || !["admin","student"].includes(state.profile.role)) return;
-  const path = state.profile.role === "admin" ? "supportChats" : `supportChats/${state.user.uid}`;
+  if (!state.user || !state.profile || !canUseSupportChat()) return;
+  const path = isAdminRole() ? "supportChats" : `supportChats/${state.user.uid}`;
   const unsubscribe = subscribe(path, (data) => {
     let unread = 0;
-    if (state.profile.role === "admin") {
+    if (isAdminRole()) {
       Object.values(data || {}).forEach((chat) => { unread += chatUnreadCount(chat || {}, "admin"); });
     } else {
       unread = chatUnreadCount(data || {}, "student");
@@ -760,7 +817,7 @@ function renderChatMessages(messages = [], studentUid = "") {
 
 async function markChatRead(studentUid) {
   if (!studentUid || !state.profile) return;
-  const role = state.profile.role === "admin" ? "admin" : "student";
+  const role = isAdminRole() ? "admin" : "student";
   try { await setValue(`supportChats/${studentUid}/reads/${role}`, Date.now()); } catch (_) {}
 }
 
@@ -806,7 +863,7 @@ function scrollChatToBottom() {
 }
 
 async function renderChat(selectedUid = "") {
-  if (state.profile.role === "student") {
+  if (isStudentRole()) {
     qs("#pageContent").innerHTML = `<div class="page-head"><div><h2>Live Chat</h2><p>Hubungi admin Izzuddin Academy langsung dari ruang belajar Anda.</p></div></div><div id="studentChatHost">${chatConversationShell(null, [], false)}</div>`;
     const uid = state.user.uid;
     const bindComposer = () => {
@@ -835,7 +892,7 @@ async function renderChat(selectedUid = "") {
   qs("#pageContent").innerHTML = `<div class="page-head"><div><h2>Live Chat</h2><p>Percakapan realtime dengan peserta Izzuddin Academy.</p></div></div><div id="adminChatHost" class="chat-layout"></div>`;
 
   const refresh = () => {
-    const students = objectToArray(usersData || {}).map((item) => ({ ...item, uid: item.id })).filter((u) => u.role === "student" && u.status !== "inactive");
+    const students = objectToArray(usersData || {}).map((item) => ({ ...item, role: normalizeRole(item.role), uid: item.id })).filter((u) => normalizeRole(u.role) === "student" && u.status !== "inactive");
     const rows = students.map((student) => {
       const chat = chatsData?.[student.uid] || {};
       const last = chatLastMessage(chat);
@@ -1088,7 +1145,7 @@ function classCard(course) {
   return `
     <article class="class-card">
       <div class="class-cover ${escapeHtml(course.accent || "blue")}"><div class="class-cover-top"><span class="class-category">${escapeHtml(course.category || "Kelas")}</span><span class="price-badge ${(course.accessType || "free") === "paid" ? "paid" : "free"}">${classAccessLabel(course)}</span></div><h3>${escapeHtml(course.title)}</h3></div>
-      <div class="class-body"><p>${escapeHtml(course.description || "Ruang belajar Izzuddin Academy.")}</p><div class="class-meta"><span>${escapeHtml(course.teacherName || "Belum ditentukan")}</span><span>${course.status === "draft" ? "Draf" : "Aktif"}</span></div><div style="display:flex;gap:8px;margin-top:14px"><button class="btn btn-primary btn-sm" style="flex:1" data-open-class="${course.id}">Buka Kelas</button>${state.profile.role === "admin" ? `<button class="icon-btn" data-edit-class="${course.id}" title="Edit">${icon("edit")}</button>` : ""}</div></div>
+      <div class="class-body"><p>${escapeHtml(course.description || "Ruang belajar Izzuddin Academy.")}</p><div class="class-meta"><span>${escapeHtml(course.teacherName || "Belum ditentukan")}</span><span>${course.status === "draft" ? "Draf" : "Aktif"}</span></div><div style="display:flex;gap:8px;margin-top:14px"><button class="btn btn-primary btn-sm" style="flex:1" data-open-class="${course.id}">Buka Kelas</button>${isAdminRole() ? `<button class="icon-btn" data-edit-class="${course.id}" title="Edit">${icon("edit")}</button>` : ""}</div></div>
     </article>`;
 }
 
@@ -1098,7 +1155,7 @@ async function renderClasses() {
     <div class="page-head">
       <div><h2>Kelas Saya</h2><p>Kelas yang telah Anda ikuti beserta video, materi, tugas, dan progres belajar.</p></div>
       <div class="page-actions">
-        ${state.profile.role === "admin" ? `<button class="btn btn-primary" id="createClass">${icon("plus")} Buat Kelas</button>` : state.profile.role === "student" ? `<button class="btn btn-primary" data-route-action="catalog">${icon("search")} Jelajahi Kelas</button>` : ""}
+        ${isAdminRole() ? `<button class="btn btn-primary" id="createClass">${icon("plus")} Buat Kelas</button>` : isStudentRole() ? `<button class="btn btn-primary" data-route-action="catalog">${icon("search")} Jelajahi Kelas</button>` : ""}
       </div>
     </div>
     <div class="filter-row">
@@ -1106,7 +1163,7 @@ async function renderClasses() {
       <select class="form-control" id="classStatusFilter"><option value="">Semua status</option><option value="active">Aktif</option><option value="draft">Draf</option></select>
     </div>
     <section id="classGrid" class="class-grid">
-      ${state.classes.map(classCard).join("") || emptyState("Belum ada kelas", state.profile.role === "admin" ? "Buat kelas pertama untuk memulai pembelajaran." : "Kelas yang sudah Anda ikuti akan tampil di sini.", state.profile.role === "admin" ? `<button class="btn btn-primary" id="emptyCreateClass">Buat Kelas Pertama</button>` : "")}
+      ${state.classes.map(classCard).join("") || emptyState("Belum ada kelas", isAdminRole() ? "Buat kelas pertama untuk memulai pembelajaran." : "Kelas yang sudah Anda ikuti akan tampil di sini.", isAdminRole() ? `<button class="btn btn-primary" id="emptyCreateClass">Buat Kelas Pertama</button>` : "")}
     </section>`;
 
   const filterClasses = () => {
@@ -1132,7 +1189,7 @@ function bindClassActions() {
 }
 
 async function openClassForm(course = null) {
-  const teachers = (await getAllUsers()).filter((user) => user.role === "teacher" && user.status !== "inactive");
+  const teachers = (await getAllUsers()).filter((user) => normalizeRole(user.role) === "teacher" && user.status !== "inactive");
   const body = `<form id="classForm" class="form-grid">
     <div class="form-group full"><label class="form-label">Nama kelas <span class="required">*</span></label><input id="classTitle" class="form-control" required value="${escapeHtml(course?.title || "")}" placeholder="Contoh: Aqidah Tasawuf Dasar"></div>
     <div class="form-group"><label class="form-label">Kategori</label><input id="classCategory" class="form-control" value="${escapeHtml(course?.category || "")}" placeholder="Aqidah, Tahfiz, Manajemen..."></div>
@@ -1202,7 +1259,7 @@ async function renderAssignments() {
   const tasks = bundles.flatMap(({ course, assignments }) => assignments.map((a) => ({ ...a, classId: course.id, classTitle: course.title })))
     .sort((a,b) => new Date(a.dueAt || 8640000000000000) - new Date(b.dueAt || 8640000000000000));
   let submissions = {};
-  if (state.profile.role === "student") {
+  if (isStudentRole()) {
     for (const task of tasks) {
       submissions[task.id] = await getValue(`submissions/${task.classId}/${task.id}/${state.user.uid}`);
     }
@@ -1219,7 +1276,7 @@ async function renderAssignments() {
               <div class="list-icon">${icon("tasks")}</div>
               <div class="list-copy"><b>${escapeHtml(task.title)}</b><span>${escapeHtml(task.classTitle)} · Tenggat ${task.dueAt ? formatDateTime(task.dueAt) : "tidak dibatasi"} · ${task.points || 100} poin</span></div>
               <div class="list-actions">
-                ${state.profile.role === "student" ? `<span class="badge ${submission ? "badge-replay" : overdue ? "badge-live" : "badge-upcoming"}">${submission ? (submission.score != null ? `Nilai ${submission.score}` : "Sudah dikirim") : overdue ? "Terlambat" : "Belum dikerjakan"}</span><button class="btn btn-primary btn-sm" data-submit-task="${task.classId}|${task.id}">${submission ? "Lihat" : "Kerjakan"}</button>` : `<button class="btn btn-secondary btn-sm" data-review-task="${task.classId}|${task.id}">Lihat Kiriman</button>`}
+                ${isStudentRole() ? `<span class="badge ${submission ? "badge-replay" : overdue ? "badge-live" : "badge-upcoming"}">${submission ? (submission.score != null ? `Nilai ${submission.score}` : "Sudah dikirim") : overdue ? "Terlambat" : "Belum dikerjakan"}</span><button class="btn btn-primary btn-sm" data-submit-task="${task.classId}|${task.id}">${submission ? "Lihat" : "Kerjakan"}</button>` : `<button class="btn btn-secondary btn-sm" data-review-task="${task.classId}|${task.id}">Lihat Kiriman</button>`}
               </div>
             </div>`;
           }).join("") || emptyState("Belum ada tugas", "Tugas yang dibuat di kelas akan tampil di halaman ini.")}
@@ -1313,7 +1370,7 @@ async function renderUsers() {
   qs("#userRole")?.addEventListener("change", apply);
   qs("#createUser")?.addEventListener("click", () => openUserForm());
   const unsubscribe = subscribe("users", (data) => {
-    users = objectToArray(data || {}).map((item) => ({ ...item, uid: item.id })).sort((a,b) => String(a.name || "").localeCompare(String(b.name || ""), "id"));
+    users = objectToArray(data || {}).map((item) => ({ ...item, role: normalizeRole(item.role), uid: item.id })).sort((a,b) => String(a.name || "").localeCompare(String(b.name || ""), "id"));
     apply();
   });
   state.unsubscribers.push(unsubscribe);
@@ -1442,14 +1499,14 @@ async function openUserClassAccess(user) {
 }
 
 function canManageClass(course) {
-  return state.profile.role === "admin" || (state.profile.role === "teacher" && course.teacherUid === state.user.uid);
+  return isAdminRole() || (normalizeRole(state.profile.role) === "teacher" && course.teacherUid === state.user.uid);
 }
 
 async function renderClassDetail(classId) {
   const courseData = await getClass(classId);
   if (!courseData) throw new Error("Kelas tidak ditemukan atau Anda tidak memiliki akses.");
   const course = { id: classId, ...courseData };
-  if (state.profile.role === "student" && !(await getValue(`userClasses/${state.user.uid}/${classId}`, false))) { toast("Daftar atau selesaikan pembayaran untuk membuka kelas ini.", "warning"); navigate("catalog"); return; }
+  if (isStudentRole() && !(await getValue(`userClasses/${state.user.uid}/${classId}`, false))) { toast("Daftar atau selesaikan pembayaran untuk membuka kelas ini.", "warning"); navigate("catalog"); return; }
   state.activeClass = course;
   const [modules, meetings, assignments] = await Promise.all([getModules(classId), getMeetings(classId), getAssignments(classId)]);
   let members = [];
@@ -1475,7 +1532,7 @@ async function renderClassDetail(classId) {
 
     <div class="page-head" style="margin-top:24px;margin-bottom:15px">
       <div><h2 style="font-size:1.35rem">Isi Kelas</h2><p>Modul, video, materi, dan tugas tersusun dalam satu alur belajar.</p></div>
-      ${manageable ? `<div class="page-actions"><button class="btn btn-secondary" id="addModule">${icon("plus")} Modul</button><button class="btn btn-primary" id="addMeeting">${icon("plus")} Video</button><button class="btn btn-secondary" id="addAssignment">${icon("plus")} Tugas</button>${state.profile.role === "admin" ? `<button class="btn btn-ghost" id="manageMembers">${icon("users")} Peserta</button>` : ""}</div>` : ""}
+      ${manageable ? `<div class="page-actions"><button class="btn btn-secondary" id="addModule">${icon("plus")} Modul</button><button class="btn btn-primary" id="addMeeting">${icon("plus")} Video</button><button class="btn btn-secondary" id="addAssignment">${icon("plus")} Tugas</button>${isAdminRole() ? `<button class="btn btn-ghost" id="manageMembers">${icon("users")} Peserta</button>` : ""}</div>` : ""}
     </div>
 
     <div class="grid grid-sidebar">
@@ -1485,7 +1542,7 @@ async function renderClassDetail(classId) {
       </div>
       <aside class="stack">
         <section class="card"><div class="card-head"><div><h3>Tugas Kelas</h3><p>${assignments.length} penugasan</p></div></div><div class="card-body"><div class="list">${assignments.map((task) => `<div class="list-item"><div class="list-icon">${icon("tasks")}</div><div class="list-copy"><b>${escapeHtml(task.title)}</b><span>Tenggat ${task.dueAt ? formatDateTime(task.dueAt) : "bebas"} · ${task.points || 100} poin</span></div>${manageable ? `<button class="icon-btn" data-edit-assignment="${task.id}">${icon("edit")}</button>` : ""}</div>`).join("") || emptyState("Belum ada tugas", "Tugas kelas akan tampil di sini.")}</div></div></section>
-        <section class="card"><div class="card-head"><div><h3>Informasi Kelas</h3><p>Ringkasan akses dan status.</p></div></div><div class="card-body stack"><div class="notice notice-info"><b>Status:</b> ${course.status === "draft" ? "Draf" : "Aktif"}<br><b>Akses:</b> ${classAccessLabel(course)}<br><b>Pengajar:</b> ${escapeHtml(course.teacherName || "Belum ditentukan")}</div>${state.profile.role === "student" ? `<button class="btn btn-secondary" id="viewMyProgress">${icon("chart")} Lihat Progres Saya</button>` : manageable ? `<button class="btn btn-secondary" id="viewClassReport">${icon("report")} Buka Laporan Kelas</button>` : ""}</div></section>
+        <section class="card"><div class="card-head"><div><h3>Informasi Kelas</h3><p>Ringkasan akses dan status.</p></div></div><div class="card-body stack"><div class="notice notice-info"><b>Status:</b> ${course.status === "draft" ? "Draf" : "Aktif"}<br><b>Akses:</b> ${classAccessLabel(course)}<br><b>Pengajar:</b> ${escapeHtml(course.teacherName || "Belum ditentukan")}</div>${isStudentRole() ? `<button class="btn btn-secondary" id="viewMyProgress">${icon("chart")} Lihat Progres Saya</button>` : manageable ? `<button class="btn btn-secondary" id="viewClassReport">${icon("report")} Buka Laporan Kelas</button>` : ""}</div></section>
       </aside>
     </div>`;
 
@@ -1633,7 +1690,7 @@ function openAssignmentForm(classId, assignment = null) {
 }
 
 async function openClassMembers(classId, course) {
-  const users = (await getAllUsers()).filter((u) => u.role === "student" && u.status !== "inactive");
+  const users = (await getAllUsers()).filter((u) => normalizeRole(u.role) === "student" && u.status !== "inactive");
   const current = await getValue(`classMembers/${classId}`, {});
   const body = `<div class="filter-row"><input id="memberSearch" class="form-control" placeholder="Cari peserta..."></div><div id="memberList" class="stack">${renderMemberChecks(users, current)}</div>`;
   const modal = openModal({ title: `Peserta: ${course.title}`, subtitle: `${Object.keys(current || {}).length} peserta terdaftar`, body, size: "lg", footer: `<button class="btn btn-ghost" data-close-footer>Batal</button><button class="btn btn-primary" id="saveMembers">Simpan Peserta</button>` });
@@ -1679,7 +1736,7 @@ async function renderMeetingRoom(classId, meetingId) {
     getValue(`notes/${classId}/${meetingId}/${state.user.uid}`, "")
   ]);
   if (!courseData || !meeting) throw new Error("Video tidak ditemukan atau akses tidak tersedia.");
-  if (state.profile.role === "student" && !(await getValue(`userClasses/${state.user.uid}/${classId}`, false))) { toast("Anda belum memiliki akses ke kelas ini.", "warning"); navigate("catalog"); return; }
+  if (isStudentRole() && !(await getValue(`userClasses/${state.user.uid}/${classId}`, false))) { toast("Anda belum memiliki akses ke kelas ini.", "warning"); navigate("catalog"); return; }
   const course = { id: classId, ...courseData };
   const manageable = canManageClass(course);
   const source = getVideoSource(meeting);
@@ -1869,7 +1926,7 @@ async function saveWatchProgress(classId, meetingId, ended = false) {
 
 async function renderReports() {
   state.classes = await getMyClasses(state.user.uid, state.profile.role);
-  if (state.profile.role === "student") return renderStudentReport();
+  if (isStudentRole()) return renderStudentReport();
   const selectedId = state.classes[0]?.id || "";
   qs("#pageContent").innerHTML = `
     <div class="page-head"><div><h2>Laporan Belajar</h2><p>Pantau kehadiran, durasi menonton, penyelesaian video, kuis, dan tugas peserta.</p></div><div class="page-actions"><button class="btn btn-secondary" id="exportReport">${icon("download")} Unduh CSV</button></div></div>
@@ -1930,8 +1987,8 @@ async function renderStudentReport() {
 
 async function renderAnnouncements() {
   const announcements = sortByDate(objectToArray(await getValue("announcements", {})), "createdAt")
-    .filter((item) => state.profile.role === "admin" || !item.target || item.target === "all" || item.target === state.profile.role);
-  const canEdit = state.profile.role === "admin";
+    .filter((item) => isAdminRole() || !item.target || item.target === "all" || item.target === state.profile.role);
+  const canEdit = isAdminRole();
   qs("#pageContent").innerHTML = `
     <div class="page-head"><div><h2>Pengumuman</h2><p>Informasi penting, agenda, dan pembaruan pembelajaran untuk seluruh pengguna LMS.</p></div>${canEdit ? `<div class="page-actions"><button class="btn btn-primary" id="createAnnouncement">${icon("plus")} Buat Pengumuman</button></div>` : ""}</div>
     <div class="stack">${announcements.map((item) => `<article class="card card-pad"><div style="display:flex;align-items:flex-start;gap:14px"><div class="list-icon">${icon("announce")}</div><div style="flex:1;min-width:0"><div style="display:flex;justify-content:space-between;gap:12px"><div><span class="badge ${item.priority === "important" ? "badge-live" : "badge-replay"}">${item.priority === "important" ? "Penting" : "Informasi"}</span><h3 style="margin:11px 0 7px;font:800 .92rem 'Plus Jakarta Sans'">${escapeHtml(item.title)}</h3></div>${canEdit ? `<button class="icon-btn" data-edit-announcement="${item.id}">${icon("edit")}</button>` : ""}</div><p style="margin:0;color:var(--muted);font-size:.7rem;line-height:1.7;white-space:pre-wrap">${escapeHtml(item.body || "")}</p><div style="margin-top:13px;color:var(--soft);font-size:.58rem">${formatDateTime(item.createdAt)} · ${escapeHtml(item.authorName || "Administrator")}</div></div></div></article>`).join("") || `<div class="card">${emptyState("Belum ada pengumuman", "Informasi terbaru akan tampil di halaman ini.")}</div>`}</div>`;
@@ -1949,15 +2006,15 @@ function openAnnouncementForm(item = null) {
 }
 
 async function renderSettings() {
-  const payment = state.profile.role === "admin" ? await loadPaymentSettings() : {};
+  const payment = isAdminRole() ? await loadPaymentSettings() : {};
   qs("#pageContent").innerHTML = `
     <div class="page-head"><div><h2>Pengaturan</h2><p>Perbarui profil, keamanan akun, dan pengaturan pembayaran LMS.</p></div></div>
     <div class="grid grid-sidebar">
       <div class="stack">
         <section class="card"><div class="card-head"><div><h3>Profil Pengguna</h3><p>Informasi yang digunakan pada kelas dan administrasi.</p></div></div><div class="card-body"><form id="profileForm" class="form-grid"><div class="form-group full"><label class="form-label">Nama lengkap</label><input id="profileName" class="form-control" value="${escapeHtml(state.profile.name || "")}"></div><div class="form-group"><label class="form-label">Email</label><input class="form-control" value="${escapeHtml(state.profile.email || state.user.email || "")}" disabled></div><div class="form-group"><label class="form-label">Nomor WhatsApp</label><input id="profilePhone" class="form-control" value="${escapeHtml(state.profile.phone || "")}" placeholder="08xxxxxxxxxx"></div><div class="form-group"><label class="form-label">Peran</label><input class="form-control" value="${escapeHtml(roleLabel(state.profile.role))}" disabled></div><div class="form-group full"><button class="btn btn-primary" type="submit">Simpan Profil</button></div></form></div></section>
-        ${state.profile.role === "admin" ? `<section class="card"><div class="card-head"><div><h3>Pengaturan Pembayaran</h3><p>Rekening transfer dan WhatsApp admin untuk kelas berbayar.</p></div></div><div class="card-body"><form id="paymentSettingsForm" class="form-grid"><div class="form-group"><label class="form-label">Nama bank</label><input id="paymentBankName" class="form-control" value="${escapeHtml(payment.bankName || "")}" placeholder="BSI / BCA / Mandiri"></div><div class="form-group"><label class="form-label">Nomor rekening</label><input id="paymentAccountNumber" class="form-control" value="${escapeHtml(payment.accountNumber || "")}" placeholder="Nomor rekening"></div><div class="form-group"><label class="form-label">Nama pemilik rekening</label><input id="paymentAccountHolder" class="form-control" value="${escapeHtml(payment.accountHolder || "")}" placeholder="Izzuddin Academy"></div><div class="form-group"><label class="form-label">WhatsApp admin</label><input id="paymentAdminWhatsapp" class="form-control" value="${escapeHtml(payment.adminWhatsapp || "")}" placeholder="08xxxxxxxxxx"></div><div class="form-group full"><label class="form-label">Petunjuk pembayaran</label><textarea id="paymentInstructions" class="form-control" placeholder="Contoh: Transfer sesuai nominal, lalu unggah bukti yang jelas.">${escapeHtml(payment.instructions || "")}</textarea></div><div class="form-group full"><button class="btn btn-primary" type="submit">Simpan Pengaturan Pembayaran</button></div></form></div></section>` : ""}
+        ${isAdminRole() ? `<section class="card"><div class="card-head"><div><h3>Pengaturan Pembayaran</h3><p>Rekening transfer dan WhatsApp admin untuk kelas berbayar.</p></div></div><div class="card-body"><form id="paymentSettingsForm" class="form-grid"><div class="form-group"><label class="form-label">Nama bank</label><input id="paymentBankName" class="form-control" value="${escapeHtml(payment.bankName || "")}" placeholder="BSI / BCA / Mandiri"></div><div class="form-group"><label class="form-label">Nomor rekening</label><input id="paymentAccountNumber" class="form-control" value="${escapeHtml(payment.accountNumber || "")}" placeholder="Nomor rekening"></div><div class="form-group"><label class="form-label">Nama pemilik rekening</label><input id="paymentAccountHolder" class="form-control" value="${escapeHtml(payment.accountHolder || "")}" placeholder="Izzuddin Academy"></div><div class="form-group"><label class="form-label">WhatsApp admin</label><input id="paymentAdminWhatsapp" class="form-control" value="${escapeHtml(payment.adminWhatsapp || "")}" placeholder="08xxxxxxxxxx"></div><div class="form-group full"><label class="form-label">Petunjuk pembayaran</label><textarea id="paymentInstructions" class="form-control" placeholder="Contoh: Transfer sesuai nominal, lalu unggah bukti yang jelas.">${escapeHtml(payment.instructions || "")}</textarea></div><div class="form-group full"><button class="btn btn-primary" type="submit">Simpan Pengaturan Pembayaran</button></div></form></div></section>` : ""}
       </div>
-      <aside class="stack"><section class="card"><div class="card-head"><div><h3>Keamanan Akun</h3><p>Ganti kata sandi secara berkala.</p></div></div><div class="card-body"><button class="btn btn-secondary btn-block" id="changePassword">${icon("lock")} Ganti Kata Sandi</button></div></section><section class="card card-pad brand-note"><img src="assets/logo-izzuddin.png" alt="Logo Izzuddin Academy"><div><b>Izzuddin Academy</b><span>Learning Management System</span></div></section>${state.profile.role === "admin" ? `<section class="card card-pad"><div class="privacy-note"><b>Bukti pembayaran ringan</b><span>Gambar bukti transfer dikompres otomatis dan disimpan privat di database, tanpa layanan penyimpanan tambahan.</span></div></section>` : ""}</aside>
+      <aside class="stack"><section class="card"><div class="card-head"><div><h3>Keamanan Akun</h3><p>Ganti kata sandi secara berkala.</p></div></div><div class="card-body"><button class="btn btn-secondary btn-block" id="changePassword">${icon("lock")} Ganti Kata Sandi</button></div></section><section class="card card-pad brand-note"><img src="assets/logo-izzuddin.png" alt="Logo Izzuddin Academy"><div><b>Izzuddin Academy</b><span>Learning Management System</span></div></section>${isAdminRole() ? `<section class="card card-pad"><div class="privacy-note"><b>Bukti pembayaran ringan</b><span>Gambar bukti transfer dikompres otomatis dan disimpan privat di database, tanpa layanan penyimpanan tambahan.</span></div></section>` : ""}</aside>
     </div>`;
   qs("#profileForm")?.addEventListener("submit", async (event) => {
     event.preventDefault();
@@ -1983,7 +2040,7 @@ function openPasswordForm() {
 }
 
 function patchStudentNavigation() {
-  if (state.profile?.role !== "student") return;
+  if (!isStudentRole()) return;
   const settingsButton = qs('[data-route="settings"]');
   if (settingsButton && !qs('[data-route="reports"]')) {
     const button = document.createElement("button");
@@ -2013,10 +2070,9 @@ onAuthStateChanged(auth, async (user) => {
     if (profile.status === "inactive") {
       await signOut(auth); renderAuth(); toast("Akun Anda sedang dinonaktifkan.", "error"); hideLoader(); return;
     }
-    state.profile = profile;
+    state.profile = { ...profile, role: normalizeRole(profile.role) };
     renderShell();
-    patchStudentNavigation();
-    if (!location.hash || location.hash === "#/") location.hash = state.profile.role === "student" ? "#/catalog" : "#/dashboard";
+    if (!location.hash || location.hash === "#/") location.hash = isStudentRole() ? "#/catalog" : "#/dashboard";
     await route();
     hideLoader();
   } catch (error) {
@@ -2030,5 +2086,10 @@ window.addEventListener("visibilitychange", () => {
 });
 
 if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
-  window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js").catch(() => {}));
+  window.addEventListener("load", async () => {
+    try {
+      const registration = await navigator.serviceWorker.register("./sw.js?v=4.2.0", { updateViaCache: "none" });
+      registration.update().catch(() => {});
+    } catch (_) {}
+  });
 }

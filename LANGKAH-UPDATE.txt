@@ -1,15 +1,20 @@
-LANGKAH UPDATE IZZUDDIN ACADEMY LMS v4.0.0
+IZZUDDIN ACADEMY LMS v4.2.0
 
-1. Ganti seluruh file website lama dengan isi paket v4.0.0.
-2. Di Firebase Console buka Realtime Database > Rules.
-3. Ganti Rules dengan isi file database.rules.json dari paket ini, lalu Publish.
-4. Pastikan Authentication > Email/Password masih aktif dan domain izzuddin.online sudah berada di Authorized domains.
-5. Bila memakai GitHub Pages, unggah semua file termasuk sw.js agar cache versi lama dibersihkan.
-6. Setelah deployment, lakukan hard refresh sekali pada perangkat admin dan peserta.
+UPDATE KHUSUS NAVIGASI DESKTOP & MOBILE
 
-Pembaruan utama:
-- Profil/nama/WhatsApp peserta tampil realtime di admin.
-- Admin dapat melihat dan mengedit WhatsApp tanpa menghapus data profil lain.
-- Tombol salin nomor rekening dan nominal pada pembayaran.
-- Live Chat realtime peserta ↔ admin dengan indikator pesan belum dibaca.
-- Blok teks “Verifikasi sederhana” pada halaman pembayaran dihapus.
+1. Upload seluruh isi paket ini untuk menggantikan versi sebelumnya.
+2. Pastikan database.rules.json yang digunakan minimal versi v4.0 (supportChats sudah tersedia).
+3. Setelah upload, buka ulang izzuddin.online. Service worker v4.2 menghapus cache versi lama otomatis.
+4. Jika browser masih menampilkan file lama, lakukan satu kali hard refresh (Mac: Command + Shift + R).
+
+VERIFIKASI TAMPILAN
+- Desktop member/peserta: Live Chat Admin tampil sebagai tombol khusus di sidebar, menu sidebar, dan tombol Live Chat di topbar.
+- Desktop admin: Live Chat Peserta tampil sebagai tombol khusus di sidebar, menu sidebar, dan tombol Live Chat di topbar.
+- Mobile/tablet: Live Chat tampil di bottom navigation dan tombol chat mengambang.
+- Role alias member/peserta/student dan admin/administrator dinormalisasi untuk mencegah menu hilang karena variasi nama role.
+
+FITUR V4 SEBELUMNYA TETAP ADA
+- Sinkronisasi profil/WhatsApp member ke data admin.
+- Copy nomor rekening dan nominal pembayaran.
+- Live Chat realtime member-admin.
+- Pembayaran transfer + bukti + approval admin.

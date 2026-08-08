@@ -156,7 +156,7 @@ export function statusLabel(status) {
 }
 
 export function roleLabel(role) {
-  return ({ admin: "Administrator", teacher: "Pengajar", student: "Peserta" })[role] || role || "Pengguna";
+  return ({ admin: "Administrator", administrator: "Administrator", teacher: "Pengajar", pengajar: "Pengajar", guru: "Pengajar", student: "Peserta", member: "Peserta", peserta: "Peserta", siswa: "Peserta", santri: "Peserta" })[String(role || "").toLowerCase()] || role || "Pengguna";
 }
 
 export function percent(value, total) {

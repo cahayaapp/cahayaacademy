@@ -1,4 +1,4 @@
-# IZZUDDIN ACADEMY LMS — v4.0.0
+# IZZUDDIN ACADEMY LMS — v4.2.0
 
 Pembaruan LMS dengan pendaftaran mandiri, katalog kelas gratis/berbayar, pembayaran transfer, video YouTube/Google Drive, dan tampilan mobile yang diperkuat.
 
@@ -37,7 +37,7 @@ Untuk GitHub Pages, upload seluruh isi folder ke root repository. Pastikan domai
 YouTube sebaiknya Unlisted dan embedding aktif. Google Drive sebaiknya Viewer serta download, print, dan copy dinonaktifkan. Pembatasan layanan pihak ketiga bukan DRM absolut.
 
 
-## Pembaruan v4.0.0
+## Pembaruan v4.2.0
 - Sinkronisasi profil peserta realtime ke halaman admin.
 - Tombol salin nomor rekening dan nominal pembayaran.
 - Live Chat realtime antara peserta dan admin.
