@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard — belajarislam.online</title>
+  <link rel="icon" type="image/png" href="../assets/img/icon-64.png" />
+  <meta name="theme-color" content="#0f766e" />
+  <link rel="manifest" href="../manifest.webmanifest" />
+  <link rel="stylesheet" href="../assets/css/styles.css" />
+</head>
+<body>
+  <div class="toast" id="toast"></div>
+  <header class="topbar">
+    <div class="container topbar-inner">
+      <a href="../index.html" class="brand">
+        <img src="../assets/img/logo-icon.png" alt="belajarislam.online" />
+        <div>
+          <div class="brand-title">belajarislam.online</div>
+          <div class="brand-sub">Ruang belajar pelajar</div>
+        </div>
+      </a>
+      <div class="search-shell">
+        <div class="search-box">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 10.5A6.5 6.5 0 1 1 4 10.5a6.5 6.5 0 0 1 13 0Z"/></svg>
+          <input id="dashSearch" type="search" placeholder="Cari kelas, materi, atau ustadz..." />
+        </div>
+        <div class="header-actions">
+          <a class="btn" id="notifBtn">Notifikasi <span id="notifCount">0</span></a>
+          <a class="btn primary" id="goAdminBtn" href="admin.html" style="display:none;">Admin</a>
+          <button class="btn" id="logoutBtn">Keluar</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="layout-app">
+    <aside class="sidebar">
+      <a href="../index.html" class="brand">
+        <img src="../assets/img/logo-icon.png" alt="belajarislam.online" />
+        <div>
+          <div class="brand-title">belajarislam.online</div>
+          <div class="brand-sub">Belajar Islam kapan saja</div>
+        </div>
+      </a>
+      <div class="side-menu">
+        <a href="#home" class="active" data-section="homeSection">Beranda</a>
+        <a href="#catalog" data-section="catalogSection">Katalog Kelas</a>
+        <a href="#myclasses" data-section="myClassSection">Kelas Saya</a>
+        <a href="#chat" data-section="chatSection">Chat Admin</a>
+        <a href="#profile" data-section="profileSection">Profil Saya</a>
+      </div>
+      <div class="side-footer">
+        <div class="muted" style="color:rgba(255,255,255,.7);">Akun aktif</div>
+        <h3 id="sideUserName" style="margin:8px 0 4px;">Pelajar</h3>
+        <div id="sideUserEmail" style="color:rgba(255,255,255,.72); font-size:14px;">-</div>
+      </div>
+    </aside>
+
+    <main class="app-content">
+      <section id="homeSection">
+        <div class="panel app-hero">
+          <div class="app-hero-banner">
+            <span class="badge" style="background:rgba(255,255,255,.12); color:#fff;">Ruang belajar Anda</span>
+            <h1>Assalamu'alaikum, <span id="heroUserName">Pelajar</span> 👋</h1>
+            <p>Temukan kelas, lanjutkan materi terakhir, dan diskusikan pertanyaan Anda langsung di forum setiap video.</p>
+            <div class="hero-actions">
+              <button class="btn gold" data-section-trigger="catalogSection">Jelajahi Kelas</button>
+              <button class="btn" data-section-trigger="myClassSection" style="background:rgba(255,255,255,.12); color:#fff; border-color: rgba(255,255,255,.15);">Lihat Kelas Saya</button>
+            </div>
+          </div>
+          <div class="app-hero-progress">
+            <div class="muted" style="font-weight:800; text-align:center;">Target Belajar Pekan Ini</div>
+            <div class="progress-ring"><div class="inner" id="progressValue">75%</div></div>
+            <div style="text-align:center; font-weight:700;">45/60 menit tercapai</div>
+            <div class="muted" style="text-align:center; margin-top:6px;">Konsisten 7 hari berturut-turut</div>
+          </div>
+        </div>
+        <div style="height:18px"></div>
+        <div class="cards-two">
+          <div class="panel" style="padding:24px;">
+            <div class="section-head"><div><h2 style="font-size:26px;">Lanjutkan Belajar</h2><p class="muted">Kelas dan materi yang siap Anda lanjutkan.</p></div></div>
+            <div id="continueLearning"></div>
+          </div>
+          <div class="panel" style="padding:24px;">
+            <div class="section-head"><div><h2 style="font-size:26px;">Aktivitas Terbaru</h2><p class="muted">Ringkas dan mudah dipantau.</p></div></div>
+            <div id="activityList" class="list-clean"></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="catalogSection" class="hidden">
+        <div class="section-head">
+          <div>
+            <h2>Semua Kelas</h2>
+            <p class="muted">Pilih kelas gratis atau berbayar, lalu mulai belajar dengan alur yang sederhana.</p>
+          </div>
+          <div class="filters">
+            <button class="pill active" data-filter="all">Semua</button>
+            <button class="pill" data-filter="free">Gratis</button>
+            <button class="pill" data-filter="paid">Berbayar</button>
+          </div>
+        </div>
+        <div class="class-grid" id="dashboardClassGrid"></div>
+      </section>
+
+      <section id="myClassSection" class="hidden">
+        <div class="section-head">
+          <div>
+            <h2>Kelas Saya</h2>
+            <p class="muted">Kelas yang sudah Anda ambil dan status aksesnya.</p>
+          </div>
+        </div>
+        <div class="class-grid" id="myClassGrid"></div>
+      </section>
+
+      <section id="chatSection" class="hidden">
+        <div class="panel chat-box">
+          <div class="section-head"><div><h2>Chat dengan Admin</h2><p class="muted">Ruang tanya cepat untuk urusan teknis, pembayaran, atau bantuan belajar.</p></div></div>
+          <div id="chatMessages" class="list-clean" style="max-height:420px; overflow:auto;"></div>
+          <div style="height:16px"></div>
+          <div class="field">
+            <label>Tulis pesan</label>
+            <textarea id="chatInput" placeholder="Ketik pertanyaan Anda..."></textarea>
+          </div>
+          <button class="btn primary" id="sendChatBtn">Kirim Pesan</button>
+        </div>
+      </section>
+
+      <section id="profileSection" class="hidden">
+        <div class="panel profile-box">
+          <div class="section-head"><div><h2>Profil Saya</h2><p class="muted">Ketika profil diperbarui, data yang dilihat admin juga akan ikut terbarui.</p></div></div>
+          <form id="profileForm">
+            <div class="form-grid">
+              <div class="field full"><label>Nama lengkap</label><input id="profileName" name="name" required /></div>
+              <div class="field"><label>Email</label><input id="profileEmail" name="email" disabled /></div>
+              <div class="field"><label>Nomor WhatsApp</label><input id="profileWhatsApp" name="whatsapp" required /></div>
+              <div class="field full"><label>Bio singkat</label><textarea id="profileBio" name="bio" placeholder="Ceritakan tujuan belajar Anda..."></textarea></div>
+            </div>
+            <button class="btn primary">Simpan Perubahan</button>
+          </form>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <nav class="sticky-mobile-nav">
+    <a href="#home" class="active" data-section="homeSection">Beranda</a>
+    <a href="#catalog" data-section="catalogSection">Kelas</a>
+    <a href="#myclasses" data-section="myClassSection">Kelas Saya</a>
+    <a href="#chat" data-section="chatSection">Chat</a>
+    <a href="#profile" data-section="profileSection">Profil</a>
+  </nav>
+
+  <script type="module" src="../assets/js/dashboard.js"></script>
+</body>
+</html>

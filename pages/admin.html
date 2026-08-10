@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin — belajarislam.online</title>
+  <link rel="icon" type="image/png" href="../assets/img/icon-64.png" />
+  <meta name="theme-color" content="#0f766e" />
+  <link rel="manifest" href="../manifest.webmanifest" />
+  <link rel="stylesheet" href="../assets/css/styles.css" />
+</head>
+<body>
+  <div class="toast" id="toast"></div>
+  <header class="topbar">
+    <div class="container topbar-inner">
+      <a href="dashboard.html" class="brand">
+        <img src="../assets/img/logo-icon.png" alt="belajarislam.online" />
+        <div>
+          <div class="brand-title">belajarislam.online</div>
+          <div class="brand-sub">Panel admin & pembimbing</div>
+        </div>
+      </a>
+      <div class="search-shell">
+        <div class="header-actions">
+          <a href="dashboard.html" class="btn">Dashboard Pelajar</a>
+          <button class="btn" id="adminLogoutBtn">Keluar</button>
+        </div>
+      </div>
+    </div>
+  </header>
+  <div class="layout-app">
+    <aside class="sidebar">
+      <a href="admin.html" class="brand">
+        <img src="../assets/img/logo-icon.png" alt="belajarislam.online" />
+        <div>
+          <div class="brand-title">belajarislam.online</div>
+          <div class="brand-sub">Panel admin</div>
+        </div>
+      </a>
+      <div class="side-menu">
+        <a href="#overview" class="active" data-section="adminOverview">Ringkasan</a>
+        <a href="#classes" data-section="adminClasses">Kelola Kelas</a>
+        <a href="#payments" data-section="adminPayments">Pembayaran</a>
+        <a href="#users" data-section="adminUsers">Data Pengguna</a>
+        <a href="#chat" data-section="adminChat">Live Chat</a>
+        <a href="#settings" data-section="adminSettings">Pengaturan</a>
+      </div>
+      <div class="side-footer">
+        <div class="muted" style="color:rgba(255,255,255,.7);">Masuk sebagai</div>
+        <h3 id="adminUserName" style="margin:8px 0 4px;">Admin</h3>
+        <div id="adminUserRole" style="color:rgba(255,255,255,.72); font-size:14px;">-</div>
+      </div>
+    </aside>
+    <main class="app-content">
+      <section id="adminOverview">
+        <div class="section-head"><div><h2>Ringkasan LMS</h2><p class="muted">Pantau kelas, pembayaran, dan pengguna dalam satu tampilan.</p></div></div>
+        <div class="stats-row" id="adminStats"></div>
+      </section>
+
+      <section id="adminClasses" class="hidden">
+        <div class="panel admin-panel">
+          <div class="section-head"><div><h2>Kelola Kelas</h2><p class="muted">Tambahkan kelas gratis atau berbayar, serta sumber video YouTube / Google Drive.</p></div></div>
+          <form id="classForm">
+            <div class="form-grid">
+              <div class="field full"><label>Judul kelas</label><input name="title" required /></div>
+              <div class="field"><label>Kategori</label><input name="category" placeholder="Aqidah / Fiqih / Al-Qur'an" required /></div>
+              <div class="field"><label>Nama pengajar</label><input name="teacherName" required /></div>
+              <div class="field"><label>Jenis kelas</label><select name="classType"><option value="free">Gratis</option><option value="paid">Berbayar</option></select></div>
+              <div class="field"><label>Harga (jika berbayar)</label><input name="price" type="number" value="0" /></div>
+              <div class="field"><label>Level</label><input name="level" placeholder="Pemula / Menengah" /></div>
+              <div class="field full"><label>Deskripsi singkat</label><textarea name="description"></textarea></div>
+            </div>
+            <button class="btn primary">Simpan Kelas</button>
+          </form>
+          <hr class="sep" />
+          <div class="section-head"><div><h2 style="font-size:24px;">Tambah Video</h2><p class="muted">Pilih kelas target lalu tambahkan link video.</p></div></div>
+          <form id="videoForm">
+            <div class="form-grid">
+              <div class="field"><label>Kelas</label><select name="classId" id="videoClassSelect"></select></div>
+              <div class="field"><label>Judul video</label><input name="title" required /></div>
+              <div class="field"><label>Durasi</label><input name="duration" placeholder="Contoh: 24 menit" /></div>
+              <div class="field"><label>Sumber video</label><select name="sourceType"><option value="youtube">YouTube</option><option value="gdrive">Google Drive</option></select></div>
+              <div class="field full"><label>Link embed / preview</label><input name="embedUrl" placeholder="Gunakan link embed YouTube atau preview Google Drive" required /></div>
+              <div class="field full"><label>Ringkasan / materi singkat</label><textarea name="summary"></textarea></div>
+            </div>
+            <button class="btn primary">Simpan Video</button>
+          </form>
+        </div>
+      </section>
+
+      <section id="adminPayments" class="hidden">
+        <div class="panel admin-panel">
+          <div class="section-head"><div><h2>Pembayaran Masuk</h2><p class="muted">Setelah disetujui, akses kelas berbayar akan otomatis terbuka untuk peserta.</p></div></div>
+          <div id="paymentTableWrap" class="table-wrap"></div>
+        </div>
+      </section>
+
+      <section id="adminUsers" class="hidden">
+        <div class="panel admin-panel">
+          <div class="section-head"><div><h2>Data Pengguna</h2><p class="muted">Perubahan profil peserta, termasuk nomor WhatsApp, akan langsung terlihat di sini.</p></div></div>
+          <div id="userTableWrap" class="table-wrap"></div>
+        </div>
+      </section>
+
+      <section id="adminChat" class="hidden">
+        <div class="panel admin-panel">
+          <div class="section-head"><div><h2>Live Chat</h2><p class="muted">Balas pesan peserta secara realtime.</p></div></div>
+          <div class="form-grid">
+            <div class="field">
+              <label>Pilih ruang chat peserta</label>
+              <select id="chatRoomSelect"></select>
+            </div>
+          </div>
+          <div id="adminChatMessages" class="list-clean" style="max-height:420px; overflow:auto;"></div>
+          <div style="height:16px"></div>
+          <div class="field"><label>Balas pesan</label><textarea id="adminChatInput" placeholder="Tulis balasan untuk peserta..."></textarea></div>
+          <button class="btn primary" id="adminSendChatBtn">Kirim Balasan</button>
+        </div>
+      </section>
+
+      <section id="adminSettings" class="hidden">
+        <div class="panel admin-panel">
+          <div class="section-head"><div><h2>Pengaturan Pembayaran</h2><p class="muted">Data rekening dan nomor admin tampil pada halaman pembayaran peserta.</p></div></div>
+          <form id="settingsForm">
+            <div class="form-grid">
+              <div class="field"><label>Nama bank</label><input name="bankName" required /></div>
+              <div class="field"><label>Nomor rekening</label><input name="accountNumber" required /></div>
+              <div class="field"><label>Nama pemilik rekening</label><input name="accountName" required /></div>
+              <div class="field"><label>WhatsApp admin</label><input name="whatsappAdmin" required /></div>
+            </div>
+            <button class="btn primary">Simpan Pengaturan</button>
+          </form>
+        </div>
+      </section>
+    </main>
+  </div>
+  <nav class="sticky-mobile-nav">
+    <a href="#overview" class="active" data-section="adminOverview">Ringkasan</a>
+    <a href="#classes" data-section="adminClasses">Kelas</a>
+    <a href="#payments" data-section="adminPayments">Bayar</a>
+    <a href="#users" data-section="adminUsers">User</a>
+    <a href="#chat" data-section="adminChat">Chat</a>
+  </nav>
+  <script type="module" src="../assets/js/admin.js"></script>
+</body>
+</html>

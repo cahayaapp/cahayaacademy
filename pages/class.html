@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Video Pembelajaran — belajarislam.online</title>
+  <link rel="icon" type="image/png" href="../assets/img/icon-64.png" />
+  <meta name="theme-color" content="#0f766e" />
+  <link rel="manifest" href="../manifest.webmanifest" />
+  <link rel="stylesheet" href="../assets/css/styles.css" />
+</head>
+<body>
+  <div class="toast" id="toast"></div>
+  <header class="topbar">
+    <div class="container topbar-inner">
+      <a href="dashboard.html" class="brand">
+        <img src="../assets/img/logo-icon.png" alt="belajarislam.online" />
+        <div>
+          <div class="brand-title">belajarislam.online</div>
+          <div class="brand-sub">Video pembelajaran & forum diskusi</div>
+        </div>
+      </a>
+      <div class="search-shell">
+        <div class="header-actions">
+          <a href="dashboard.html" class="btn">Kembali ke Dashboard</a>
+          <button class="btn" id="classLogoutBtn">Keluar</button>
+        </div>
+      </div>
+    </div>
+  </header>
+  <main class="container" style="padding:24px 0 100px;">
+    <div class="video-layout">
+      <section>
+        <div class="panel video-player-shell">
+          <div class="video-header">
+            <div>
+              <span id="classCategoryBadge" class="badge free">Video Pembelajaran</span>
+              <h1 id="classTitle">Memuat kelas...</h1>
+              <div class="muted" id="classTeacher">-</div>
+            </div>
+            <div class="utility-row">
+              <span class="badge" id="classPriceBadge">-</span>
+              <span class="badge" id="accessBadge">-</span>
+            </div>
+          </div>
+          <div id="videoShell" class="video-embed"></div>
+          <div class="tabs">
+            <button class="active" data-tab="materiPanel">Materi</button>
+            <button data-tab="forumPanel">Forum Diskusi</button>
+            <button data-tab="paymentPanel" id="paymentTabBtn">Akses Kelas</button>
+          </div>
+          <div id="materiPanel" class="tab-panel">
+            <p id="videoSummary" class="muted" style="line-height:1.8;"></p>
+          </div>
+          <div id="forumPanel" class="tab-panel hidden">
+            <div class="notice">Forum diskusi ini khusus untuk video yang sedang dipelajari. Peserta dan pembimbing dapat tanya jawab langsung di sini.</div>
+            <div style="height:16px"></div>
+            <div class="forum-list" id="forumList"></div>
+            <form id="forumForm">
+              <div class="field">
+                <label>Tulis pertanyaan atau tanggapan</label>
+                <textarea id="forumText" placeholder="Ketik pertanyaan Anda di sini..."></textarea>
+              </div>
+              <button class="btn primary">Kirim ke forum</button>
+            </form>
+          </div>
+          <div id="paymentPanel" class="tab-panel hidden">
+            <div id="freeAccessBox" class="empty-state hidden">Kelas ini gratis. Anda dapat langsung belajar.</div>
+            <div id="paidAccessBox" class="hidden">
+              <div class="notice">Kelas ini berbayar. Setelah pembayaran diverifikasi admin, akses penuh akan terbuka otomatis.</div>
+              <div style="height:16px"></div>
+              <div class="kv-grid">
+                <div class="kv">
+                  <strong>Rekening Transfer</strong>
+                  <div id="paymentBankName">-</div>
+                  <div class="copy-row" style="margin-top:8px;"><span id="paymentBankNumber">-</span><button type="button" class="btn small ghost" id="copyAccountBtn">Salin</button></div>
+                  <div class="muted" id="paymentBankAccountName">-</div>
+                </div>
+                <div class="kv">
+                  <strong>Nominal Transfer</strong>
+                  <div id="paymentAmountText" style="font-size:28px; font-weight:800; color: var(--primary);">-</div>
+                  <div class="copy-row" style="margin-top:8px;"><span class="muted">Sesuai nominal tertera</span><button type="button" class="btn small ghost" id="copyAmountBtn">Salin</button></div>
+                </div>
+                <div class="kv">
+                  <strong>Status Pembayaran</strong>
+                  <div id="paymentStatusBox">Belum ada pembayaran</div>
+                </div>
+              </div>
+              <hr class="sep" />
+              <form id="paymentForm">
+                <div class="form-grid">
+                  <div class="field"><label>Nama pengirim</label><input id="senderName" required placeholder="Nama pemilik rekening" /></div>
+                  <div class="field"><label>Bank pengirim</label><input id="senderBank" required placeholder="Contoh: BSI / BCA" /></div>
+                  <div class="field full"><label>Upload bukti transfer</label><input id="proofFile" type="file" accept="image/*" required /></div>
+                </div>
+                <button class="btn primary">Kirim bukti pembayaran</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </section>
+      <aside>
+        <div class="panel module-list">
+          <div class="section-head"><div><h2 style="font-size:22px;">Daftar Materi</h2><p class="muted">Pilih video yang ingin dipelajari.</p></div></div>
+          <div id="videoList" class="list-clean"></div>
+        </div>
+      </aside>
+    </div>
+  </main>
+  <script type="module" src="../assets/js/class.js"></script>
+</body>
+</html>

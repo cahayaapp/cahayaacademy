@@ -1,43 +1,30 @@
-CAHAYA ACADEMY — LANGKAH AKTIVASI CEPAT
-=======================================
+BELAJARISLAM.ONLINE LMS — Paket Upgrade Kode
 
-1. FIREBASE AUTHENTICATION
-   Firebase Console → Security/Authentication → Get Started → Sign-in method
-   → aktifkan Email/Password.
+Urutan cepat:
+1. Upload semua isi paket ini ke hosting / GitHub Pages.
+2. Pastikan Authentication > Email/Password aktif.
+3. Tambahkan domain baru di Firebase Authentication > Authorized domains:
+   - belajarislam.online
+   - www.belajarislam.online
+4. Publish isi file database.rules.json ke Realtime Database > Rules.
+5. Jika menggunakan upload bukti transfer, aktifkan Firebase Storage lalu publish storage.rules.
+6. Pastikan ada minimal 1 akun admin di path users/{uid} dengan role: admin.
 
-2. DATABASE RULES
-   Firebase Console → Realtime Database → Rules.
-   Salin seluruh isi file database.rules.json, lalu klik Publish.
+Fitur utama paket ini:
+- Rebranding penuh ke belajarislam.online
+- Landing page dengan daftar pelajar sendiri
+- Dashboard pelajar desktop & mobile
+- Katalog kelas gratis / berbayar
+- Halaman video pembelajaran dengan forum diskusi per video
+- Pembayaran transfer + upload bukti + approval admin
+- Profil peserta sinkron ke admin
+- Live chat peserta ↔ admin
+- Admin panel untuk kelas, video, pembayaran, pengguna, dan pengaturan rekening
 
-3. UPLOAD KODE
-   Upload seluruh isi folder ini ke repository GitHub Pages atau Firebase Hosting.
-   Jangan hanya mengunggah index.html; folder css, js, dan assets juga wajib ikut.
+Catatan:
+- Link video dapat memakai YouTube (embed / nocookie) atau Google Drive (preview/embed).
+- Untuk kelas berbayar, peserta mengirim bukti transfer dari halaman kelas.
+- Setelah admin menyetujui pembayaran, akses kelas akan aktif otomatis.
 
-4. AUTHORIZED DOMAIN
-   Jika memakai GitHub Pages, tambahkan domain GitHub Pages pada:
-   Authentication → Settings → Authorized domains.
-   Contoh: username.github.io
-
-5. AKTIFKAN ADMIN PERTAMA
-   Buka alamat:
-   https://alamat-lms-anda/setup.html
-   Isi nama, email, dan kata sandi administrator.
-   Aktivasi hanya dapat diklaim oleh satu akun pertama.
-
-6. MASUK KE LMS
-   Buka index.html atau alamat utama LMS, lalu login memakai akun admin.
-
-7. URUTAN PENGISIAN
-   a. Menu Pengguna → buat akun Pengajar dan Peserta.
-   b. Menu Kelas Saya → Buat Kelas.
-   c. Atur pengajar dan peserta kelas.
-   d. Tambahkan Modul, Pertemuan, link YouTube, materi, tugas, dan kuis.
-
-ALUR LIVE
-Streamlabs → YouTube Live (Unlisted) → salin link video →
-Kelas → Tambah Pertemuan → tempel link YouTube.
-Setelah live selesai, link yang sama akan menjadi tayangan ulang.
-
-CATATAN LOGO
-File assets/logofi.png sudah tersedia sebagai logo sementara.
-Ganti file tersebut dengan logo resmi pesantren menggunakan nama file yang sama.
+CNAME:
+- File CNAME sudah disiapkan untuk GitHub Pages.

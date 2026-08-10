@@ -1,42 +1,132 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta name="theme-color" content="#102f55">
-  <meta name="description" content="Izzuddin Academy — Digital Learning Platform">
-  <meta name="application-name" content="Izzuddin Academy">
-  <title>Izzuddin Academy</title>
-  <link rel="icon" href="assets/logo-izzuddin.png">
-  <link rel="apple-touch-icon" href="assets/icon-192.png">
-  <link rel="manifest" href="manifest.webmanifest">
-  <link rel="stylesheet" href="css/app.css?v=4.3.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>belajarislam.online — Belajar Islam Kapan Saja, di Mana Saja</title>
+  <meta name="description" content="Platform pembelajaran Islam modern, fresh, dan memudahkan pengguna untuk belajar kapan saja, di mana saja." />
+  <link rel="icon" type="image/png" href="assets/img/icon-64.png" />
+  <meta name="theme-color" content="#0f766e" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="stylesheet" href="assets/css/styles.css" />
 </head>
 <body>
-  <div id="appLoader" class="app-loader" aria-live="polite">
-    <div class="loader-card">
-      <img class="loader-logo" src="assets/logo-izzuddin.png" alt="Logo Izzuddin Academy">
-      <div class="loader-title">IZZUDDIN ACADEMY</div>
-      <div class="loader-subtitle">Menyiapkan ruang belajar Anda</div>
-      <div class="loader-bar"></div>
+  <div class="toast" id="toast"></div>
+  <header class="topbar">
+    <div class="container topbar-inner">
+      <a href="index.html" class="brand">
+        <img src="assets/img/logo-icon.png" alt="belajarislam.online" />
+        <div>
+          <div class="brand-title">belajarislam.online</div>
+          <div class="brand-sub">Belajar Islam kapan saja, di mana saja.</div>
+        </div>
+      </a>
+      <nav class="nav">
+        <a href="#beranda" class="active">Beranda</a>
+        <a href="#kelas">Kelas</a>
+        <a href="#forum">Forum</a>
+        <a href="#fitur">Fitur</a>
+      </nav>
+      <div class="search-shell">
+        <div class="search-box">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 10.5A6.5 6.5 0 1 1 4 10.5a6.5 6.5 0 0 1 13 0Z"/></svg>
+          <input id="landingSearch" type="search" placeholder="Cari kelas, materi, atau ustadz..." />
+        </div>
+        <div class="header-actions">
+          <a href="#auth" class="btn">Masuk / Daftar</a>
+          <a href="pages/dashboard.html" class="btn primary">Dashboard Saya</a>
+        </div>
+      </div>
     </div>
-  </div>
+  </header>
 
-  <div id="authRoot" class="hidden"></div>
-  <div id="appRoot" class="hidden"></div>
-  <div id="modalRoot" class="modal-backdrop" aria-hidden="true"></div>
-  <div id="toastRoot" class="toast-stack" aria-live="polite"></div>
+  <main>
+    <section class="container landing-grid" id="beranda">
+      <div class="hero-card">
+        <span class="badge" style="background:rgba(255,255,255,.14); color:#fff;">Platform pembelajaran Islam modern</span>
+        <h1 class="hero-title">Belajar Islam lebih mudah, terarah, dan menyenangkan.</h1>
+        <p class="hero-sub">Satu platform untuk kelas gratis dan berbayar, video pembelajaran, forum diskusi di setiap video, progres belajar, dan pengalaman yang nyaman di desktop maupun mobile.</p>
+        <div class="hero-actions">
+          <a href="#kelas" class="btn gold">Lihat Kelas</a>
+          <a href="#auth" class="btn" style="background:rgba(255,255,255,.12); color:#fff; border-color: rgba(255,255,255,.15);">Daftar Gratis</a>
+        </div>
+        <div class="hero-points">
+          <div class="point-card"><strong>Ustadz Terpercaya</strong><span>Dibimbing asatidz kompeten.</span></div>
+          <div class="point-card"><strong>Video Berkualitas</strong><span>Tampilan bersih dan responsif.</span></div>
+          <div class="point-card"><strong>Forum Per Video</strong><span>Tanya jawab dengan pembimbing.</span></div>
+          <div class="point-card"><strong>Belajar Fleksibel</strong><span>Kapan saja, di mana saja.</span></div>
+        </div>
+        <div class="stats-row">
+          <div class="stat-card"><strong>10K+</strong>Peserta aktif</div>
+          <div class="stat-card"><strong>300+</strong>Kelas tersedia</div>
+          <div class="stat-card"><strong>150+</strong>Ustadz & pembimbing</div>
+          <div class="stat-card"><strong>95%</strong>Kepuasan pengguna</div>
+        </div>
+      </div>
+      <aside class="panel auth-panel" id="auth">
+        <div class="auth-tabs">
+          <button id="tabLogin" class="active">Masuk</button>
+          <button id="tabRegister">Daftar Pelajar</button>
+        </div>
+        <form id="loginForm">
+          <div class="field">
+            <label>Email</label>
+            <input type="email" name="email" required placeholder="contoh@email.com" />
+          </div>
+          <div class="field">
+            <label>Password</label>
+            <input type="password" name="password" required placeholder="Masukkan password" />
+          </div>
+          <button class="btn primary" style="width:100%;">Masuk ke akun saya</button>
+        </form>
+        <form id="registerForm" class="hidden">
+          <div class="form-grid">
+            <div class="field full">
+              <label>Nama lengkap</label>
+              <input type="text" name="name" required placeholder="Nama lengkap" />
+            </div>
+            <div class="field">
+              <label>Email</label>
+              <input type="email" name="email" required placeholder="contoh@email.com" />
+            </div>
+            <div class="field">
+              <label>Nomor WhatsApp</label>
+              <input type="text" name="whatsapp" required placeholder="08xxxxxxxxxx" />
+            </div>
+            <div class="field">
+              <label>Password</label>
+              <input type="password" name="password" required placeholder="Minimal 6 karakter" />
+            </div>
+            <div class="field">
+              <label>Konfirmasi password</label>
+              <input type="password" name="confirmPassword" required placeholder="Ulangi password" />
+            </div>
+          </div>
+          <div class="note">Setelah daftar, pelajar dapat langsung login sendiri, melihat kelas gratis atau berbayar, dan mulai belajar dari dashboard.</div>
+          <div style="height:12px"></div>
+          <button class="btn primary" style="width:100%;">Buat akun pelajar</button>
+        </form>
+        <hr class="sep" />
+        <div class="muted" style="font-size:14px; line-height:1.7;">Admin/pembimbing dapat masuk memakai akun yang sudah diberi role di Firebase. Halaman admin tersedia otomatis sesuai role pengguna.</div>
+      </aside>
+    </section>
 
-  <script type="module" src="js/app.js?v=4.3.0"></script>
-  <script>
-    window.setTimeout(function () {
-      var loader = document.getElementById("appLoader");
-      var authRoot = document.getElementById("authRoot");
-      var appRoot = document.getElementById("appRoot");
-      if (loader && !loader.classList.contains("is-hidden") && !authRoot.innerHTML && !appRoot.innerHTML) {
-        loader.innerHTML = '<div class="loader-card"><img class="loader-logo" src="assets/logo-izzuddin.png" alt="Logo Izzuddin Academy"><div class="loader-title">Koneksi belum berhasil</div><div class="loader-subtitle" style="max-width:340px;line-height:1.6">Periksa koneksi internet atau muat ulang halaman.</div><button class="btn btn-primary" style="margin-top:18px" onclick="location.reload()">Muat Ulang</button></div>';
-      }
-    }, 12000);
-  </script>
+    <section class="container catalog-section" id="kelas">
+      <div class="section-head">
+        <div>
+          <h2>Katalog Kelas</h2>
+          <p class="muted">Temukan kelas gratis dan berbayar yang rapi, mudah dicari, dan siap dipelajari.</p>
+        </div>
+        <div class="filters">
+          <button class="pill active" data-filter="all">Semua</button>
+          <button class="pill" data-filter="free">Gratis</button>
+          <button class="pill" data-filter="paid">Berbayar</button>
+        </div>
+      </div>
+      <div class="class-grid" id="landingClassGrid"></div>
+    </section>
+  </main>
+
+  <script type="module" src="assets/js/index.js"></script>
 </body>
 </html>
