@@ -1,205 +1,77 @@
 import {
-  auth, onAuthStateChanged, fetchProfile, fetchClass, fetchVideos, fetchEnrollment, ensureEnrollment,
-  fetchSettings, uploadProof, submitPayment, subscribeForum, submitForumPost,
-  logoutUser, initials, toast, rupiah
+  auth,onAuthStateChanged,fetchProfile,fetchClass,fetchVideos,fetchEnrollment,joinFreeClass,subscribeEnrollment,
+  fetchSettings,uploadProof,submitPayment,subscribeForum,submitForumPost,logoutUser,
+  initials,toast,rupiah,escapeHtml,fetchProgress,saveLessonProgress,markLessonComplete,
+  fetchQuiz,fetchQuizResult,submitQuizResult,fetchClassCompletion,logActivity,normalizeWa
 } from './core.js';
 
-const params = new URLSearchParams(window.location.search);
-const classId = params.get('class');
-let currentUser = null;
-let profile = null;
-let classData = null;
-let videos = [];
-let currentVideo = null;
-let enrollment = null;
-let settings = null;
-let forumUnsub = null;
+const $=id=>document.getElementById(id);
+const classId=new URLSearchParams(location.search).get('class');
+let user,profile,classData,videos=[],video,enrollment,settings,progressMap={},quizData,quizResult,forumUnsub,enrollmentUnsub,replyingTo=null,ytPlayer=null,progressTimer=null;
 
-function switchTab(tabId) {
-  document.querySelectorAll('.tabs button').forEach(btn => btn.classList.toggle('active', btn.dataset.tab === tabId));
-  document.querySelectorAll('.tab-panel').forEach(panel => panel.classList.toggle('hidden', panel.id !== tabId));
+function hasAccess(){return !classData?.isPaid||enrollment?.status==='active'||['admin','mentor'].includes(profile?.role);}
+function switchTab(id){document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('active',b.dataset.tab===id));document.querySelectorAll('.tab-panel').forEach(p=>p.classList.toggle('hidden',p.id!==id));}
+document.querySelectorAll('.tabs button').forEach(b=>b.addEventListener('click',()=>switchTab(b.dataset.tab)));
+
+function ytId(url=''){const m=String(url).match(/\/embed\/([^?&/]+)/)||String(url).match(/youtu\.be\/([^?&/]+)/)||String(url).match(/[?&]v=([^?&/]+)/);return m?.[1]||'';}
+let ytApiPromise;
+function loadYT(){if(window.YT?.Player)return Promise.resolve(window.YT);if(ytApiPromise)return ytApiPromise;ytApiPromise=new Promise(resolve=>{window.onYouTubeIframeAPIReady=()=>resolve(window.YT);const s=document.createElement('script');s.src='https://www.youtube.com/iframe_api';document.head.appendChild(s);});return ytApiPromise;}
+function clearTracking(){if(progressTimer)clearInterval(progressTimer);progressTimer=null;try{ytPlayer?.destroy?.();}catch(_){}ytPlayer=null;}
+async function persistYT(force=false){if(!ytPlayer||!video||!user)return;try{const d=Number(ytPlayer.getDuration?.()||0),t=Number(ytPlayer.getCurrentTime?.()||0);if(!d)return;const pct=force?100:Math.min(100,Math.round(t/d*100));const completed=force||pct>=90;const prev=progressMap[video.id]||{};const payload={completed,percent:pct,lastPosition:completed?d:t,duration:d,watchedSeconds:Math.max(Number(prev.watchedSeconds||0),t),sourceType:'youtube'};await saveLessonProgress(user.uid,classId,video.id,payload);progressMap[video.id]={...prev,...payload};renderProgress();renderVideoList();await refreshCompletion();}catch(_){}}
+async function renderVideo(){
+  clearTracking();const shell=$('videoShell');$('videoSummary').textContent=video?.summary||'Ringkasan materi belum tersedia.';
+  if(!hasAccess()){shell.innerHTML='<div class="locked-video"><div class="lock-icon">🔒</div><strong>Video tersedia setelah akses kelas aktif</strong><span>Gunakan tab Akses Kelas untuk menyelesaikan pembayaran.</span></div>';return;}
+  if(!video){shell.innerHTML='<div class="empty-state">Video belum tersedia.</div>';return;}
+  if(video.sourceType==='gdrive'){shell.innerHTML=`<iframe class="drive-frame" src="${escapeHtml(video.embedUrl)}" allow="autoplay; fullscreen" allowfullscreen></iframe>`;return;}
+  const id=ytId(video.embedUrl); if(!id){shell.innerHTML=`<iframe src="${escapeHtml(video.embedUrl)}" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe>`;return;}
+  shell.innerHTML='<div id="ytPlayer" class="yt-fill"></div>';const YT=await loadYT();ytPlayer=new YT.Player('ytPlayer',{host:'https://www.youtube-nocookie.com',videoId:id,playerVars:{rel:0,playsinline:1,enablejsapi:1,origin:location.origin,controls:1,fs:1},events:{onReady:e=>{const p=progressMap[video.id];if(p?.lastPosition&&!p.completed)try{e.target.seekTo(Number(p.lastPosition),true);}catch(_){}},onStateChange:async e=>{if(e.data===YT.PlayerState.PLAYING){clearInterval(progressTimer);progressTimer=setInterval(()=>persistYT(false),30000);}else if(e.data===YT.PlayerState.PAUSED){clearInterval(progressTimer);progressTimer=null;await persistYT(false);}else if(e.data===YT.PlayerState.ENDED){clearInterval(progressTimer);progressTimer=null;await persistYT(true);await logActivity(user.uid,{type:'lesson',title:`Menyelesaikan video ${video.title}`,classId,videoId:video.id});}}}});
 }
-document.querySelectorAll('.tabs button').forEach(btn => btn.addEventListener('click', ()=> switchTab(btn.dataset.tab)));
-
-function renderVideoEmbed(video) {
-  const shell = document.getElementById('videoShell');
-  if (!video) {
-    shell.innerHTML = '<div class="empty-state">Video belum tersedia.</div>';
-    return;
-  }
-  if (video.sourceType === 'gdrive') {
-    shell.innerHTML = `<iframe class="drive-frame" src="${video.embedUrl}" allow="autoplay"></iframe>`;
-  } else {
-    shell.innerHTML = `<iframe src="${video.embedUrl}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>`;
-  }
-  document.getElementById('videoSummary').textContent = video.summary || 'Ringkasan materi belum tersedia.';
+function renderMeta(){
+  $('classTitle').textContent=classData.title;$('classTeacher').textContent=classData.teacherName||'-';$('classCategoryBadge').textContent=classData.category||'Video Pembelajaran';
+  $('classPriceBadge').className=`badge ${classData.isPaid?'paid':'free'}`;$('classPriceBadge').textContent=classData.isPaid?rupiah(classData.price):'Gratis';
+  let text=!classData.isPaid?'Akses langsung':enrollment?.status==='active'?'Akses aktif':enrollment?.paymentStatus==='pending'?'Menunggu verifikasi':enrollment?.paymentStatus==='rejected'?'Perlu kirim ulang':'Belum aktif';
+  $('accessBadge').className=`badge ${(!classData.isPaid||enrollment?.status==='active')?'free':'pending'}`;$('accessBadge').textContent=text;
 }
+function renderVideoList(){
+  $('videoList').innerHTML=videos.length?videos.map(v=>{const p=progressMap[v.id]||{};const done=p.completed||Number(p.percent||0)>=90;return `<button class="lesson-item ${v.id===video?.id?'active':''}" data-video="${v.id}"><div class="lesson-row"><div class="grow"><strong>${escapeHtml(v.title)}</strong><div class="muted mini">${escapeHtml(v.duration||'-')} • ${done?'Selesai':`${Number(p.percent||0)}%`}</div><div class="progress-track compact"><span style="width:${done?100:Number(p.percent||0)}%"></span></div></div><span class="lesson-state ${done?'done':''}">${done?'✓':'▶'}</span></div></button>`;}).join(''):'<div class="empty-state">Belum ada video pada kelas ini.</div>';
+  $('videoList').querySelectorAll('[data-video]').forEach(b=>b.addEventListener('click',async()=>{await persistYT(false);video=videos.find(v=>v.id===b.dataset.video);renderVideoList();renderProgress();await renderVideo();subscribeForumCurrent();await loadQuiz();}));
+}
+function renderProgress(){const p=progressMap[video?.id]||{};const pct=p.completed?100:Math.max(0,Math.min(100,Number(p.percent||0)));$('lessonProgressBar').style.width=`${pct}%`;$('lessonProgressText').textContent=p.completed?'Materi selesai':pct?`${pct}% dipelajari`:'Belum dimulai';$('markCompleteBtn').textContent=p.completed?'✓ Sudah Selesai':'Tandai Selesai';$('markCompleteBtn').disabled=Boolean(p.completed)||!hasAccess();}
 
-function renderVideoList() {
-  const container = document.getElementById('videoList');
-  container.innerHTML = videos.length ? videos.map(item => `
-    <button class="lesson-item ${item.id === currentVideo?.id ? 'active' : ''}" data-video="${item.id}" style="text-align:left; width:100%; background:#fff;">
-      <div style="display:flex; justify-content:space-between; gap:10px; align-items:flex-start;">
-        <div>
-          <div style="font-weight:800;">${item.title}</div>
-          <div class="muted" style="margin-top:4px;">${item.duration || '-'}</div>
-        </div>
-        <span class="badge ${item.id === currentVideo?.id ? 'free' : ''}">${item.sourceType === 'gdrive' ? 'Drive' : 'YouTube'}</span>
-      </div>
-    </button>
-  `).join('') : '<div class="empty-state">Belum ada video pada kelas ini.</div>';
-  container.querySelectorAll('[data-video]').forEach(btn => btn.addEventListener('click', ()=> {
-    currentVideo = videos.find(v => v.id === btn.dataset.video);
-    renderVideoEmbed(currentVideo);
-    renderVideoList();
-    subscribeForumForCurrentVideo();
-  }));
+function forumCard(x,reply=false){return `<div class="forum-item ${reply?'reply':''}"><div class="avatar">${initials(x.name)}</div><div class="forum-bubble"><div class="forum-meta"><strong>${escapeHtml(x.name)}</strong><span class="badge ${['admin','mentor'].includes(x.role)?'mentor':'student'}">${['admin','mentor'].includes(x.role)?'Pembimbing':'Peserta'}</span><span class="muted mini">${new Date(x.createdAt||Date.now()).toLocaleString('id-ID')}</span></div><div class="forum-content">${escapeHtml(x.text)}</div><button class="reply-action" data-reply="${x.id}" data-name="${escapeHtml(x.name)}">Balas</button></div></div>`;}
+function renderForum(items){
+  const roots=items.filter(x=>!x.parentId),replies=items.filter(x=>x.parentId),map={};replies.forEach(x=>(map[x.parentId]??=[]).push(x));
+  $('forumList').innerHTML=roots.length?roots.map(r=>forumCard(r)+(map[r.id]||[]).map(x=>forumCard(x,true)).join('')).join(''):'<div class="empty-state">Belum ada pertanyaan. Mulai diskusi dari video ini.</div>';
+  $('forumList').querySelectorAll('[data-reply]').forEach(b=>b.addEventListener('click',()=>{replyingTo={id:b.dataset.reply,name:b.dataset.name};$('replyingText').textContent=`Membalas ${replyingTo.name}`;$('replyingBanner').classList.remove('hidden');$('forumText').focus();}));
+}
+function subscribeForumCurrent(){if(forumUnsub)forumUnsub();if(!video||!hasAccess()){$('forumList').innerHTML='<div class="empty-state">Forum tersedia setelah akses kelas aktif.</div>';return;}forumUnsub=subscribeForum(classId,video.id,renderForum);}
+
+async function loadQuiz(){if(!video)return;quizData=await fetchQuiz(classId,video.id);quizResult=await fetchQuizResult(user.uid,classId,video.id);renderQuiz();}
+function renderQuiz(){
+  const area=$('quizArea');if(!hasAccess()){area.innerHTML='<div class="empty-state">Kuis tersedia setelah akses kelas aktif.</div>';return;}
+  if(!quizData?.questions||!Object.keys(quizData.questions).length){area.innerHTML='<div class="empty-state">Belum ada kuis untuk video ini.</div>';return;}
+  const qs=Object.entries(quizData.questions);const result=quizResult?`<div class="quiz-result"><div class="quiz-score">${Number(quizResult.score||0)}</div><div><strong>${quizResult.passed?'Alhamdulillah, kuis lulus.':'Nilai belum mencapai batas lulus.'}</strong><div class="muted">Batas lulus ${Number(quizData.passScore||70)}. Kuis dapat diulang.</div></div></div>`:'';
+  area.innerHTML=`${result}<form id="quizAnswerForm">${qs.map(([id,q],i)=>`<div class="quiz-question"><h4>${i+1}. ${escapeHtml(q.text)}</h4>${Object.entries(q.options||{}).map(([k,v])=>`<label class="quiz-option"><input type="radio" name="${id}" value="${k}" required><span><strong>${k.toUpperCase()}.</strong> ${escapeHtml(v)}</span></label>`).join('')}</div>`).join('')}<button class="btn primary">Kumpulkan Jawaban</button></form>`;
+  $('quizAnswerForm').addEventListener('submit',async e=>{e.preventDefault();const fd=new FormData(e.target);let correct=0;const answers={};qs.forEach(([id,q])=>{const a=fd.get(id);answers[id]=a;if(a===q.correct)correct++;});const score=Math.round(correct/qs.length*100),passed=score>=Number(quizData.passScore||70);await submitQuizResult(user.uid,classId,video.id,{score,passed,correct,total:qs.length,answers});quizResult={score,passed,correct,total:qs.length,answers};if(passed)await logActivity(user.uid,{type:'quiz',title:`Lulus kuis ${video.title}`,classId,videoId:video.id,score});renderQuiz();toast(passed?'Kuis lulus. Masya Allah!':'Nilai tersimpan. Silakan pelajari lagi.');await refreshCompletion();});
 }
 
-function renderMeta() {
-  document.getElementById('classTitle').textContent = classData.title;
-  document.getElementById('classTeacher').textContent = classData.teacherName || '-';
-  document.getElementById('classCategoryBadge').textContent = classData.category || 'Video Pembelajaran';
-  const priceBadge = document.getElementById('classPriceBadge');
-  priceBadge.className = `badge ${classData.isPaid ? 'paid' : 'free'}`;
-  priceBadge.textContent = classData.isPaid ? rupiah(classData.price) : 'Gratis';
-  const accessBadge = document.getElementById('accessBadge');
-  const accessText = classData.isPaid
-    ? (enrollment?.status === 'active' ? 'Akses aktif' : enrollment?.paymentStatus === 'pending' ? 'Menunggu verifikasi' : 'Belum aktif')
-    : 'Akses langsung';
-  accessBadge.className = `badge ${enrollment?.status === 'active' || !classData.isPaid ? 'free' : 'pending'}`;
-  accessBadge.textContent = accessText;
+async function renderPayment(){
+  if(!classData.isPaid){$('freeAccessBox').classList.remove('hidden');$('paidAccessBox').classList.add('hidden');return;}
+  $('freeAccessBox').classList.add('hidden');$('paidAccessBox').classList.remove('hidden');
+  $('paymentBankName').textContent=settings.payment.bankName||'-';$('paymentBankNumber').textContent=settings.payment.accountNumber||'-';$('paymentBankAccountName').textContent=`a.n. ${settings.payment.accountName||'-'}`;$('paymentAmountText').textContent=rupiah(classData.price);
+  const status=enrollment?.paymentStatus==='pending'?'Menunggu verifikasi admin':enrollment?.paymentStatus==='approved'?'Pembayaran disetujui — akses aktif':enrollment?.paymentStatus==='rejected'?'Bukti perlu diperiksa ulang':'Belum ada pembayaran';$('paymentStatusBox').textContent=status;
+  $('paymentForm').classList.toggle('hidden',enrollment?.paymentStatus==='pending'||enrollment?.paymentStatus==='approved');
 }
+async function refreshCompletion(){if(!hasAccess()){ $('courseProgressBar').style.width='0%'; $('courseProgressText').textContent='0%'; $('certificateHint').textContent='Sertifikat tersedia setelah akses kelas aktif dan seluruh materi dituntaskan.'; $('certificateBtn').classList.add('hidden'); return {percent:0,completedVideos:0,totalVideos:0,quizzesPassed:false,eligible:false}; } const c=await fetchClassCompletion(user.uid,classId);$('courseProgressBar').style.width=`${c.percent}%`;$('courseProgressText').textContent=`${c.percent}%`;if(c.eligible){$('certificateHint').textContent='Semua materi selesai dan kuis wajib lulus. Sertifikat siap.';$('certificateBtn').classList.remove('hidden');$('certificateBtn').href=`certificate.html?class=${encodeURIComponent(classId)}`;}else{$('certificateHint').textContent=`${c.completedVideos}/${c.totalVideos} video selesai${c.quizzesPassed?'':' • masih ada kuis yang belum lulus'}.`;$('certificateBtn').classList.add('hidden');}return c;}
 
-function renderForum(items) {
-  const list = document.getElementById('forumList');
-  list.innerHTML = items.length ? items.map(item => `
-    <div class="forum-item">
-      <div class="avatar">${initials(item.name)}</div>
-      <div class="forum-bubble">
-        <div class="forum-meta">
-          <strong>${item.name}</strong>
-          <span class="badge ${item.role === 'admin' || item.role === 'mentor' ? 'mentor' : 'student'}">${item.role === 'admin' || item.role === 'mentor' ? 'Pembimbing' : 'Peserta'}</span>
-          <span class="muted">${new Date(item.createdAt || Date.now()).toLocaleString('id-ID')}</span>
-        </div>
-        <div class="forum-content">${item.text}</div>
-      </div>
-    </div>
-  `).join('') : '<div class="empty-state">Belum ada pertanyaan. Jadilah yang pertama bertanya di forum ini.</div>';
-}
+$('markCompleteBtn').addEventListener('click',async()=>{if(!video||!hasAccess())return;await markLessonComplete(user.uid,classId,video.id,true);progressMap[video.id]={...(progressMap[video.id]||{}),completed:true,percent:100};await logActivity(user.uid,{type:'lesson',title:`Menyelesaikan video ${video.title}`,classId,videoId:video.id});renderProgress();renderVideoList();await refreshCompletion();toast('Materi ditandai selesai');});
+$('cancelReplyBtn').addEventListener('click',()=>{replyingTo=null;$('replyingBanner').classList.add('hidden');});
+$('forumForm').addEventListener('submit',async e=>{e.preventDefault();const text=$('forumText').value.trim();if(!text)return;if(!hasAccess())return toast('Forum tersedia setelah akses aktif','error');await submitForumPost(classId,video.id,{uid:user.uid,name:profile.name,role:profile.role,text,parentId:replyingTo?.id||null});$('forumText').value='';replyingTo=null;$('replyingBanner').classList.add('hidden');});
+$('paymentForm').addEventListener('submit',async e=>{e.preventDefault();const file=$('proofFile').files[0];if(!file)return toast('Pilih bukti transfer','error');if(file.size>3*1024*1024)return toast('Ukuran bukti maksimal 3 MB','error');const wa=normalizeWa(settings.payment.whatsappAdmin||'');const waWindow=wa?window.open('about:blank','_blank'):null;try{const proofUrl=await uploadProof(file,user.uid,classId);const p=await submitPayment({uid:user.uid,classId,amount:classData.price,senderName:$('senderName').value.trim(),senderBank:$('senderBank').value.trim(),proofUrl});enrollment={status:'pending_payment',paymentStatus:'pending',paymentId:p.id};renderMeta();renderPayment();toast('Bukti pembayaran berhasil dikirim');if(wa&&waWindow){const msg=encodeURIComponent(`Assalamu'alaikum. Saya ${profile.name} sudah mengirim bukti pembayaran kelas "${classData.title}" sebesar ${rupiah(classData.price)} melalui belajarislam.online.`);waWindow.location.href=`https://wa.me/${wa}?text=${msg}`;}}catch(err){try{waWindow?.close();}catch(_){}toast(err.message||'Gagal mengirim bukti pembayaran','error');}});
+$('copyAccountBtn').addEventListener('click',async()=>{await navigator.clipboard.writeText(settings.payment.accountNumber||'');toast('Nomor rekening disalin');});
+$('copyAmountBtn').addEventListener('click',async()=>{await navigator.clipboard.writeText(String(classData.price||0));toast('Nominal disalin');});
+$('classMobileChatFab')?.addEventListener('click',()=>location.href='dashboard.html#chat');
+$('classLogoutBtn').addEventListener('click',async()=>{await persistYT(false);await logoutUser();location.href='../index.html';});
+window.addEventListener('beforeunload',()=>{if(progressTimer)clearInterval(progressTimer);});
 
-function subscribeForumForCurrentVideo() {
-  if (forumUnsub) forumUnsub();
-  if (!currentVideo) return;
-  forumUnsub = subscribeForum(classId, currentVideo.id, renderForum);
-}
-
-async function renderPayment() {
-  const freeBox = document.getElementById('freeAccessBox');
-  const paidBox = document.getElementById('paidAccessBox');
-  if (!classData.isPaid) {
-    freeBox.classList.remove('hidden');
-    paidBox.classList.add('hidden');
-    return;
-  }
-  freeBox.classList.add('hidden');
-  paidBox.classList.remove('hidden');
-  document.getElementById('paymentBankName').textContent = settings.payment.bankName;
-  document.getElementById('paymentBankNumber').textContent = settings.payment.accountNumber;
-  document.getElementById('paymentBankAccountName').textContent = `a.n. ${settings.payment.accountName}`;
-  document.getElementById('paymentAmountText').textContent = rupiah(classData.price);
-  let statusText = 'Belum ada pembayaran';
-  if (enrollment?.paymentStatus === 'pending') statusText = 'Menunggu verifikasi admin';
-  if (enrollment?.paymentStatus === 'approved') statusText = 'Pembayaran disetujui — akses aktif';
-  if (enrollment?.paymentStatus === 'rejected') statusText = 'Pembayaran perlu diperiksa ulang';
-  document.getElementById('paymentStatusBox').textContent = statusText;
-}
-
-function guardLearningAccess() {
-  const locked = classData.isPaid && enrollment?.status !== 'active' && profile.role !== 'admin' && profile.role !== 'mentor';
-  document.getElementById('forumForm').style.display = locked ? 'none' : 'block';
-  if (locked) {
-    document.getElementById('videoShell').innerHTML = '<div class="empty-state">Akses video penuh akan terbuka setelah pembayaran disetujui admin. Silakan gunakan tab Akses Kelas.</div>';
-  } else {
-    renderVideoEmbed(currentVideo);
-  }
-}
-
-document.getElementById('forumForm').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const text = document.getElementById('forumText').value.trim();
-  if (!text) return;
-  if (classData.isPaid && enrollment?.status !== 'active' && profile.role !== 'admin' && profile.role !== 'mentor') {
-    toast('Forum aktif setelah akses kelas terbuka', 'error');
-    return;
-  }
-  try {
-    await submitForumPost(classId, currentVideo.id, {
-      uid: currentUser.uid,
-      name: profile.name,
-      role: profile.role,
-      text
-    });
-    document.getElementById('forumText').value = '';
-    toast('Pertanyaan berhasil dikirim');
-  } catch (err) {
-    toast(err.message || 'Gagal mengirim ke forum', 'error');
-  }
-});
-
-document.getElementById('paymentForm').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const file = document.getElementById('proofFile').files[0];
-  if (!file) { toast('Silakan pilih bukti transfer', 'error'); return; }
-  try {
-    const proofUrl = await uploadProof(file, currentUser.uid, classId);
-    await submitPayment({
-      uid: currentUser.uid,
-      classId,
-      amount: classData.price,
-      senderName: document.getElementById('senderName').value.trim(),
-      senderBank: document.getElementById('senderBank').value.trim(),
-      proofUrl
-    });
-    toast('Bukti pembayaran berhasil dikirim');
-    enrollment = { ...(enrollment || {}), status: 'pending_payment', paymentStatus: 'pending' };
-    renderMeta();
-    renderPayment();
-  } catch (err) {
-    toast(err.message || 'Gagal mengirim bukti pembayaran', 'error');
-  }
-});
-
-document.getElementById('copyAccountBtn').addEventListener('click', async () => {
-  await navigator.clipboard.writeText(settings.payment.accountNumber);
-  toast('Nomor rekening disalin');
-});
-
-document.getElementById('copyAmountBtn').addEventListener('click', async () => {
-  await navigator.clipboard.writeText(String(classData.price || 0));
-  toast('Nominal disalin');
-});
-
-document.getElementById('classLogoutBtn').addEventListener('click', async () => {
-  await logoutUser();
-  window.location.href = '../index.html';
-});
-
-onAuthStateChanged(auth, async (user) => {
-  if (!user) { window.location.href = '../index.html'; return; }
-  if (!classId) { window.location.href = 'dashboard.html'; return; }
-  currentUser = user;
-  profile = await fetchProfile(user.uid);
-  classData = await fetchClass(classId);
-  if (!classData) { toast('Kelas tidak ditemukan', 'error'); return; }
-  settings = await fetchSettings();
-  enrollment = await ensureEnrollment(user.uid, classId, classData);
-  videos = await fetchVideos(classId);
-  currentVideo = videos[0] || null;
-  renderMeta();
-  renderVideoList();
-  guardLearningAccess();
-  subscribeForumForCurrentVideo();
-  renderPayment();
-  if (!classData.isPaid) document.getElementById('paymentTabBtn').textContent = 'Akses Kelas';
-});
+onAuthStateChanged(auth,async u=>{if(!u){location.href='../index.html';return;}if(!classId){location.href='dashboard.html';return;}user=u;profile=await fetchProfile(u.uid);classData=await fetchClass(classId);if(!classData)return toast('Kelas tidak ditemukan','error');settings=await fetchSettings();enrollment=await fetchEnrollment(u.uid,classId);if(!classData.isPaid&&!enrollment)enrollment=await joinFreeClass(u.uid,classId);if(hasAccess()){ videos=await fetchVideos(classId); progressMap=await fetchProgress(u.uid,classId); video=videos[0]||null; } else { videos=[]; progressMap={}; video=null; } renderMeta();renderVideoList();renderProgress();await renderVideo();subscribeForumCurrent();if(hasAccess()&&video) await loadQuiz(); else $('quizArea').innerHTML='<div class="empty-state">Kuis tersedia setelah akses kelas aktif.</div>';await renderPayment();await refreshCompletion();$('forumForm').style.display=hasAccess()?'block':'none';if(enrollmentUnsub)enrollmentUnsub();enrollmentUnsub=subscribeEnrollment(u.uid,classId,async next=>{const was=hasAccess();enrollment=next;const now=hasAccess();renderMeta();await renderPayment();if(!was&&now){videos=await fetchVideos(classId);progressMap=await fetchProgress(u.uid,classId);video=videos[0]||null;renderVideoList();renderProgress();await renderVideo();subscribeForumCurrent();if(video)await loadQuiz();$('forumForm').style.display='block';await refreshCompletion();toast('Akses kelas sudah aktif. Selamat belajar!');}});});

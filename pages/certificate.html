@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sertifikat — belajarislam.online</title>
+  <link rel="icon" type="image/png" href="../assets/img/icon-64.png" />
+  <link rel="stylesheet" href="../assets/css/styles.css" />
+</head>
+<body class="cert-page-body">
+  <div class="toast" id="toast"></div>
+  <div class="cert-page">
+    <div style="width:min(1120px,100%);">
+      <div class="cert-actions" style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:18px;">
+        <a class="btn" id="backToClass" href="dashboard.html">← Kembali ke Kelas</a>
+        <button class="btn primary" id="printCertBtn">Cetak / Simpan PDF</button>
+      </div>
+      <section class="cert-paper" id="certificatePaper">
+        <img class="cert-logo" src="../assets/img/logo-icon.png" alt="belajarislam.online" />
+        <div class="muted" style="font-weight:800;letter-spacing:.18em;text-transform:uppercase;margin-top:14px;">belajarislam.online</div>
+        <h1 class="cert-title">Sertifikat Penyelesaian</h1>
+        <p class="cert-small">Dengan ini menyatakan bahwa</p>
+        <div class="cert-name" id="certStudentName">-</div>
+        <p class="cert-small">telah menyelesaikan seluruh materi pembelajaran dan memenuhi evaluasi pada kelas</p>
+        <div class="cert-course" id="certClassTitle">-</div>
+        <p class="cert-small" id="certTeacherText">-</p>
+        <div class="cert-footer">
+          <div class="cert-sign"><strong id="certDate">-</strong><div class="muted">Tanggal penerbitan</div></div>
+          <div class="cert-sign"><strong id="certSigner">-</strong><div class="muted" id="certSignerTitle">Pembimbing Program</div></div>
+        </div>
+        <div class="muted" style="margin-top:28px;font-size:12px;">ID Sertifikat: <span id="certId">-</span></div>
+      </section>
+    </div>
+  </div>
+  <script type="module" src="../assets/js/certificate.js"></script>
+</body>
+</html>

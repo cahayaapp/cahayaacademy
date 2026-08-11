@@ -22,6 +22,8 @@
       </a>
       <div class="search-shell">
         <div class="header-actions">
+          <button class="icon-btn" data-theme-toggle aria-label="Ganti tema">🌙</button>
+          <button class="icon-btn notif-icon" id="adminNotifBtn" aria-label="Notifikasi">🔔<span class="notif-badge" id="adminNotifCount">0</span></button>
           <a href="dashboard.html" class="btn">Dashboard Pelajar</a>
           <button class="btn" id="adminLogoutBtn">Keluar</button>
         </div>
@@ -41,6 +43,7 @@
         <a href="#overview" class="active" data-section="adminOverview">Ringkasan</a>
         <a href="#classes" data-section="adminClasses">Kelola Kelas</a>
         <a href="#payments" data-section="adminPayments">Pembayaran</a>
+        <a href="#quizzes" data-section="adminQuizzes">Kuis</a>
         <a href="#users" data-section="adminUsers">Data Pengguna</a>
         <a href="#chat" data-section="adminChat">Live Chat</a>
         <a href="#settings" data-section="adminSettings">Pengaturan</a>
@@ -55,12 +58,24 @@
       <section id="adminOverview">
         <div class="section-head"><div><h2>Ringkasan LMS</h2><p class="muted">Pantau kelas, pembayaran, dan pengguna dalam satu tampilan.</p></div></div>
         <div class="stats-row" id="adminStats"></div>
+        <div style="height:18px"></div>
+        <div class="panel admin-panel">
+          <div class="section-head"><div><h2 style="font-size:24px;">Analitik Pembelajaran</h2><p class="muted">Ringkasan progres peserta dan kelulusan kuis.</p></div></div>
+          <div class="analytics-grid" id="learningAnalytics"></div>
+          <div style="height:18px"></div>
+          <div class="admin-quick-actions">
+            <button class="quick-action" data-open-section="adminClasses"><strong>＋ Buat Kelas</strong><span class="muted">Tambah kelas dan video baru.</span></button>
+            <button class="quick-action" data-open-section="adminQuizzes"><strong>✓ Buat Kuis</strong><span class="muted">Tambahkan evaluasi per video.</span></button>
+            <button class="quick-action" data-open-section="adminPayments"><strong>Rp Verifikasi</strong><span class="muted">Periksa pembayaran yang masuk.</span></button>
+          </div>
+        </div>
       </section>
 
       <section id="adminClasses" class="hidden">
         <div class="panel admin-panel">
           <div class="section-head"><div><h2>Kelola Kelas</h2><p class="muted">Tambahkan kelas gratis atau berbayar, serta sumber video YouTube / Google Drive.</p></div></div>
           <form id="classForm">
+            <input type="hidden" name="classId" />
             <div class="form-grid">
               <div class="field full"><label>Judul kelas</label><input name="title" required /></div>
               <div class="field"><label>Kategori</label><input name="category" placeholder="Aqidah / Fiqih / Al-Qur'an" required /></div>
@@ -70,11 +85,13 @@
               <div class="field"><label>Level</label><input name="level" placeholder="Pemula / Menengah" /></div>
               <div class="field full"><label>Deskripsi singkat</label><textarea name="description"></textarea></div>
             </div>
-            <button class="btn primary">Simpan Kelas</button>
+            <div class="utility-row"><button class="btn primary">Simpan Kelas</button><button class="btn" type="button" id="resetClassFormBtn">Form Baru</button></div>
           </form>
+          <div style="height:18px"></div><div id="classManagerList" class="manager-grid"></div>
           <hr class="sep" />
           <div class="section-head"><div><h2 style="font-size:24px;">Tambah Video</h2><p class="muted">Pilih kelas target lalu tambahkan link video.</p></div></div>
           <form id="videoForm">
+            <input type="hidden" name="videoId" />
             <div class="form-grid">
               <div class="field"><label>Kelas</label><select name="classId" id="videoClassSelect"></select></div>
               <div class="field"><label>Judul video</label><input name="title" required /></div>
@@ -83,8 +100,9 @@
               <div class="field full"><label>Link embed / preview</label><input name="embedUrl" placeholder="Gunakan link embed YouTube atau preview Google Drive" required /></div>
               <div class="field full"><label>Ringkasan / materi singkat</label><textarea name="summary"></textarea></div>
             </div>
-            <button class="btn primary">Simpan Video</button>
+            <div class="utility-row"><button class="btn primary">Simpan Video</button><button class="btn" type="button" id="resetVideoFormBtn">Form Baru</button></div>
           </form>
+          <div style="height:18px"></div><div id="videoManagerList" class="list-clean"></div>
         </div>
       </section>
 
@@ -92,6 +110,28 @@
         <div class="panel admin-panel">
           <div class="section-head"><div><h2>Pembayaran Masuk</h2><p class="muted">Setelah disetujui, akses kelas berbayar akan otomatis terbuka untuk peserta.</p></div></div>
           <div id="paymentTableWrap" class="table-wrap"></div>
+        </div>
+      </section>
+
+      <section id="adminQuizzes" class="hidden">
+        <div class="panel admin-panel">
+          <div class="section-head"><div><h2>Kuis per Video</h2><p class="muted">Tambahkan pertanyaan pilihan ganda untuk mengukur pemahaman setelah video.</p></div></div>
+          <form id="quizForm">
+            <div class="form-grid">
+              <div class="field"><label>Kelas</label><select id="quizClassSelect" name="classId"></select></div>
+              <div class="field"><label>Video</label><select id="quizVideoSelect" name="videoId"></select></div>
+              <div class="field"><label>Nilai lulus</label><input type="number" name="passScore" value="70" min="0" max="100" /></div>
+              <div class="field full"><label>Pertanyaan</label><textarea name="question" required></textarea></div>
+              <div class="field"><label>Jawaban A</label><input name="optionA" required /></div>
+              <div class="field"><label>Jawaban B</label><input name="optionB" required /></div>
+              <div class="field"><label>Jawaban C</label><input name="optionC" required /></div>
+              <div class="field"><label>Jawaban D</label><input name="optionD" required /></div>
+              <div class="field"><label>Jawaban benar</label><select name="correct"><option value="a">A</option><option value="b">B</option><option value="c">C</option><option value="d">D</option></select></div>
+            </div>
+            <button class="btn primary">Tambah Pertanyaan</button>
+          </form>
+          <hr class="sep" />
+          <div id="quizQuestionList" class="list-clean"></div>
         </div>
       </section>
 
@@ -120,13 +160,15 @@
 
       <section id="adminSettings" class="hidden">
         <div class="panel admin-panel">
-          <div class="section-head"><div><h2>Pengaturan Pembayaran</h2><p class="muted">Data rekening dan nomor admin tampil pada halaman pembayaran peserta.</p></div></div>
+          <div class="section-head"><div><h2>Pengaturan LMS</h2><p class="muted">Kelola rekening pembayaran, WhatsApp admin, dan penandatangan sertifikat.</p></div></div>
           <form id="settingsForm">
             <div class="form-grid">
               <div class="field"><label>Nama bank</label><input name="bankName" required /></div>
               <div class="field"><label>Nomor rekening</label><input name="accountNumber" required /></div>
               <div class="field"><label>Nama pemilik rekening</label><input name="accountName" required /></div>
               <div class="field"><label>WhatsApp admin</label><input name="whatsappAdmin" required /></div>
+              <div class="field"><label>Nama penandatangan sertifikat</label><input name="signerName" /></div>
+              <div class="field"><label>Jabatan penandatangan</label><input name="signerTitle" /></div>
             </div>
             <button class="btn primary">Simpan Pengaturan</button>
           </form>
@@ -139,8 +181,17 @@
     <a href="#classes" data-section="adminClasses">Kelas</a>
     <a href="#payments" data-section="adminPayments">Bayar</a>
     <a href="#users" data-section="adminUsers">User</a>
-    <a href="#chat" data-section="adminChat">Chat</a>
   </nav>
+  <button class="mobile-chat-fab" id="adminMobileChatFab" aria-label="Buka live chat"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a9.5 9.5 0 0 0-8.2 14.3L2.5 21.5l5.35-1.25A9.5 9.5 0 1 0 12 2Zm0 17a7.43 7.43 0 0 1-3.79-1.03l-.43-.25-3.16.74.78-3.06-.28-.45A7.5 7.5 0 1 1 12 19Zm4.1-5.55c-.22-.11-1.3-.64-1.5-.71-.2-.08-.35-.11-.5.11-.14.22-.57.71-.7.86-.13.15-.26.17-.48.06-.22-.11-.93-.34-1.77-1.1a6.67 6.67 0 0 1-1.23-1.53c-.13-.22-.01-.34.1-.45.1-.1.22-.26.33-.39.11-.13.15-.22.22-.37.07-.15.04-.28-.02-.39-.05-.11-.5-1.2-.68-1.64-.18-.43-.36-.37-.5-.38h-.42c-.15 0-.39.06-.59.28-.2.22-.77.75-.77 1.83s.79 2.12.9 2.27c.11.15 1.55 2.36 3.75 3.31.52.23.93.36 1.25.46.52.17 1 .14 1.37.09.42-.06 1.3-.53 1.48-1.04.18-.51.18-.95.13-1.04-.05-.09-.2-.14-.42-.25Z"/></svg></button>
+  <div class="modal-backdrop" id="adminNotificationModal">
+    <div class="modal notification-modal-card">
+      <div class="section-head"><div><h2 style="font-size:24px;">Notifikasi Admin</h2><p class="muted">Pembayaran dan aktivitas yang membutuhkan perhatian.</p></div><button class="icon-btn" id="closeAdminNotifBtn" aria-label="Tutup">×</button></div>
+      <div id="adminNotificationList" class="notification-list"></div>
+      <div class="utility-row" style="justify-content:flex-end;margin-top:16px;"><button class="btn ghost" id="markAllAdminNotifBtn">Tandai semua dibaca</button></div>
+    </div>
+  </div>
+  <script type="module" src="../assets/js/theme.js"></script>
+  <script type="module" src="../assets/js/pwa.js"></script>
   <script type="module" src="../assets/js/admin.js"></script>
 </body>
 </html>

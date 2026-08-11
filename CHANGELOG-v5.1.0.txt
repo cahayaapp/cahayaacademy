@@ -1,0 +1,25 @@
+BELAJARISLAM.ONLINE LMS v5.1.0
+
+- Rombak UI/UX menyeluruh desktop + mobile
+- Identitas belajarislam.online konsisten di semua halaman
+- Dark mode
+- PWA/service worker dasar
+- Dashboard progres berbasis data nyata
+- Katalog gratis/berbayar
+- Kelas Saya dan status akses
+- YouTube clean embed + tracking progres
+- Google Drive preview/embed
+- Kuis per video
+- Forum diskusi per video + reply thread
+- Sertifikat otomatis setelah syarat terpenuhi
+- Payment flow transfer + copy rekening/nominal + upload bukti
+- WhatsApp admin dibuka dengan pesan siap kirim setelah bukti berhasil disimpan
+- Notifikasi member
+- Live chat member ↔ admin
+- Profil member tersinkron di admin
+- Admin analitik pembelajaran
+- Admin create/edit/archive kelas
+- Admin create/edit/delete video
+- Admin kelola role user
+- Rules database diperketat agar user tidak bisa menaikkan role dirinya sendiri
+- URL video kelas berbayar tidak dibaca sebelum akses aktif melalui Realtime Database Rules

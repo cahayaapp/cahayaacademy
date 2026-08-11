@@ -1,242 +1,87 @@
 import {
-  auth, onAuthStateChanged, fetchProfile, logoutUser, fetchUsers, fetchAllPayments,
-  fetchClasses, createClass, saveVideo, fetchSettings, saveSettings,
-  approvePayment, rejectPayment, toast, rupiah, initials,
-  subscribeLiveChat, sendLiveChatMessage
+  auth,onAuthStateChanged,fetchProfile,logoutUser,fetchUsers,setUserRole,fetchAllPayments,
+  fetchClasses,saveClass,archiveClass,fetchVideos,saveVideo,deleteVideo,fetchSettings,saveSettings,
+  approvePayment,rejectPayment,toast,rupiah,initials,escapeHtml,subscribeLiveChat,sendLiveChatMessage,
+  saveQuizQuestion,fetchQuiz,deleteQuizQuestion,fetchAllProgress,fetchAllQuizResultsAdmin,fetchAllEnrollments,
+  subscribeNotifications,markAllNotifRead
 } from './core.js';
 
-const sections = [...document.querySelectorAll('main section')];
-const navLinks = [...document.querySelectorAll('[data-section]')];
-navLinks.forEach(link => link.addEventListener('click', (e) => { e.preventDefault(); switchSection(link.dataset.section); }));
-function switchSection(id) {
-  sections.forEach(sec => sec.classList.toggle('hidden', sec.id !== id));
-  navLinks.forEach(link => link.classList.toggle('active', link.dataset.section === id));
+const sections=[...document.querySelectorAll('main section')],links=[...document.querySelectorAll('[data-section]')];
+let user,profile,users=[],classes=[],payments=[],settings,progress={},quizResults={},enrollments={},chatUnsub=null,adminNotifications=[];
+function switchSection(id){sections.forEach(s=>s.classList.toggle('hidden',s.id!==id));links.forEach(a=>a.classList.toggle('active',a.dataset.section===id));}
+links.forEach(a=>a.addEventListener('click',e=>{e.preventDefault();switchSection(a.dataset.section);}));
+document.querySelectorAll('[data-open-section]').forEach(b=>b.addEventListener('click',()=>switchSection(b.dataset.openSection)));
+document.getElementById('adminMobileChatFab')?.addEventListener('click',()=>switchSection('adminChat'));
+
+
+function renderAdminNotifications(){
+  const unread=adminNotifications.filter(n=>!n.read).length;
+  document.getElementById('adminNotifCount').textContent=unread;
+  const box=document.getElementById('adminNotificationList');
+  box.innerHTML=adminNotifications.length?adminNotifications.slice(0,30).map(n=>`<div class="notif-item ${n.read?'':'unread'}"><strong>${escapeHtml(n.title||'Notifikasi')}</strong><div>${escapeHtml(n.message||'')}</div><small>${new Date(n.createdAt||Date.now()).toLocaleString('id-ID')}</small></div>`).join(''):'<div class="empty-state">Belum ada notifikasi admin.</div>';
 }
+function toggleAdminNotif(show){document.getElementById('adminNotificationModal')?.classList.toggle('show',show);}
+document.getElementById('adminNotifBtn')?.addEventListener('click',()=>toggleAdminNotif(true));
+document.getElementById('closeAdminNotifBtn')?.addEventListener('click',()=>toggleAdminNotif(false));
+document.getElementById('markAllAdminNotifBtn')?.addEventListener('click',async()=>{await markAllNotifRead('notifications/admin',adminNotifications);toggleAdminNotif(false);});
+document.getElementById('adminNotificationModal')?.addEventListener('click',e=>{if(e.target.id==='adminNotificationModal')toggleAdminNotif(false);});
 
-let currentUser = null;
-let profile = null;
-let users = [];
-let classes = [];
-let payments = [];
-let settings = null;
-let liveChatUnsub = null;
-
-function renderStats() {
-  const totalUsers = users.length;
-  const totalClasses = classes.length;
-  const pendingPayments = payments.filter(p => p.status === 'pending').length;
-  const paidClasses = classes.filter(c => c.isPaid).length;
-  document.getElementById('adminStats').innerHTML = `
-    <div class="stat-card"><strong>${totalUsers}</strong>Pengguna terdaftar</div>
-    <div class="stat-card"><strong>${totalClasses}</strong>Kelas aktif</div>
-    <div class="stat-card"><strong>${pendingPayments}</strong>Pembayaran menunggu</div>
-    <div class="stat-card"><strong>${paidClasses}</strong>Kelas berbayar</div>
-  `;
+function renderStats(){
+  const students=users.filter(x=>!['admin','mentor'].includes(x.role)).length,activeEnrollments=Object.values(enrollments).reduce((n,map)=>n+Object.values(map||{}).filter(x=>x.status==='active').length,0),pending=payments.filter(x=>x.status==='pending').length;
+  document.getElementById('adminStats').innerHTML=`<div class="stat-card"><strong>${students}</strong>Pelajar</div><div class="stat-card"><strong>${classes.length}</strong>Kelas aktif</div><div class="stat-card"><strong>${activeEnrollments}</strong>Akses kelas aktif</div><div class="stat-card"><strong>${pending}</strong>Pembayaran menunggu</div>`;
 }
-
-function renderPaymentTable() {
-  const wrap = document.getElementById('paymentTableWrap');
-  if (!payments.length) {
-    wrap.innerHTML = '<div class="empty-state">Belum ada pembayaran masuk.</div>';
-    return;
-  }
-  wrap.innerHTML = `
-    <table>
-      <thead>
-        <tr><th>Tanggal</th><th>Peserta</th><th>Kelas</th><th>Nominal</th><th>Status</th><th>Bukti</th><th>Aksi</th></tr>
-      </thead>
-      <tbody>
-        ${payments.map(item => {
-          const user = users.find(u => u.uid === item.uid);
-          const course = classes.find(c => c.id === item.classId);
-          return `
-            <tr>
-              <td>${new Date(item.createdAt || Date.now()).toLocaleString('id-ID')}</td>
-              <td><strong>${user?.name || item.senderName || '-'}</strong><div class="muted">${user?.whatsapp || '-'}</div></td>
-              <td>${course?.title || item.classId}</td>
-              <td>${rupiah(item.amount)}</td>
-              <td><span class="badge ${item.status === 'approved' ? 'free' : item.status === 'rejected' ? 'pending' : 'paid'}">${item.status}</span></td>
-              <td>${item.proofUrl ? `<a href="${item.proofUrl}" target="_blank" class="btn small">Lihat</a>` : '-'}</td>
-              <td>
-                <div class="utility-row">
-                  <button class="btn small primary" data-approve="${item.id}">Setujui</button>
-                  <button class="btn small" data-reject="${item.id}">Tolak</button>
-                </div>
-              </td>
-            </tr>`;
-        }).join('')}
-      </tbody>
-    </table>`;
-  wrap.querySelectorAll('[data-approve]').forEach(btn => btn.addEventListener('click', async ()=> {
-    try { await approvePayment(btn.dataset.approve); toast('Pembayaran disetujui'); await reloadData(); } catch(err){ toast(err.message || 'Gagal menyetujui pembayaran','error'); }
-  }));
-  wrap.querySelectorAll('[data-reject]').forEach(btn => btn.addEventListener('click', async ()=> {
-    try { await rejectPayment(btn.dataset.reject); toast('Pembayaran ditolak'); await reloadData(); } catch(err){ toast(err.message || 'Gagal menolak pembayaran','error'); }
-  }));
+function renderAnalytics(){
+  let records=0,done=0,attempts=0,passed=0;
+  Object.values(progress||{}).forEach(byClass=>Object.values(byClass||{}).forEach(byVideo=>Object.values(byVideo||{}).forEach(p=>{records++;if(p?.completed||Number(p?.percent||0)>=90)done++;})));
+  Object.values(quizResults||{}).forEach(byClass=>Object.values(byClass||{}).forEach(byVideo=>Object.values(byVideo||{}).forEach(r=>{attempts++;if(r?.passed)passed++;})));
+  const completeRate=records?Math.round(done/records*100):0,passRate=attempts?Math.round(passed/attempts*100):0;
+  document.getElementById('learningAnalytics').innerHTML=`<div class="analytics-card"><div class="muted">Penyelesaian video</div><div class="big">${completeRate}%</div><div>${done}/${records} progres selesai</div></div><div class="analytics-card"><div class="muted">Kelulusan kuis</div><div class="big">${passRate}%</div><div>${passed}/${attempts} percobaan lulus</div></div><div class="analytics-card"><div class="muted">Pendapatan terverifikasi</div><div class="big money">${rupiah(payments.filter(x=>x.status==='approved').reduce((s,x)=>s+Number(x.amount||0),0))}</div><div>Dari pembayaran yang disetujui</div></div>`;
 }
-
-function renderUserTable() {
-  const wrap = document.getElementById('userTableWrap');
-  if (!users.length) {
-    wrap.innerHTML = '<div class="empty-state">Belum ada pengguna.</div>';
-    return;
-  }
-  wrap.innerHTML = `
-    <table>
-      <thead><tr><th>Nama</th><th>Email</th><th>WhatsApp</th><th>Role</th><th>Update Terakhir</th></tr></thead>
-      <tbody>
-        ${users.map(u => `
-          <tr>
-            <td>${u.name || '-'}</td>
-            <td>${u.email || '-'}</td>
-            <td>${u.whatsapp || '-'}</td>
-            <td><span class="badge ${u.role === 'admin' || u.role === 'mentor' ? 'mentor' : 'student'}">${u.role || 'student'}</span></td>
-            <td>${u.updatedAt ? new Date(u.updatedAt).toLocaleString('id-ID') : '-'}</td>
-          </tr>`).join('')}
-      </tbody>
-    </table>`;
+function renderPayments(){
+  const wrap=document.getElementById('paymentTableWrap');if(!payments.length){wrap.innerHTML='<div class="empty-state">Belum ada pembayaran.</div>';return;}
+  wrap.innerHTML=`<table><thead><tr><th>Tanggal</th><th>Peserta</th><th>Kelas</th><th>Nominal</th><th>Status</th><th>Bukti</th><th>Aksi</th></tr></thead><tbody>${payments.map(p=>{const u=users.find(x=>x.uid===p.uid),c=classes.find(x=>x.id===p.classId);return `<tr><td>${new Date(p.createdAt||Date.now()).toLocaleString('id-ID')}</td><td><strong>${escapeHtml(u?.name||p.senderName||'-')}</strong><div class="muted mini">${escapeHtml(u?.whatsapp||'-')}</div></td><td>${escapeHtml(c?.title||p.classId)}</td><td>${rupiah(p.amount)}</td><td><span class="badge ${p.status==='approved'?'free':p.status==='rejected'?'pending':'paid'}">${escapeHtml(p.status)}</span></td><td>${p.proofUrl?`<a class="btn small" href="${escapeHtml(p.proofUrl)}" target="_blank" rel="noopener">Lihat</a>`:'-'}</td><td><div class="utility-row"><button class="btn small primary" data-approve="${p.id}" ${p.status==='approved'?'disabled':''}>Setujui</button><button class="btn small" data-reject="${p.id}" ${p.status==='rejected'?'disabled':''}>Tolak</button></div></td></tr>`;}).join('')}</tbody></table>`;
+  wrap.querySelectorAll('[data-approve]').forEach(b=>b.addEventListener('click',async()=>{await approvePayment(b.dataset.approve);toast('Pembayaran disetujui');await reload();}));
+  wrap.querySelectorAll('[data-reject]').forEach(b=>b.addEventListener('click',async()=>{await rejectPayment(b.dataset.reject);toast('Pembayaran ditolak');await reload();}));
 }
-
-function refreshClassSelect() {
-  const select = document.getElementById('videoClassSelect');
-  select.innerHTML = classes.map(c => `<option value="${c.id}">${c.title}</option>`).join('');
+function renderUsers(){
+  const wrap=document.getElementById('userTableWrap');wrap.innerHTML=users.length?`<table><thead><tr><th>Nama</th><th>Email</th><th>WhatsApp</th><th>Role</th><th>Update</th></tr></thead><tbody>${users.map(u=>`<tr><td><strong>${escapeHtml(u.name||'-')}</strong></td><td>${escapeHtml(u.email||'-')}</td><td>${escapeHtml(u.whatsapp||'-')}</td><td><select class="role-select" data-uid="${u.uid}" ${profile?.role!=='admin'?'disabled':''}><option value="student" ${u.role==='student'?'selected':''}>student</option><option value="mentor" ${u.role==='mentor'?'selected':''}>mentor</option><option value="admin" ${u.role==='admin'?'selected':''}>admin</option></select></td><td>${u.updatedAt?new Date(u.updatedAt).toLocaleString('id-ID'):'-'}</td></tr>`).join('')}</tbody></table>`:'<div class="empty-state">Belum ada pengguna.</div>';
+  wrap.querySelectorAll('.role-select').forEach(s=>s.addEventListener('change',async()=>{if(s.dataset.uid===user.uid&&s.value!=='admin'&&!confirm('Anda mengubah role akun sendiri. Lanjutkan?')){await reload();return;}await setUserRole(s.dataset.uid,s.value);toast('Role pengguna diperbarui');await reload();}));
 }
-
-function fillSettingsForm() {
-  const form = document.getElementById('settingsForm');
-  form.bankName.value = settings.payment.bankName || '';
-  form.accountNumber.value = settings.payment.accountNumber || '';
-  form.accountName.value = settings.payment.accountName || '';
-  form.whatsappAdmin.value = settings.payment.whatsappAdmin || '';
+function classManagerCard(c){return `<div class="manager-card"><div class="manager-cover" style="background:linear-gradient(135deg,#075985,#0f766e,#d4a017)"></div><div class="grow"><div class="utility-row"><span class="badge ${c.isPaid?'paid':'free'}">${c.isPaid?'Berbayar':'Gratis'}</span><span class="badge student">${escapeHtml(c.category||'Kelas')}</span></div><h3>${escapeHtml(c.title)}</h3><div class="muted">${escapeHtml(c.teacherName||'-')} • ${c.isPaid?rupiah(c.price):'Gratis'}</div></div><div class="utility-row"><button class="btn small" data-edit-class="${c.id}">Edit</button><button class="btn small" data-videos-class="${c.id}">Video</button><button class="btn small danger" data-archive-class="${c.id}">Arsipkan</button></div></div>`;}
+function renderClassManager(){
+  const box=document.getElementById('classManagerList');box.innerHTML=classes.length?classes.map(classManagerCard).join(''):'<div class="empty-state span-all">Belum ada kelas.</div>';
+  box.querySelectorAll('[data-edit-class]').forEach(b=>b.addEventListener('click',()=>fillClassForm(classes.find(c=>c.id===b.dataset.editClass))));
+  box.querySelectorAll('[data-archive-class]').forEach(b=>b.addEventListener('click',async()=>{if(!confirm('Arsipkan kelas ini?'))return;await archiveClass(b.dataset.archiveClass);toast('Kelas diarsipkan');await reload();}));
+  box.querySelectorAll('[data-videos-class]').forEach(b=>b.addEventListener('click',async()=>{document.getElementById('videoClassSelect').value=b.dataset.videosClass;await renderVideoManager();}));
 }
-
-function buildChatRooms() {
-  const select = document.getElementById('chatRoomSelect');
-  const studentUsers = users.filter(u => u.role !== 'admin' && u.role !== 'mentor');
-  select.innerHTML = studentUsers.map(u => `<option value="member_${u.uid}">${u.name} — ${u.whatsapp || u.email}</option>`).join('');
-  if (studentUsers.length) subscribeToRoom(select.value);
+function fillClassForm(c){const f=document.getElementById('classForm');f.classId.value=c.id;f.title.value=c.title||'';f.category.value=c.category||'';f.teacherName.value=c.teacherName||'';f.classType.value=c.isPaid?'paid':'free';f.price.value=c.price||0;f.level.value=c.level||'';f.description.value=c.description||'';f.scrollIntoView({behavior:'smooth',block:'start'});}
+function resetClassForm(){const f=document.getElementById('classForm');f.reset();f.classId.value='';f.price.value=0;}
+async function renderVideoManager(){
+  const classId=document.getElementById('videoClassSelect').value,box=document.getElementById('videoManagerList');if(!classId){box.innerHTML='<div class="empty-state">Pilih kelas.</div>';return;}const vids=await fetchVideos(classId);box.innerHTML=vids.length?vids.map(v=>`<div class="lesson-item"><div class="grow"><strong>${escapeHtml(v.title)}</strong><div class="muted mini">${escapeHtml(v.duration||'-')} • ${v.sourceType==='gdrive'?'Google Drive':'YouTube'}</div></div><div class="utility-row"><button class="btn small" data-edit-video="${v.id}">Edit</button><button class="btn small danger" data-delete-video="${v.id}">Hapus</button></div></div>`).join(''):'<div class="empty-state">Belum ada video.</div>';
+  box.querySelectorAll('[data-edit-video]').forEach(b=>b.addEventListener('click',()=>fillVideoForm(vids.find(v=>v.id===b.dataset.editVideo),classId)));
+  box.querySelectorAll('[data-delete-video]').forEach(b=>b.addEventListener('click',async()=>{if(!confirm('Hapus video ini?'))return;await deleteVideo(classId,b.dataset.deleteVideo);toast('Video dihapus');await renderVideoManager();}));
 }
+function fillVideoForm(v,classId){const f=document.getElementById('videoForm');f.videoId.value=v.id;f.classId.value=classId;f.title.value=v.title||'';f.duration.value=v.duration||'';f.sourceType.value=v.sourceType||'youtube';f.embedUrl.value=v.embedUrl||'';f.summary.value=v.summary||'';f.scrollIntoView({behavior:'smooth',block:'start'});}
+function resetVideoForm(){const f=document.getElementById('videoForm');const cid=f.classId.value;f.reset();f.videoId.value='';if(cid)f.classId.value=cid;}
+function refreshClassSelects(){const opts=classes.map(c=>`<option value="${c.id}">${escapeHtml(c.title)}</option>`).join('');document.getElementById('videoClassSelect').innerHTML=opts;document.getElementById('quizClassSelect').innerHTML=opts;}
 
-function renderAdminChat(items) {
-  const box = document.getElementById('adminChatMessages');
-  box.innerHTML = items.length ? items.map(item => `
-    <div class="chat-item" style="display:flex; gap:12px; align-items:flex-start;">
-      <div class="avatar">${initials(item.name)}</div>
-      <div style="flex:1;">
-        <div class="forum-meta"><strong>${item.name}</strong> <span class="badge ${item.role === 'admin' || item.role === 'mentor' ? 'mentor' : 'student'}">${item.role}</span> <span class="muted">${new Date(item.createdAt || Date.now()).toLocaleString('id-ID')}</span></div>
-        <div class="forum-content">${item.text}</div>
-      </div>
-    </div>`).join('') : '<div class="empty-state">Belum ada pesan pada ruang ini.</div>';
-  box.scrollTop = box.scrollHeight;
-}
+async function refreshQuizVideos(){const cid=document.getElementById('quizClassSelect').value;const vids=cid?await fetchVideos(cid):[];document.getElementById('quizVideoSelect').innerHTML=vids.map(v=>`<option value="${v.id}">${escapeHtml(v.title)}</option>`).join('');await renderQuizList();}
+async function renderQuizList(){const cid=document.getElementById('quizClassSelect').value,vid=document.getElementById('quizVideoSelect').value,box=document.getElementById('quizQuestionList');if(!cid||!vid){box.innerHTML='<div class="empty-state">Pilih kelas dan video.</div>';return;}const quiz=await fetchQuiz(cid,vid);const q=Object.entries(quiz?.questions||{});box.innerHTML=q.length?q.map(([id,x],i)=>`<div class="lesson-item"><div class="grow"><strong>${i+1}. ${escapeHtml(x.text)}</strong><div class="muted" style="margin-top:6px">A. ${escapeHtml(x.options?.a||'')}<br>B. ${escapeHtml(x.options?.b||'')}<br>C. ${escapeHtml(x.options?.c||'')}<br>D. ${escapeHtml(x.options?.d||'')}</div><div class="mini">Jawaban benar: <strong>${String(x.correct||'').toUpperCase()}</strong></div></div><button class="btn small danger" data-delete-q="${id}">Hapus</button></div>`).join(''):'<div class="empty-state">Belum ada kuis pada video ini.</div>';box.querySelectorAll('[data-delete-q]').forEach(b=>b.addEventListener('click',async()=>{await deleteQuizQuestion(cid,vid,b.dataset.deleteQ);await renderQuizList();}));}
 
-function subscribeToRoom(roomId) {
-  if (liveChatUnsub) liveChatUnsub();
-  if (!roomId) return;
-  liveChatUnsub = subscribeLiveChat(roomId, renderAdminChat);
-}
+function fillSettings(){const f=document.getElementById('settingsForm');f.bankName.value=settings.payment?.bankName||'';f.accountNumber.value=settings.payment?.accountNumber||'';f.accountName.value=settings.payment?.accountName||'';f.whatsappAdmin.value=settings.payment?.whatsappAdmin||'';f.signerName.value=settings.certificate?.signerName||'';f.signerTitle.value=settings.certificate?.signerTitle||'';}
+function buildChatRooms(){const s=document.getElementById('chatRoomSelect'),students=users.filter(x=>!['admin','mentor'].includes(x.role));s.innerHTML=students.map(x=>`<option value="member_${x.uid}">${escapeHtml(x.name)} — ${escapeHtml(x.whatsapp||x.email||'')}</option>`).join('');if(students.length)subscribeRoom(s.value);else document.getElementById('adminChatMessages').innerHTML='<div class="empty-state">Belum ada peserta.</div>';}
+function subscribeRoom(room){if(chatUnsub)chatUnsub();if(!room)return;chatUnsub=subscribeLiveChat(room,items=>{const box=document.getElementById('adminChatMessages');box.innerHTML=items.length?items.map(x=>`<div class="chat-item message-row ${x.uid===user.uid?'mine':''}"><div class="avatar">${initials(x.name)}</div><div class="message-bubble"><div class="forum-meta"><strong>${escapeHtml(x.name)}</strong><span class="badge ${['admin','mentor'].includes(x.role)?'mentor':'student'}">${escapeHtml(x.role)}</span></div><div class="forum-content">${escapeHtml(x.text)}</div><div class="muted mini">${new Date(x.createdAt||Date.now()).toLocaleString('id-ID')}</div></div></div>`).join(''):'<div class="empty-state">Belum ada pesan.</div>';box.scrollTop=box.scrollHeight;});}
 
-document.getElementById('chatRoomSelect').addEventListener('change', (e)=> subscribeToRoom(e.target.value));
+document.getElementById('classForm').addEventListener('submit',async e=>{e.preventDefault();const f=e.target,fd=new FormData(f);const id=fd.get('classId')||null;await saveClass({title:fd.get('title'),category:fd.get('category'),teacherName:fd.get('teacherName'),isPaid:fd.get('classType')==='paid',price:Number(fd.get('price')||0),level:fd.get('level'),description:fd.get('description'),coverTheme:'emerald',order:id?(classes.find(x=>x.id===id)?.order||classes.length+1):classes.length+1},id);toast(id?'Kelas diperbarui':'Kelas dibuat');resetClassForm();await reload();});
+document.getElementById('resetClassFormBtn').addEventListener('click',resetClassForm);
+document.getElementById('videoForm').addEventListener('submit',async e=>{e.preventDefault();const f=e.target,fd=new FormData(f);await saveVideo(fd.get('classId'),{title:fd.get('title'),duration:fd.get('duration'),sourceType:fd.get('sourceType'),embedUrl:fd.get('embedUrl'),summary:fd.get('summary'),order:fd.get('videoId')?(await fetchVideos(fd.get('classId'))).find(x=>x.id===fd.get('videoId'))?.order||Date.now():Date.now()},fd.get('videoId')||null);toast(fd.get('videoId')?'Video diperbarui':'Video ditambahkan');resetVideoForm();await renderVideoManager();});
+document.getElementById('resetVideoFormBtn').addEventListener('click',resetVideoForm);document.getElementById('videoClassSelect').addEventListener('change',renderVideoManager);
+document.getElementById('quizClassSelect').addEventListener('change',refreshQuizVideos);document.getElementById('quizVideoSelect').addEventListener('change',renderQuizList);
+document.getElementById('quizForm').addEventListener('submit',async e=>{e.preventDefault();const fd=new FormData(e.target);await saveQuizQuestion(fd.get('classId'),fd.get('videoId'),{text:fd.get('question'),options:{a:fd.get('optionA'),b:fd.get('optionB'),c:fd.get('optionC'),d:fd.get('optionD')},correct:fd.get('correct')},fd.get('passScore'));toast('Pertanyaan ditambahkan');e.target.querySelector('[name=question]').value='';['optionA','optionB','optionC','optionD'].forEach(n=>e.target.querySelector(`[name=${n}]`).value='');await renderQuizList();});
+document.getElementById('settingsForm').addEventListener('submit',async e=>{e.preventDefault();const fd=new FormData(e.target);await saveSettings({payment:{bankName:fd.get('bankName'),accountNumber:fd.get('accountNumber'),accountName:fd.get('accountName'),whatsappAdmin:fd.get('whatsappAdmin')},certificate:{issuer:'belajarislam.online',signerName:fd.get('signerName'),signerTitle:fd.get('signerTitle')}});toast('Pengaturan disimpan');await reload();});
+document.getElementById('chatRoomSelect').addEventListener('change',e=>subscribeRoom(e.target.value));
+document.getElementById('adminSendChatBtn').addEventListener('click',async()=>{const input=document.getElementById('adminChatInput'),text=input.value.trim(),room=document.getElementById('chatRoomSelect').value;if(!text||!room)return;await sendLiveChatMessage(room,{uid:user.uid,name:profile.name,role:profile.role,text});input.value='';});
+document.getElementById('adminLogoutBtn').addEventListener('click',async()=>{await logoutUser();location.href='../index.html';});
 
-document.getElementById('adminSendChatBtn').addEventListener('click', async () => {
-  const text = document.getElementById('adminChatInput').value.trim();
-  const roomId = document.getElementById('chatRoomSelect').value;
-  if (!text || !roomId) return;
-  try {
-    await sendLiveChatMessage(roomId, { uid: currentUser.uid, name: profile.name, role: profile.role || 'admin', text });
-    document.getElementById('adminChatInput').value = '';
-  } catch (err) {
-    toast(err.message || 'Gagal mengirim balasan','error');
-  }
-});
-
-document.getElementById('classForm').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const form = new FormData(e.target);
-  const classType = form.get('classType');
-  try {
-    await createClass({
-      title: form.get('title'),
-      category: form.get('category'),
-      teacherName: form.get('teacherName'),
-      isPaid: classType === 'paid',
-      price: Number(form.get('price') || 0),
-      level: form.get('level'),
-      description: form.get('description'),
-      coverTheme: 'emerald',
-      order: classes.length + 1
-    });
-    toast('Kelas berhasil disimpan');
-    e.target.reset();
-    await reloadData();
-  } catch (err) {
-    toast(err.message || 'Gagal menyimpan kelas','error');
-  }
-});
-
-document.getElementById('videoForm').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const form = new FormData(e.target);
-  try {
-    await saveVideo(form.get('classId'), {
-      title: form.get('title'),
-      duration: form.get('duration'),
-      sourceType: form.get('sourceType'),
-      embedUrl: form.get('embedUrl'),
-      summary: form.get('summary'),
-      order: Date.now()
-    });
-    toast('Video berhasil disimpan');
-    e.target.reset();
-  } catch (err) {
-    toast(err.message || 'Gagal menyimpan video','error');
-  }
-});
-
-document.getElementById('settingsForm').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const form = new FormData(e.target);
-  try {
-    await saveSettings({ payment: {
-      bankName: form.get('bankName'),
-      accountNumber: form.get('accountNumber'),
-      accountName: form.get('accountName'),
-      whatsappAdmin: form.get('whatsappAdmin')
-    }});
-    toast('Pengaturan pembayaran berhasil disimpan');
-    await reloadData();
-  } catch (err) {
-    toast(err.message || 'Gagal menyimpan pengaturan','error');
-  }
-});
-
-document.getElementById('adminLogoutBtn').addEventListener('click', async ()=> {
-  await logoutUser();
-  window.location.href = '../index.html';
-});
-
-async function reloadData() {
-  users = await fetchUsers();
-  classes = await fetchClasses();
-  payments = await fetchAllPayments();
-  settings = await fetchSettings();
-  renderStats();
-  renderPaymentTable();
-  renderUserTable();
-  refreshClassSelect();
-  fillSettingsForm();
-  buildChatRooms();
-}
-
-onAuthStateChanged(auth, async (user) => {
-  if (!user) { window.location.href = '../index.html'; return; }
-  currentUser = user;
-  profile = await fetchProfile(user.uid);
-  if (!profile || (profile.role !== 'admin' && profile.role !== 'mentor')) {
-    window.location.href = 'dashboard.html';
-    return;
-  }
-  document.getElementById('adminUserName').textContent = profile.name || 'Admin';
-  document.getElementById('adminUserRole').textContent = profile.role || 'admin';
-  await reloadData();
-});
+async function reload(){const isAdmin=profile?.role==='admin';[users,classes,payments,settings,progress,quizResults,enrollments]=await Promise.all([fetchUsers(),fetchClasses(),isAdmin?fetchAllPayments():Promise.resolve([]),fetchSettings(),fetchAllProgress(),fetchAllQuizResultsAdmin(),fetchAllEnrollments()]);renderStats();renderAnalytics();renderPayments();renderUsers();refreshClassSelects();renderClassManager();fillSettings();buildChatRooms();await renderVideoManager();await refreshQuizVideos();}
+onAuthStateChanged(auth,async u=>{if(!u){location.href='../index.html';return;}user=u;profile=await fetchProfile(u.uid);if(!profile||!['admin','mentor'].includes(profile.role)){location.href='dashboard.html';return;}document.getElementById('adminUserName').textContent=profile.name||'Admin';document.getElementById('adminUserRole').textContent=profile.role;if(profile.role!=='admin'){document.querySelectorAll('[data-section="adminPayments"],[data-section="adminSettings"]').forEach(el=>el.style.display='none');document.getElementById('adminPayments').style.display='none';document.getElementById('adminSettings').style.display='none';document.getElementById('adminNotifBtn').style.display='none';}else{subscribeNotifications('notifications/admin',items=>{adminNotifications=items;renderAdminNotifications();});}await reload();});

@@ -1,30 +1,51 @@
-BELAJARISLAM.ONLINE LMS — Paket Upgrade Kode
+BELAJARISLAM.ONLINE LMS v5.1.0 — FULL PACKAGE
 
-Urutan cepat:
-1. Upload semua isi paket ini ke hosting / GitHub Pages.
-2. Pastikan Authentication > Email/Password aktif.
-3. Tambahkan domain baru di Firebase Authentication > Authorized domains:
-   - belajarislam.online
-   - www.belajarislam.online
-4. Publish isi file database.rules.json ke Realtime Database > Rules.
-5. Jika menggunakan upload bukti transfer, aktifkan Firebase Storage lalu publish storage.rules.
-6. Pastikan ada minimal 1 akun admin di path users/{uid} dengan role: admin.
+1. UPLOAD
+   Upload seluruh isi folder ini ke root hosting/GitHub Pages.
 
-Fitur utama paket ini:
-- Rebranding penuh ke belajarislam.online
-- Landing page dengan daftar pelajar sendiri
-- Dashboard pelajar desktop & mobile
-- Katalog kelas gratis / berbayar
-- Halaman video pembelajaran dengan forum diskusi per video
-- Pembayaran transfer + upload bukti + approval admin
-- Profil peserta sinkron ke admin
-- Live chat peserta ↔ admin
-- Admin panel untuk kelas, video, pembayaran, pengguna, dan pengaturan rekening
+2. CUSTOM DOMAIN
+   File CNAME sudah berisi:
+   belajarislam.online
 
-Catatan:
-- Link video dapat memakai YouTube (embed / nocookie) atau Google Drive (preview/embed).
-- Untuk kelas berbayar, peserta mengirim bukti transfer dari halaman kelas.
-- Setelah admin menyetujui pembayaran, akses kelas akan aktif otomatis.
+3. FIREBASE AUTHENTICATION
+   - Email/Password: Enabled
+   - Authorized domains:
+     belajarislam.online
+     www.belajarislam.online (jika digunakan)
 
-CNAME:
-- File CNAME sudah disiapkan untuk GitHub Pages.
+4. REALTIME DATABASE
+   Buka Realtime Database > Rules.
+   Salin seluruh isi database.rules.json lalu Publish.
+
+5. FIREBASE STORAGE
+   Aktifkan Storage jika bukti transfer memakai upload gambar.
+   Salin seluruh isi storage.rules lalu Publish.
+
+6. AKUN ADMIN
+   Pastikan akun admin yang sudah ada mempunyai:
+   users/{UID}/role = admin
+
+7. PENGATURAN ADMIN
+   Login admin > Pengaturan:
+   - Nama bank
+   - Nomor rekening
+   - Nama pemilik rekening
+   - WhatsApp admin
+   - Penandatangan sertifikat
+
+8. KELAS & VIDEO
+   Admin > Kelola Kelas:
+   - buat kelas Gratis atau Berbayar
+   - tambah video YouTube atau Google Drive
+   Link YouTube biasa akan dinormalisasi otomatis menjadi embed youtube-nocookie.
+   Link Google Drive biasa akan dinormalisasi menjadi preview bila format ID dapat dikenali.
+
+9. KUIS
+   Admin > Kuis > pilih kelas dan video > masukkan soal + nilai lulus.
+
+10. ALUR PESERTA
+    Daftar > login > pilih kelas > belajar > kuis > forum > sertifikat.
+    Untuk kelas berbayar: transfer > upload bukti > admin approve > akses aktif otomatis.
+
+CATATAN UPGRADE
+Data pengguna, kelas, pembayaran, dan chat versi sebelumnya tetap memakai jalur database yang kompatibel.

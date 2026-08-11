@@ -1,42 +1,10 @@
-const CACHE_NAME = "izzuddin-academy-v4.3.0";
-const APP_ASSETS = [
-  "./",
-  "./index.html",
-  "./css/app.css?v=4.3.0",
-  "./js/app.js?v=4.3.0",
-  "./js/firebase.js",
-  "./js/firebase-config.js",
-  "./js/store.js",
-  "./js/utils.js",
-  "./assets/logo-izzuddin.png",
-  "./assets/icon-192.png",
-  "./assets/icon-512.png",
-  "./manifest.webmanifest"
-];
-
-self.addEventListener("install", (event) => {
-  event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(APP_ASSETS)));
-  self.skipWaiting();
-});
-
-self.addEventListener("activate", (event) => {
-  event.waitUntil(
-    caches.keys().then((keys) => Promise.all(keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key))))
-  );
-  self.clients.claim();
-});
-
-self.addEventListener("fetch", (event) => {
-  const requestUrl = new URL(event.request.url);
-  if (event.request.method !== "GET" || requestUrl.origin !== self.location.origin) return;
-
-  event.respondWith(
-    fetch(event.request)
-      .then((response) => {
-        const copy = response.clone();
-        caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
-        return response;
-      })
-      .catch(() => caches.match(event.request).then((cached) => cached || caches.match("./index.html")))
-  );
+const CACHE='belajarislam-v5.1.0-shell';
+const ASSETS=['./','./index.html','./assets/css/styles.css','./assets/img/logo-icon.png','./assets/img/icon-192.png','./assets/img/icon-512.png','./manifest.webmanifest'];
+self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)));self.skipWaiting();});
+self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))));self.clients.claim();});
+self.addEventListener('fetch',e=>{
+  if(e.request.method!=='GET')return;
+  const url=new URL(e.request.url);
+  if(url.origin!==location.origin)return;
+  e.respondWith(fetch(e.request).then(r=>{const clone=r.clone();caches.open(CACHE).then(c=>c.put(e.request,clone));return r;}).catch(()=>caches.match(e.request).then(r=>r||caches.match('./index.html'))));
 });

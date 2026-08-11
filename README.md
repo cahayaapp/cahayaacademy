@@ -1,55 +1,63 @@
-# IZZUDDIN ACADEMY LMS — v4.3.0
+# belajarislam.online LMS v5.1.0
 
-Pembaruan LMS dengan pendaftaran mandiri, katalog kelas gratis/berbayar, pembayaran transfer, video YouTube/Google Drive, dan tampilan mobile yang diperkuat.
+Paket penuh LMS berbasis HTML/CSS/JavaScript + Firebase Authentication, Realtime Database, dan Storage. Tidak membutuhkan proses build.
 
-## Fitur baru
+## Identitas
+- Nama: **belajarislam.online**
+- Domain: `belajarislam.online`
+- UI: emerald/teal + aksen emas, responsive desktop/mobile, dark mode
+- Logo/app icon sudah termasuk dalam `assets/img/`
 
-- Tab Masuk dan Daftar pada halaman awal.
-- Akun pelajar dibuat mandiri dan langsung diarahkan ke katalog kelas.
-- Admin memilih kelas Gratis atau Berbayar serta menentukan harga.
-- Kelas gratis dapat diikuti langsung.
-- Kelas berbayar: transfer, unggah bukti, notifikasi admin, WhatsApp siap kirim, verifikasi, lalu akses terbuka otomatis.
-- Bukti transfer dikompres sebagai gambar dan disimpan privat di Realtime Database; tidak memerlukan Firebase Storage.
-- Sumber video utama dan materi pendamping dapat memakai YouTube atau Google Drive.
-- Clean Player YouTube menutup tampilan jeda/akhir agar rekomendasi tidak mengganggu.
-- Antarmuka hanya memakai istilah Video Pembelajaran, tanpa istilah siaran langsung atau tayangan ulang.
-- Frame video mobile mengikuti lebar layar dan tidak membutuhkan geser horizontal.
-- Seluruh halaman aktivasi awal telah dihapus.
+## Modul Pelajar
+- Registrasi mandiri dan login
+- Katalog kelas gratis / berbayar
+- Kelas Saya
+- Video YouTube atau Google Drive
+- Tracking progres YouTube + tombol tandai selesai
+- Kuis pilihan ganda per video
+- Forum diskusi khusus setiap video + reply thread
+- Sertifikat setelah kelas selesai dan kuis wajib lulus
+- Pembayaran transfer, copy rekening dan nominal, upload bukti
+- Notifikasi pembayaran
+- Live chat realtime dengan admin
+- Profil peserta tersinkron ke admin
+- Dark mode
+- PWA/service worker dasar
 
-## Pembaruan situs aktif
+## Modul Admin/Pembimbing
+- Dashboard statistik dan analitik pembelajaran
+- Buat/edit/arsip kelas
+- Tambah/edit/hapus video
+- Kelas gratis/berbayar
+- Verifikasi pembayaran
+- Kelola kuis per video
+- Data pengguna + ubah role student/mentor/admin
+- Live chat peserta
+- Pengaturan rekening, WhatsApp admin, dan sertifikat
 
-1. Cadangkan repository lama.
-2. Ganti seluruh file lama dengan isi paket ini.
-3. Publish isi `database.rules.json` pada Realtime Database Rules.
-4. Login sebagai admin, buka Pengaturan, lalu isi rekening dan nomor WhatsApp admin.
-5. Upload ke GitHub Pages atau Firebase Hosting dan lakukan hard refresh sekali.
+## Struktur penting
+- `index.html` — landing, login, daftar, katalog publik
+- `pages/dashboard.html` — dashboard pelajar
+- `pages/class.html` — ruang belajar video, kuis, forum, pembayaran
+- `pages/admin.html` — panel admin/pembimbing
+- `pages/certificate.html` — sertifikat
+- `database.rules.json` — Realtime Database Rules
+- `storage.rules` — Storage Rules
+- `CNAME` — custom domain GitHub Pages
 
-## Firebase CLI
+## Firebase
+Konfigurasi project yang sudah digunakan ada di `assets/js/firebase-config.js`.
 
-```bash
-firebase deploy --only database,hosting
-```
+Sebelum produksi:
+1. Firebase Authentication > Sign-in method > aktifkan Email/Password.
+2. Authentication > Settings > Authorized domains: tambahkan `belajarislam.online` dan `www.belajarislam.online` jika dipakai.
+3. Realtime Database > Rules: ganti seluruh rules dengan `database.rules.json` lalu Publish.
+4. Firebase Storage > Rules: ganti dengan `storage.rules` lalu Publish.
+5. Pastikan akun admin lama memiliki `users/{uid}/role = "admin"`.
+6. Admin masuk lalu isi rekening dan WhatsApp admin pada Pengaturan.
 
-Untuk GitHub Pages, upload seluruh isi folder ke root repository. Pastikan domain produksi sudah masuk Firebase Authentication → Authorized domains.
+## Catatan video
+YouTube diputar melalui `youtube-nocookie.com` dengan embed yang lebih bersih. YouTube tetap dapat menampilkan elemen platform tertentu karena batasan player YouTube. Google Drive memakai mode preview/embed; pembatasan download tetap bergantung pada pengaturan file Google Drive.
 
-## Catatan privasi
-
-YouTube sebaiknya Unlisted dan embedding aktif. Google Drive sebaiknya Viewer serta download, print, dan copy dinonaktifkan. Pembatasan layanan pihak ketiga bukan DRM absolut.
-
-
-## Pembaruan v4.3.0
-- Sinkronisasi profil peserta realtime ke halaman admin.
-- Tombol salin nomor rekening dan nominal pembayaran.
-- Live Chat realtime antara peserta dan admin.
-- Informasi “Verifikasi sederhana” di formulir pembayaran dihapus.
-- Rules Realtime Database ditambah untuk `supportChats`.
-
-
-## Pembaruan v4.3.0
-- Mobile: Live Chat hanya tampil sebagai tombol mengambang di kanan bawah, tepat di atas bottom navigation.
-- Live Chat di topbar mobile, sidebar/drawer mobile, dan bottom navigation dihapus.
-- Notifikasi tetap tampil di samping avatar pengguna pada layar kecil.
-- Ikon Live Chat diperbarui menjadi ikon percakapan/telepon berbentuk bubble.
-- Tombol chat mengambang otomatis hilang ketika ruang chat dibuka agar tombol Kirim tidak tertutup.
-- Bottom navigation menyesuaikan otomatis menjadi 4 kolom.
-- CSS escape dari build sebelumnya dibersihkan agar aturan responsif terbaca konsisten.
+## Upgrade dari v4/v5
+Struktur data utama tetap memakai path lama (`users`, `classes`, `videos`, `enrollments`, `payments`, `liveChats`, `notifications`), sehingga data lama dapat dilanjutkan. v5.1 menambahkan `lessonProgress`, `quizzes`, `quizResults`, `certificates`, dan `activities`.

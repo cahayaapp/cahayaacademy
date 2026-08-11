@@ -24,7 +24,7 @@
       <nav class="nav">
         <a href="#beranda" class="active">Beranda</a>
         <a href="#kelas">Kelas</a>
-        <a href="#forum">Forum</a>
+        <a href="#fitur">Forum Video</a>
         <a href="#fitur">Fitur</a>
       </nav>
       <div class="search-shell">
@@ -33,6 +33,7 @@
           <input id="landingSearch" type="search" placeholder="Cari kelas, materi, atau ustadz..." />
         </div>
         <div class="header-actions">
+          <button class="icon-btn" data-theme-toggle aria-label="Ganti tema">🌙</button>
           <a href="#auth" class="btn">Masuk / Daftar</a>
           <a href="pages/dashboard.html" class="btn primary">Dashboard Saya</a>
         </div>
@@ -57,10 +58,10 @@
           <div class="point-card"><strong>Belajar Fleksibel</strong><span>Kapan saja, di mana saja.</span></div>
         </div>
         <div class="stats-row">
-          <div class="stat-card"><strong>10K+</strong>Peserta aktif</div>
-          <div class="stat-card"><strong>300+</strong>Kelas tersedia</div>
-          <div class="stat-card"><strong>150+</strong>Ustadz & pembimbing</div>
-          <div class="stat-card"><strong>95%</strong>Kepuasan pengguna</div>
+          <div class="stat-card"><strong id="publicClassCount">0</strong>Kelas tersedia</div>
+          <div class="stat-card"><strong>Gratis</strong>Kelas terbuka untuk mulai belajar</div>
+          <div class="stat-card"><strong>Forum</strong>Tanya jawab di setiap video</div>
+          <div class="stat-card"><strong>Sertifikat</strong>Untuk kelas yang dituntaskan</div>
         </div>
       </div>
       <aside class="panel auth-panel" id="auth">
@@ -125,8 +126,20 @@
       </div>
       <div class="class-grid" id="landingClassGrid"></div>
     </section>
+
+    <section class="container catalog-section" id="fitur">
+      <div class="section-head"><div><h2>Belajar tanpa terasa rumit</h2><p class="muted">Alur dibuat ringkas dari daftar, pilih kelas, belajar, berdiskusi, sampai sertifikat.</p></div></div>
+      <div class="feature-grid">
+        <div class="feature-card"><div class="feature-icon">▶</div><h3>Video Pembelajaran</h3><p>Video YouTube atau Google Drive ditampilkan responsif langsung di ruang belajar.</p></div>
+        <div class="feature-card"><div class="feature-icon">?</div><h3>Forum per Video</h3><p>Pertanyaan peserta tetap menempel pada materi yang sedang dibahas dan dapat dijawab pembimbing.</p></div>
+        <div class="feature-card"><div class="feature-icon">✓</div><h3>Kuis & Progres</h3><p>Peserta dapat memantau progres, mengerjakan kuis, dan melanjutkan dari materi terakhir.</p></div>
+        <div class="feature-card"><div class="feature-icon">★</div><h3>Sertifikat</h3><p>Sertifikat tersedia setelah seluruh materi selesai dan kuis wajib dinyatakan lulus.</p></div>
+      </div>
+    </section>
   </main>
 
+  <script type="module" src="assets/js/theme.js"></script>
+  <script type="module" src="assets/js/pwa-root.js"></script>
   <script type="module" src="assets/js/index.js"></script>
 </body>
 </html>
