@@ -7,7 +7,7 @@ const $=id=>document.getElementById(id),ebookId=new URLSearchParams(location.sea
 let user,profile,book,access={},settings,accessUnsub=null;
 function active(){return access?.status==='active'||['admin','mentor'].includes(profile?.role);}
 function renderMeta(){
-  $('ebookTitle').textContent=book.title||'Ebook';$('ebookAuthor').textContent=book.author?`Oleh ${book.author}`:'belajarislam.online';$('ebookDescription').textContent=book.description||'Ebook digital belajarislam.online.';
+  $('ebookTitle').textContent=book.title||'Ebook';$('ebookAuthor').textContent=book.author?`Oleh ${book.author}`:'belajarislam.online';$('ebookDescription').textContent=book.description||'Ebook digital belajarislam.online.';const synopsis=String(book.synopsis||'').trim();$('ebookSynopsis').textContent=synopsis;$('ebookSynopsisBlock').classList.toggle('hidden',!synopsis);
   $('ebookFileMeta').textContent=book.fileMode==='gdrive'?'PDF • Google Drive':book.fileSize?`PDF • ${(Number(book.fileSize)/1024/1024).toFixed(2)} MB`:'PDF digital';
   $('ebookPriceBadge').className=`badge ${book.isPaid?'paid':'free'}`;$('ebookPriceBadge').textContent=book.isPaid?rupiah(book.price):'Gratis';
   const status=active()?'Akses aktif':access?.paymentStatus==='pending'?'Menunggu verifikasi':access?.paymentStatus==='rejected'?'Perlu kirim ulang':book.isPaid?'Belum dibeli':'Belum diambil';$('ebookAccessBadge').className=`badge ${active()?'free':'pending'}`;$('ebookAccessBadge').textContent=status;

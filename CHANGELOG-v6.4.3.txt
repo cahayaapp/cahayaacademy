@@ -1,0 +1,27 @@
+BELAJARISLAM.ONLINE LMS v6.4.3
+
+PERUBAHAN UTAMA
+1. Fitur Sinopsis Ebook
+   - Form Admin > Kelola Ebook sekarang memiliki dua bidang terpisah:
+     a. Deskripsi singkat untuk kartu katalog/promosi.
+     b. Sinopsis ebook untuk uraian lebih lengkap.
+   - Sinopsis disimpan online di Firebase pada data ebook.
+   - Saat ebook diedit kembali, sinopsis lama otomatis dimuat ke form.
+   - Halaman detail ebook menampilkan blok "SINOPSIS — Tentang Ebook Ini" bila sinopsis tersedia.
+   - Paragraf/baris pada sinopsis dipertahankan saat ditampilkan.
+   - Pencarian katalog juga membaca isi sinopsis.
+
+2. Logo Header Mobile
+   - Header dashboard, kelas, ebook, dan admin kini tetap menampilkan identitas lengkap "belajarislam.online" pada mobile.
+   - Wordmark tidak lagi disembunyikan pada layar <= 720 px maupun <= 420 px.
+   - Ukuran logo, wordmark, tagline, notification button, theme button, dan avatar disesuaikan untuk 360–720 px.
+   - Tombol header sekunder yang sudah tersedia lewat bottom navigation disembunyikan di mobile agar logo tidak terdesak.
+   - Tidak menambah scroll horizontal.
+
+3. Cache/PWA
+   - Asset query dinaikkan ke v=643.
+   - Service worker cache dinaikkan ke belajarislam-v6.4.3-shell agar CSS mobile baru langsung terbaca setelah update.
+
+FIREBASE
+- Tidak ada path baru dan tidak membutuhkan perubahan Database Rules dari v6.4.2.
+- Field synopsis tersimpan di ebooks/{ebookId}/synopsis mengikuti rule ebook yang sudah ada.

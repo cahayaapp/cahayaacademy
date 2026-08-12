@@ -1,8 +1,8 @@
-BELAJARISLAM.ONLINE LMS v6.4.2 — UPDATE EBOOK GOOGLE DRIVE
+BELAJARISLAM.ONLINE LMS v6.4.3 — UPDATE EBOOK GOOGLE DRIVE
 
-1. Upload seluruh isi paket v6.4.2 menggantikan versi sebelumnya.
+1. Upload seluruh isi paket v6.4.3 menggantikan versi sebelumnya.
 2. Firebase Console > Realtime Database > Rules.
-3. Ganti Rules dengan database.rules.json v6.4.2 lalu Publish.
+3. Ganti Rules dengan database.rules.json v6.4.3 lalu Publish.
 4. Lakukan hard refresh sekali setelah deploy.
 
 MEMBUAT EBOOK DARI GOOGLE DRIVE
