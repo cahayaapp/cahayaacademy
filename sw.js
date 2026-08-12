@@ -1,16 +1,10 @@
-const CACHE='belajarislam-v6.4.0-shell';
-const ASSETS=[
-  './','./index.html','./assets/css/styles.css?v=640','./assets/img/logo-icon.svg?v=640','./assets/img/favicon.ico?v=640',
-  './assets/img/icon-32.png?v=640','./assets/img/icon-64.png?v=640','./assets/img/icon-180.png?v=640','./assets/img/icon-192.png?v=640',
-  './assets/img/icon-maskable-192.png?v=640','./assets/img/icon-512.png?v=640','./assets/img/icon-maskable-512.png?v=640','./manifest.webmanifest?v=640'
-];
-self.addEventListener('install',event=>{event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(ASSETS).catch(()=>{})));self.skipWaiting();});
-self.addEventListener('activate',event=>{event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))));self.clients.claim();});
-self.addEventListener('fetch',event=>{
-  if(event.request.method!=='GET')return;
-  const url=new URL(event.request.url);if(url.origin!==self.location.origin)return;
-  if(event.request.mode==='navigate'){
-    event.respondWith(fetch(event.request).then(res=>{const copy=res.clone();caches.open(CACHE).then(c=>c.put(event.request,copy));return res;}).catch(()=>caches.match(event.request).then(r=>r||caches.match('./index.html'))));return;
-  }
-  event.respondWith(fetch(event.request).then(res=>{if(res.ok){const copy=res.clone();caches.open(CACHE).then(c=>c.put(event.request,copy));}return res;}).catch(()=>caches.match(event.request)));
+const CACHE='belajarislam-v5.1.0-shell';
+const ASSETS=['./','./index.html','./assets/css/styles.css','./assets/img/logo-icon.png','./assets/img/icon-192.png','./assets/img/icon-512.png','./manifest.webmanifest'];
+self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)));self.skipWaiting();});
+self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))));self.clients.claim();});
+self.addEventListener('fetch',e=>{
+  if(e.request.method!=='GET')return;
+  const url=new URL(e.request.url);
+  if(url.origin!==location.origin)return;
+  e.respondWith(fetch(e.request).then(r=>{const clone=r.clone();caches.open(CACHE).then(c=>c.put(e.request,clone));return r;}).catch(()=>caches.match(e.request).then(r=>r||caches.match('./index.html'))));
 });

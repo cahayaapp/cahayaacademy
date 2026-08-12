@@ -1,41 +1,51 @@
-BELAJARISLAM.ONLINE LMS v6.4.0 — LANGKAH UPDATE
+BELAJARISLAM.ONLINE LMS v5.1.0 — FULL PACKAGE
 
-WAJIB:
-1. Upload SELURUH isi paket v6.4.0 menggantikan versi lama. Jangan hanya mengganti index.html.
-2. Firebase Console > Realtime Database > Rules:
-   salin seluruh isi database.rules.json v6.4.0 lalu klik Publish.
-3. Firebase Authentication > Sign-in method:
-   pastikan Email/Password aktif.
-4. Firebase Authentication > Settings > Authorized domains:
-   pastikan belajarislam.online dan www.belajarislam.online terdaftar jika keduanya dipakai.
-5. Setelah deployment, LOGIN SEKALI menggunakan akun ADMIN.
-   Ini menjalankan:
-   - migrasi link video lama ke path private videoSources;
-   - perbaikan otomatis pembelian lama yang sudah approved tetapi belum masuk Kelas Saya/Ebook Saya.
-6. Lakukan hard refresh sekali setelah update (Mac: Cmd+Shift+R).
+1. UPLOAD
+   Upload seluruh isi folder ini ke root hosting/GitHub Pages.
 
-TIDAK WAJIB FIREBASE STORAGE:
-- Bukti transfer tetap dikompresi dan disimpan di Realtime Database.
-- Cover kelas/ebook disimpan di Realtime Database.
-- PDF ebook maksimal 5 MB disimpan di Realtime Database.
+2. CUSTOM DOMAIN
+   File CNAME sudah berisi:
+   belajarislam.online
 
-PATH PENTING:
-users/{uid}                         profil user
-classes/{classId}                  metadata kelas
-videos/{classId}/{videoId}         metadata video tanpa URL sumber
-videoSources/{classId}/{videoId}   URL sumber terlindungi
-lessonProgress/{uid}/{classId}/... progres belajar
-recentLearning/{uid}               materi terakhir
-quizzes/...                        soal kuis
-quizResults/{uid}/...              hasil kuis
-certificates/{uid}/{classId}       sertifikat online
-enrollments/{uid}/{classId}        akses kelas
-ebooks/{ebookId}                   metadata ebook
-ebookFiles/{ebookId}               PDF ebook terlindungi
-ebookAccess/{uid}/{ebookId}        akses ebook
-payments/{paymentId}               pembayaran
+3. FIREBASE AUTHENTICATION
+   - Email/Password: Enabled
+   - Authorized domains:
+     belajarislam.online
+     www.belajarislam.online (jika digunakan)
 
-CATATAN VIDEO:
-- Google Drive: di pengaturan Share file, gunakan Viewer dan nonaktifkan opsi download/print/copy untuk viewer/commenter bila tersedia.
-- YouTube: gunakan video Unlisted agar tidak tampil publik di channel/search normal.
-- Tidak ada aplikasi browser yang bisa membuat URL runtime 100% mustahil dilihat lewat Network/DevTools. v6.4.0 memindahkan URL keluar dari source statis dan hanya mengambilnya setelah Firebase mengizinkan akses.
+4. REALTIME DATABASE
+   Buka Realtime Database > Rules.
+   Salin seluruh isi database.rules.json lalu Publish.
+
+5. FIREBASE STORAGE
+   Aktifkan Storage jika bukti transfer memakai upload gambar.
+   Salin seluruh isi storage.rules lalu Publish.
+
+6. AKUN ADMIN
+   Pastikan akun admin yang sudah ada mempunyai:
+   users/{UID}/role = admin
+
+7. PENGATURAN ADMIN
+   Login admin > Pengaturan:
+   - Nama bank
+   - Nomor rekening
+   - Nama pemilik rekening
+   - WhatsApp admin
+   - Penandatangan sertifikat
+
+8. KELAS & VIDEO
+   Admin > Kelola Kelas:
+   - buat kelas Gratis atau Berbayar
+   - tambah video YouTube atau Google Drive
+   Link YouTube biasa akan dinormalisasi otomatis menjadi embed youtube-nocookie.
+   Link Google Drive biasa akan dinormalisasi menjadi preview bila format ID dapat dikenali.
+
+9. KUIS
+   Admin > Kuis > pilih kelas dan video > masukkan soal + nilai lulus.
+
+10. ALUR PESERTA
+    Daftar > login > pilih kelas > belajar > kuis > forum > sertifikat.
+    Untuk kelas berbayar: transfer > upload bukti > admin approve > akses aktif otomatis.
+
+CATATAN UPGRADE
+Data pengguna, kelas, pembayaran, dan chat versi sebelumnya tetap memakai jalur database yang kompatibel.

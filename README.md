@@ -1,19 +1,63 @@
-# belajarislam.online LMS v6.4.0
+# belajarislam.online LMS v5.1.0
 
-Full package LMS berbasis Firebase Authentication + Firebase Realtime Database.
+Paket penuh LMS berbasis HTML/CSS/JavaScript + Firebase Authentication, Realtime Database, dan Storage. Tidak membutuhkan proses build.
 
-## Fokus v6.4.0
-- Seluruh data belajar penting disimpan online di Firebase: profil, nomor WhatsApp, kelas, akses pembelian, progres video, materi terakhir, kuis, hasil kuis, sertifikat, forum, chat, notifikasi, pembayaran, ebook, dan file ebook.
-- Perubahan video pada panel admin memakai listener realtime: tambah/edit/hapus langsung tampil tanpa refresh.
-- Kelas Saya membaca `enrollments/{uid}` realtime sehingga kelas premium yang disetujui admin langsung masuk.
-- Materi Terakhir membaca `recentLearning` + `lessonProgress` dari Firebase.
-- Terbaru dan Rekomendasi sudah aktif dan berbasis data online.
-- Produk ebook PDF bisa gratis atau berbayar, tanpa video.
-- Link sumber video dipisahkan dari metadata publik dan disimpan di `videoSources`, hanya dapat dibaca akun yang memiliki akses kelas atau admin/pembimbing.
-- Mobile di-hardening agar tidak horizontal scroll dan player tetap 16:9.
+## Identitas
+- Nama: **belajarislam.online**
+- Domain: `belajarislam.online`
+- UI: emerald/teal + aksen emas, responsive desktop/mobile, dark mode
+- Logo/app icon sudah termasuk dalam `assets/img/`
 
-## Catatan keamanan video
-Aplikasi menghilangkan link sumber dari HTML statis/metadata kelas, mengambilnya dari Firebase setelah akses terverifikasi, menonaktifkan interaksi langsung ke iframe YouTube, memakai kontrol LMS sendiri, dan membatasi sandbox Google Drive. Namun sumber yang benar-benar diputar oleh browser tidak mungkin dibuat 100% tak terlihat bagi pengguna teknis yang memeriksa Network/DevTools; browser tetap harus menerima informasi yang diperlukan untuk memutar konten.
+## Modul Pelajar
+- Registrasi mandiri dan login
+- Katalog kelas gratis / berbayar
+- Kelas Saya
+- Video YouTube atau Google Drive
+- Tracking progres YouTube + tombol tandai selesai
+- Kuis pilihan ganda per video
+- Forum diskusi khusus setiap video + reply thread
+- Sertifikat setelah kelas selesai dan kuis wajib lulus
+- Pembayaran transfer, copy rekening dan nominal, upload bukti
+- Notifikasi pembayaran
+- Live chat realtime dengan admin
+- Profil peserta tersinkron ke admin
+- Dark mode
+- PWA/service worker dasar
 
-## Penyimpanan
-Paket ini tidak membutuhkan Firebase Storage untuk alur utama. Cover, bukti transfer, dan PDF ebook disimpan di Realtime Database dengan pembatasan ukuran pada sisi aplikasi. PDF ebook maksimal 5 MB pada mode ini.
+## Modul Admin/Pembimbing
+- Dashboard statistik dan analitik pembelajaran
+- Buat/edit/arsip kelas
+- Tambah/edit/hapus video
+- Kelas gratis/berbayar
+- Verifikasi pembayaran
+- Kelola kuis per video
+- Data pengguna + ubah role student/mentor/admin
+- Live chat peserta
+- Pengaturan rekening, WhatsApp admin, dan sertifikat
+
+## Struktur penting
+- `index.html` — landing, login, daftar, katalog publik
+- `pages/dashboard.html` — dashboard pelajar
+- `pages/class.html` — ruang belajar video, kuis, forum, pembayaran
+- `pages/admin.html` — panel admin/pembimbing
+- `pages/certificate.html` — sertifikat
+- `database.rules.json` — Realtime Database Rules
+- `storage.rules` — Storage Rules
+- `CNAME` — custom domain GitHub Pages
+
+## Firebase
+Konfigurasi project yang sudah digunakan ada di `assets/js/firebase-config.js`.
+
+Sebelum produksi:
+1. Firebase Authentication > Sign-in method > aktifkan Email/Password.
+2. Authentication > Settings > Authorized domains: tambahkan `belajarislam.online` dan `www.belajarislam.online` jika dipakai.
+3. Realtime Database > Rules: ganti seluruh rules dengan `database.rules.json` lalu Publish.
+4. Firebase Storage > Rules: ganti dengan `storage.rules` lalu Publish.
+5. Pastikan akun admin lama memiliki `users/{uid}/role = "admin"`.
+6. Admin masuk lalu isi rekening dan WhatsApp admin pada Pengaturan.
+
+## Catatan video
+YouTube diputar melalui `youtube-nocookie.com` dengan embed yang lebih bersih. YouTube tetap dapat menampilkan elemen platform tertentu karena batasan player YouTube. Google Drive memakai mode preview/embed; pembatasan download tetap bergantung pada pengaturan file Google Drive.
+
+## Upgrade dari v4/v5
+Struktur data utama tetap memakai path lama (`users`, `classes`, `videos`, `enrollments`, `payments`, `liveChats`, `notifications`), sehingga data lama dapat dilanjutkan. v5.1 menambahkan `lessonProgress`, `quizzes`, `quizResults`, `certificates`, dan `activities`.

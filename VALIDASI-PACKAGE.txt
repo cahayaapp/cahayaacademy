@@ -1,21 +1,14 @@
-BELAJARISLAM.ONLINE LMS v6.4.0 — VALIDASI PACKAGE
+VALIDASI PAKET v5.1.0
 
-Status: LULUS pemeriksaan statis utama.
+Pemeriksaan yang dilakukan sebelum paket dibuat:
+- Seluruh file JavaScript lulus pemeriksaan sintaks Node.js.
+- database.rules.json, manifest.webmanifest, dan firebase.json valid JSON.
+- Tidak ada duplicate HTML id pada index, dashboard, class, admin, dan certificate.
+- Semua getElementById utama pada JavaScript memiliki target elemen HTML.
+- Tidak ditemukan sisa branding Izzuddin Academy / Cahaya Academy pada antarmuka.
+- Tidak ditemukan teks lama "Verifikasi sederhana" atau "tayangan ulang".
+- Domain CNAME: belajarislam.online.
 
-Pemeriksaan yang dilakukan:
-1. Seluruh file JavaScript di assets/js lulus `node --check`.
-2. database.rules.json valid JSON.
-3. Referensi asset lokal dari seluruh HTML tidak ada yang hilang.
-4. ID elemen statis yang dipanggil JS cocok dengan halaman HTML terkait.
-5. Tidak ditemukan URL video konten YouTube/Google Drive yang di-hardcode pada HTML/source package.
-6. Data belajar tidak menggunakan localStorage/sessionStorage; localStorage hanya dipakai untuk preferensi theme UI.
-7. Service worker cache dinaikkan ke `belajarislam-v6.4.0-shell` dan asset menggunakan query v=640.
-8. Admin video manager memakai listener realtime untuk tambah/edit/hapus.
-9. Halaman kelas memakai listener realtime untuk daftar video dan progress.
-10. Dashboard memakai listener realtime untuk profil, kelas, enrollment, ebook access, sertifikat, dan recent learning.
-11. Ebook page dan ebook admin page tersedia.
-12. Mobile CSS memiliki hardening untuk 980px, 720px, dan 420px; video 16:9 full width dan overflow-x diblokir.
-
-Catatan batas teknis:
-- Firebase Security Rules harus dipublish agar pembatasan videoSources/ebookFiles berlaku.
-- YouTube/Google Drive adalah provider eksternal. Browser harus menerima informasi sumber ketika media diputar, sehingga pengguna teknis masih dapat melihat request runtime melalui Network/DevTools. Yang dihilangkan adalah link statis/publik dan jalur klik langsung dari UI.
+Catatan pengujian produksi:
+- Firebase Authentication, Realtime Database, Storage, YouTube, dan Google Drive membutuhkan koneksi internet serta konfigurasi Firebase aktif.
+- Setelah upload, lakukan hard refresh sekali agar service worker/cache versi lama tidak menahan asset sebelumnya.
