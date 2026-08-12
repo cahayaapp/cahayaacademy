@@ -1,24 +1,15 @@
-BELAJARISLAM.ONLINE LMS v6.4.3 — UPDATE EBOOK GOOGLE DRIVE
+BELAJARISLAM.ONLINE LMS v6.4.4 — HOTFIX DOWNLOAD EBOOK
 
-1. Upload seluruh isi paket v6.4.3 menggantikan versi sebelumnya.
-2. Firebase Console > Realtime Database > Rules.
-3. Ganti Rules dengan database.rules.json v6.4.3 lalu Publish.
-4. Lakukan hard refresh sekali setelah deploy.
+1. Upload SELURUH isi paket v6.4.4 menggantikan versi sebelumnya.
+2. Tidak ada perubahan struktur Security Rules dibanding v6.4.3. Jika rules v6.4.3 sudah aktif, tidak wajib Publish ulang.
+3. Setelah deploy, lakukan hard refresh sekali agar service worker lama diganti.
+4. Buka satu ebook yang sudah dimiliki dan tunggu tombol “Download Ebook PDF” aktif.
+5. Tekan tombol Download. File harus langsung diminta oleh browser tanpa membuka halaman provider.
 
-MEMBUAT EBOOK DARI GOOGLE DRIVE
-1. Upload PDF ke Google Drive.
-2. Atur file agar dapat diakses melalui link sesuai kebutuhan LMS.
-3. Admin > Ebook > Buat/Edit Ebook.
-4. Pada Sumber file ebook pilih Google Drive.
-5. Tempel link file Drive atau File ID.
-6. Isi nama file download, contoh: quranic-luck-mastery.pdf.
-7. Simpan Ebook.
-8. Untuk ebook berbayar, setelah pembayaran di-approve peserta memperoleh akses dan tombol Download Ebook aktif.
+PENGATURAN FILE EBOOK EKSTERNAL
+- Pastikan file PDF memang dapat diakses oleh akun/pengguna yang memiliki tautan sesuai pengaturan berbagi file.
+- Gunakan link file lengkap saat memasukkan sumber di Admin. Jika link memiliki resource key, v6.4.4 akan menyimpannya otomatis.
 
-HASIL
-- Peserta tidak diarahkan ke halaman Google Drive ketika menekan Download.
-- Link Drive tidak ditulis di HTML halaman publik.
-- Sumber disimpan di Firebase path privat ebookSources/{ebookId}.
-
-BATAS TEKNIS
-Browser harus mengetahui endpoint yang dipakai untuk mengunduh file. Karena itu pengguna yang sangat teknis masih dapat melihat request Google Drive melalui DevTools Network. Untuk menyembunyikan origin secara penuh diperlukan backend proxy/server.
+TAMPILAN MEMBER
+- Member hanya melihat PDF Digital dan tombol Download Ebook PDF.
+- Nama platform penyimpanan file tidak ditampilkan di halaman member.

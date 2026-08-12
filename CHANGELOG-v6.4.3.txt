@@ -1,4 +1,4 @@
-BELAJARISLAM.ONLINE LMS v6.4.3
+BELAJARISLAM.ONLINE LMS v6.4.4
 
 PERUBAHAN UTAMA
 1. Fitur Sinopsis Ebook
@@ -19,8 +19,8 @@ PERUBAHAN UTAMA
    - Tidak menambah scroll horizontal.
 
 3. Cache/PWA
-   - Asset query dinaikkan ke v=643.
-   - Service worker cache dinaikkan ke belajarislam-v6.4.3-shell agar CSS mobile baru langsung terbaca setelah update.
+   - Asset query dinaikkan ke v=644.
+   - Service worker cache dinaikkan ke belajarislam-v6.4.4-shell agar CSS mobile baru langsung terbaca setelah update.
 
 FIREBASE
 - Tidak ada path baru dan tidak membutuhkan perubahan Database Rules dari v6.4.2.

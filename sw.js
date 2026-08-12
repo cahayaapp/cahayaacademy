@@ -1,8 +1,8 @@
-const CACHE='belajarislam-v6.4.3-shell';
+const CACHE='belajarislam-v6.4.4-shell';
 const ASSETS=[
-  './','./index.html','./assets/css/styles.css?v=643','./assets/img/logo-icon.svg?v=643','./assets/img/favicon.ico?v=643',
-  './assets/img/icon-32.png?v=643','./assets/img/icon-64.png?v=643','./assets/img/icon-180.png?v=643','./assets/img/icon-192.png?v=643',
-  './assets/img/icon-maskable-192.png?v=643','./assets/img/icon-512.png?v=643','./assets/img/icon-maskable-512.png?v=643','./manifest.webmanifest?v=643'
+  './','./index.html','./assets/css/styles.css?v=644','./assets/img/logo-icon.svg?v=644','./assets/img/favicon.ico?v=644',
+  './assets/img/icon-32.png?v=644','./assets/img/icon-64.png?v=644','./assets/img/icon-180.png?v=644','./assets/img/icon-192.png?v=644',
+  './assets/img/icon-maskable-192.png?v=644','./assets/img/icon-512.png?v=644','./assets/img/icon-maskable-512.png?v=644','./manifest.webmanifest?v=644'
 ];
 self.addEventListener('install',event=>{event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(ASSETS).catch(()=>{})));self.skipWaiting();});
 self.addEventListener('activate',event=>{event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))));self.clients.claim();});

@@ -394,6 +394,17 @@ export function extractGoogleDriveFileId(input=''){
   for(const pattern of patterns){ const match=value.match(pattern); if(match?.[1]) return match[1]; }
   return '';
 }
+export function extractGoogleDriveResourceKey(input=''){
+  const value=String(input||'').trim();
+  if(!value) return '';
+  try{
+    const url=new URL(value);
+    return String(url.searchParams.get('resourcekey')||url.searchParams.get('resourceKey')||'').trim();
+  }catch(_){
+    const m=value.match(/[?&]resourcekey=([^&#]+)/i);
+    return m?.[1]?decodeURIComponent(m[1]):'';
+  }
+}
 export async function saveEbookFile(ebookId,filePayload){
   if(!String(filePayload?.data||'').startsWith('data:application/pdf;base64,')) throw new Error('File PDF tidak valid');
   await set(ref(db,`ebookFiles/${ebookId}`),{...filePayload,updatedAt:Date.now()});
@@ -402,8 +413,9 @@ export async function saveEbookFile(ebookId,filePayload){
 }
 export async function saveEbookDriveSource(ebookId,driveLinkOrId,fileName='ebook.pdf'){
   const fileId=extractGoogleDriveFileId(driveLinkOrId);
+  const resourceKey=extractGoogleDriveResourceKey(driveLinkOrId);
   if(!fileId) throw new Error('Link Google Drive tidak valid. Gunakan link file PDF Google Drive atau File ID.');
-  await set(ref(db,`ebookSources/${ebookId}`),{mode:'gdrive',fileId,updatedAt:Date.now()});
+  await set(ref(db,`ebookSources/${ebookId}`),{mode:'gdrive',fileId,resourceKey:resourceKey||null,updatedAt:Date.now()});
   await remove(ref(db,`ebookFiles/${ebookId}`));
   await update(ref(db,`ebooks/${ebookId}`),{hasFile:true,fileMode:'gdrive',fileName:String(fileName||'ebook.pdf').trim()||'ebook.pdf',fileSize:null,updatedAt:Date.now()});
 }

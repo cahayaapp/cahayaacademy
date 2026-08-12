@@ -1,0 +1,20 @@
+BELAJARISLAM.ONLINE LMS v6.4.4
+
+PERBAIKAN DOWNLOAD EBOOK
+- Tombol Download Ebook diperbaiki agar unduhan dipicu langsung dari halaman LMS.
+- Sumber file privat dipersiapkan saat akses ebook aktif, sehingga klik Download tidak kehilangan user gesture browser.
+- Untuk sumber file eksternal, download dijalankan melalui target tersembunyi tanpa membuka halaman provider.
+- Mendukung Google Drive resource key pada link berbagi yang memerlukannya.
+- Untuk PDF yang tersimpan di Realtime Database, file tetap diunduh sebagai PDF lokal dengan nama file yang rapi.
+
+TAMPILAN MEMBER
+- Semua label provider file di halaman member dihapus.
+- Metadata sekarang hanya menampilkan “PDF Digital”.
+- Keterangan tombol dibuat profesional: download langsung ke perangkat.
+- Peserta tidak melihat istilah Google Drive/Firebase pada halaman ebook atau dashboard member.
+
+ADMIN
+- Saat mengedit ebook, resource key pada link Drive dipertahankan agar download tidak rusak setelah metadata ebook diperbarui.
+
+CACHE
+- Service worker dinaikkan ke belajarislam-v6.4.4-shell.

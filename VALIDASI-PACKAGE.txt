@@ -1,16 +1,11 @@
-VALIDASI BELAJARISLAM.ONLINE LMS v6.4.3
+BELAJARISLAM.ONLINE LMS v6.4.4 — HASIL VALIDASI
 
-[OK] admin.js syntax valid
-[OK] ebook.js syntax valid
-[OK] dashboard.js syntax valid
-[OK] index.js syntax valid
-[OK] core.js syntax valid
-[OK] Sinopsis ebook tersedia di form admin
-[OK] Sinopsis tersimpan melalui saveEbook ke Firebase
-[OK] Edit ebook memuat sinopsis tersimpan
-[OK] Halaman ebook memiliki blok sinopsis kondisional
-[OK] Search katalog membaca sinopsis
-[OK] Logo/wordmark app header tetap tampil di mobile
-[OK] Breakpoint 720 / 420 / 360 px ditangani
-[OK] Cache service worker versi v6.4.3
-[OK] Tidak membutuhkan perubahan Database Rules
+[OK] ebook.js lulus pemeriksaan sintaks JavaScript.
+[OK] core.js lulus pemeriksaan sintaks JavaScript.
+[OK] admin.js lulus pemeriksaan sintaks JavaScript.
+[OK] database.rules.json valid JSON.
+[OK] Service worker cache version v6.4.4.
+[OK] Halaman member ebook tidak menampilkan label Google Drive.
+[OK] Download sumber eksternal menggunakan preloaded private source agar klik user tetap langsung memicu unduhan.
+[OK] Resource key Google Drive disimpan dan dipertahankan saat edit ebook.
+[OK] PDF Realtime Database tetap dapat diunduh sebagai Blob lokal.
