@@ -1,109 +1,41 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Ruang Kelas — belajarislam.online</title>
-  <meta name="theme-color" content="#086c63" />
-  <link rel="icon" href="../assets/img/favicon.ico?v=521" sizes="any" />
-  <link rel="icon" type="image/png" sizes="32x32" href="../assets/img/icon-32.png?v=521" />
-  <link rel="icon" type="image/png" sizes="64x64" href="../assets/img/icon-64.png?v=521" />
-  <link rel="apple-touch-icon" sizes="180x180" href="../assets/img/icon-180.png?v=521" />
-  <link rel="manifest" href="../manifest.webmanifest?v=521" />
-  <link rel="stylesheet" href="../assets/css/styles.css?v=521" />
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>Ruang Kelas — belajarislam.online</title><meta name="theme-color" content="#075e54">
+  <link rel="icon" href="../assets/img/favicon.ico?v=600" sizes="any"><link rel="icon" type="image/svg+xml" href="../assets/img/logo-icon.svg?v=600"><link rel="apple-touch-icon" href="../assets/img/icon-180.png?v=600"><link rel="manifest" href="../manifest.webmanifest?v=600"><link rel="stylesheet" href="../assets/css/styles.css?v=600">
 </head>
-<body>
+<body class="app-body lesson-body">
   <div class="toast" id="toast"></div>
-  <header class="topbar app-topbar">
-    <div class="container topbar-inner">
-      <a href="dashboard.html" class="brand"><img src="../assets/img/logo-icon.png?v=521" alt="Logo belajarislam.online" /><div><div class="brand-title">belajarislam<span class="dot-online">.online</span></div><div class="brand-sub">Ruang kelas</div></div></a>
-      <div class="search-shell"><div class="header-actions"><button class="icon-btn" data-theme-toggle aria-label="Ganti tema">☾</button><a href="dashboard.html" class="btn">Dashboard</a><button class="btn" id="classLogoutBtn">Keluar</button></div></div>
-    </div>
-  </header>
+  <header class="app-header lesson-header"><div class="app-header-inner"><a class="brand brand-public compact" href="dashboard.html"><img src="../assets/img/logo-icon.svg?v=600" alt=""><div class="brand-word"><b>belajarislam</b><strong>.online</strong><small>RUANG KELAS</small></div></a><div class="header-actions"><button class="icon-btn" data-theme-toggle>☾</button><a class="btn small subtle" href="dashboard.html">Dashboard</a><button class="btn small subtle desktop-only" id="classLogoutBtn">Keluar</button></div></div></header>
 
-  <main class="container video-page">
-    <div class="app-page-title"><div><h1>Video Pembelajaran</h1><p>Belajar fokus, diskusikan yang belum jelas, lalu lanjutkan materi berikutnya.</p></div><a class="btn ghost" href="dashboard.html">← Kembali ke Kelas Saya</a></div>
-    <div class="video-layout">
-      <section>
-        <div class="panel video-player-shell">
-          <div class="video-header">
-            <div><span id="classCategoryBadge" class="badge free">Video Pembelajaran</span><h1 id="classTitle">Memuat kelas...</h1><div class="muted" id="classTeacher">-</div></div>
-            <div class="utility-row"><span id="classPriceBadge" class="badge free">-</span><span id="accessBadge" class="badge pending">-</span></div>
-          </div>
+  <main class="lesson-main container">
+    <div class="lesson-breadcrumb"><a href="dashboard.html#myclasses">← Kembali ke Kelas Saya</a></div>
+    <div class="lesson-topline"><div><span id="classCategoryBadge" class="badge free">Video Pembelajaran</span><h1 id="classTitle">Memuat kelas...</h1><p id="classTeacher">-</p></div><div class="utility-row"><span id="classPriceBadge" class="badge free">-</span><span id="accessBadge" class="badge pending">-</span></div></div>
 
-          <div id="videoShell" class="video-embed"></div>
-          <div class="video-clean-strip"><span>▶ Video diputar langsung di belajarislam.online</span><span id="lessonProgressText">Belum dimulai</span></div>
-          <div style="display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;margin-top:10px;"><div class="progress-track"><span id="lessonProgressBar" style="width:0%"></span></div><button class="btn small ghost" id="markCompleteBtn">Tandai Selesai</button></div>
+    <div class="lesson-layout">
+      <section class="lesson-primary">
+        <div class="video-frame-card"><div id="videoShell" class="video-embed"></div><div class="player-status"><span>▶ Diputar di belajarislam.online</span><span id="lessonProgressText">Belum dimulai</span></div><div class="lesson-progress-row"><div class="progress-track"><span id="lessonProgressBar" style="width:0%"></span></div><button class="btn small subtle" id="markCompleteBtn">Tandai Selesai</button></div></div>
 
-          <div class="tabs">
-            <button class="active" data-tab="materiPanel">Materi</button>
-            <button data-tab="forumPanel">Forum Diskusi</button>
-            <button data-tab="quizPanel">Kuis</button>
-            <button data-tab="paymentPanel">Akses Kelas</button>
-          </div>
+        <div class="surface-card lesson-tabs-card">
+          <div class="tabs"><button class="active" data-tab="materiPanel">Materi</button><button data-tab="forumPanel">Forum Diskusi</button><button data-tab="quizPanel">Kuis</button><button data-tab="paymentPanel">Akses Kelas</button></div>
+          <div id="materiPanel" class="tab-panel"><div class="lesson-summary"><span class="section-kicker">RINGKASAN MATERI</span><p id="videoSummary">Memuat ringkasan...</p></div><div class="certificate-strip"><div><span class="section-kicker">PROGRES KELAS</span><b id="courseProgressText">0%</b></div><div class="progress-track"><span id="courseProgressBar" style="width:0%"></span></div><p id="certificateHint">Selesaikan seluruh materi dan kuis untuk membuka sertifikat.</p><a id="certificateBtn" class="btn gold hidden" href="certificate.html">Lihat Sertifikat</a></div></div>
 
-          <div id="materiPanel" class="tab-panel">
-            <div class="completion-card"><strong>Ringkasan Materi</strong><p id="videoSummary" class="muted" style="line-height:1.75;margin:8px 0 0;">Memuat ringkasan...</p></div>
-            <div style="height:12px"></div>
-            <div class="certificate-card">
-              <div class="certificate-status"><span class="badge free">Progres Kelas</span><strong id="courseProgressText">0%</strong></div>
-              <div class="progress-track" style="margin-top:12px;"><span id="courseProgressBar" style="width:0%"></span></div>
-              <p class="muted" id="certificateHint" style="margin:10px 0 0;">Selesaikan seluruh materi dan kuis untuk membuka sertifikat.</p>
-              <a id="certificateBtn" class="btn gold hidden" style="margin-top:12px;" href="certificate.html">Lihat Sertifikat</a>
-            </div>
-          </div>
-
-          <div id="forumPanel" class="tab-panel hidden">
-            <div class="notice">Forum ini khusus untuk video yang sedang dipelajari. Peserta dapat bertanya dan pembimbing dapat menjawab langsung pada topik yang sama.</div>
-            <div style="height:12px"></div>
-            <div id="forumList" class="forum-list"></div>
-            <form id="forumForm">
-              <div id="replyingBanner" class="replying-banner hidden"><span id="replyingText">Membalas...</span><button id="cancelReplyBtn" type="button" class="reply-action">Batal</button></div>
-              <div class="field"><label>Pertanyaan / tanggapan</label><textarea id="forumText" placeholder="Tulis pertanyaan yang ingin dibahas..."></textarea></div>
-              <div style="display:flex;justify-content:flex-end;"><button class="btn primary">Kirim ke Forum</button></div>
-            </form>
-          </div>
+          <div id="forumPanel" class="tab-panel hidden"><div class="forum-intro"><div><span>?</span></div><div><b>Forum Diskusi Video</b><p>Ajukan pertanyaan atau tanggapan khusus untuk video yang sedang dipelajari. Pembimbing dapat menjawab di thread yang sama.</p></div></div><div id="forumList" class="forum-list"></div><form id="forumForm"><div id="replyingBanner" class="replying-banner hidden"><span id="replyingText">Membalas...</span><button id="cancelReplyBtn" type="button" class="reply-action">Batal</button></div><div class="forum-compose"><textarea id="forumText" placeholder="Tulis pertanyaan atau tanggapan..."></textarea><button class="btn primary">Kirim</button></div></form></div>
 
           <div id="quizPanel" class="tab-panel hidden"><div id="quizArea" class="quiz-shell"></div></div>
 
-          <div id="paymentPanel" class="tab-panel hidden">
-            <div id="freeAccessBox" class="empty-state hidden">Kelas ini gratis dan dapat langsung diikuti.</div>
-            <div id="paidAccessBox" class="hidden">
-              <div class="kv-grid">
-                <div class="kv"><strong>Rekening Transfer</strong><div id="paymentBankName">-</div><div class="copy-row" style="margin-top:7px;"><b id="paymentBankNumber">-</b><button type="button" class="btn small ghost" id="copyAccountBtn">Salin</button></div><div class="muted mini" id="paymentBankAccountName">-</div></div>
-                <div class="kv"><strong>Nominal Transfer</strong><div id="paymentAmountText" style="font-size:25px;font-weight:950;color:var(--primary);">-</div><button type="button" class="btn small ghost" id="copyAmountBtn" style="margin-top:8px;">Salin Nominal</button></div>
-                <div class="kv"><strong>Status Pembayaran</strong><div id="paymentStatusBox">Belum ada pembayaran</div></div>
-              </div>
-              <hr class="sep" />
-              <form id="paymentForm">
-                <div class="form-grid"><div class="field"><label>Nama pengirim</label><input id="senderName" required placeholder="Nama pemilik rekening" /></div><div class="field"><label>Bank pengirim</label><input id="senderBank" required placeholder="Contoh: BSI / BCA" /></div><div class="field full"><label>Foto bukti transfer</label><input id="proofFile" type="file" accept="image/*" required /><span class="muted mini">Foto dikompresi otomatis sebelum disimpan.</span></div></div>
-                <button class="btn primary">Kirim Bukti Pembayaran</button>
-              </form>
-            </div>
-          </div>
+          <div id="paymentPanel" class="tab-panel hidden"><div id="freeAccessBox" class="empty-state hidden">Kelas ini gratis dan dapat langsung diikuti.</div><div id="paidAccessBox" class="hidden"><div class="payment-cards"><article><small>REKENING TRANSFER</small><b id="paymentBankName">-</b><div class="copy-line"><strong id="paymentBankNumber">-</strong><button type="button" class="btn tiny subtle" id="copyAccountBtn">Salin</button></div><span id="paymentBankAccountName">-</span></article><article><small>NOMINAL TRANSFER</small><b id="paymentAmountText">-</b><button type="button" class="btn tiny subtle" id="copyAmountBtn">Salin Nominal</button></article><article><small>STATUS</small><b id="paymentStatusBox">Belum ada pembayaran</b></article></div><form id="paymentForm" class="payment-upload-form"><div class="form-grid"><div class="field"><label>Nama pengirim</label><input id="senderName" required></div><div class="field"><label>Bank pengirim</label><input id="senderBank" required></div><div class="field full"><label>Foto bukti transfer</label><input id="proofFile" type="file" accept="image/*" required><span class="field-note">Foto dikompresi otomatis. Firebase Storage tidak diperlukan.</span></div></div><button class="btn primary">Kirim Bukti Pembayaran</button></form></div></div>
         </div>
       </section>
 
-      <aside>
-        <div class="panel module-list">
-          <div class="section-head"><div><h2>Daftar Materi</h2><p class="muted">Pilih video berikutnya.</p></div></div>
-          <div id="videoList" class="list-clean"></div>
-        </div>
-      </aside>
+      <aside class="lesson-side"><div class="surface-card curriculum-card"><div class="section-head"><div><span class="section-kicker">DAFTAR MATERI</span><h2>Isi Kelas</h2></div></div><div id="videoList" class="curriculum-list"></div></div></aside>
     </div>
   </main>
 
-  <nav class="sticky-mobile-nav">
-    <a href="dashboard.html" data-icon="⌂">Beranda</a>
-    <a href="dashboard.html#myclasses" data-icon="▣">Kelas</a>
-    <a href="#forumPanel" id="mobileForumLink" data-icon="?">Forum</a>
-    <a href="dashboard.html#profile" data-icon="◎">Akun</a>
-  </nav>
+  <nav class="mobile-bottom-nav"><a href="dashboard.html"><span>⌂</span>Beranda</a><a href="dashboard.html#myclasses"><span>▣</span>Kelas</a><a href="#forumPanel" id="mobileForumLink"><span>?</span>Forum</a><a href="dashboard.html#profile"><span>◎</span>Profil</a></nav>
+  <button class="floating-chat" id="classMobileChatFab" aria-label="Chat admin"><span>◌</span></button>
 
-  <button class="mobile-chat-fab" id="classMobileChatFab" aria-label="Buka chat"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a9.5 9.5 0 0 0-8.2 14.3L2.5 21.5l5.35-1.25A9.5 9.5 0 1 0 12 2Zm0 17a7.43 7.43 0 0 1-3.79-1.03l-.43-.25-3.16.74.78-3.06-.28-.45A7.5 7.5 0 1 1 12 19Zm4.1-5.55c-.22-.11-1.3-.64-1.5-.71-.2-.08-.35-.11-.5.11-.14.22-.57.71-.7.86-.13.15-.26.17-.48.06-.22-.11-.93-.34-1.77-1.1a6.67 6.67 0 0 1-1.23-1.53c-.13-.22-.01-.34.1-.45.1-.1.22-.26.33-.39.11-.13.15-.22.22-.37.07-.15.04-.28-.02-.39-.05-.11-.5-1.2-.68-1.64-.18-.43-.36-.37-.5-.38h-.42c-.15 0-.39.06-.59.28-.2.22-.77.75-.77 1.83s.79 2.12.9 2.27c.11.15 1.55 2.36 3.75 3.31.52.23.93.36 1.25.46.52.17 1 .14 1.37.09.42-.06 1.3-.53 1.48-1.04.18-.51.18-.95.13-1.04-.05-.09-.2-.14-.42-.25Z"/></svg></button>
-
-  <script type="module" src="../assets/js/theme.js?v=521"></script>
-  <script type="module" src="../assets/js/pwa.js?v=521"></script>
-  <script type="module" src="../assets/js/class.js?v=521"></script>
+  <script type="module" src="../assets/js/theme.js?v=600"></script><script type="module" src="../assets/js/pwa.js?v=600"></script><script type="module" src="../assets/js/class.js?v=600"></script>
 </body>
 </html>

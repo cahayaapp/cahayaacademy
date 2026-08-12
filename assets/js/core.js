@@ -44,13 +44,26 @@ export function escapeHtml(str=''){ return String(str).replace(/[&<>'"]/g,c=>({'
 export function normalizeWa(value=''){ let s=String(value).replace(/\D/g,''); if(s.startsWith('0')) s='62'+s.slice(1); if(!s.startsWith('62') && s) s='62'+s; return s; }
 export function coverGradient(theme='emerald'){
   const map={
-    emerald:'linear-gradient(135deg,#075985,#0f766e 55%,#d4a017)',
-    teal:'linear-gradient(135deg,#0f766e,#0d9488 55%,#84cc16)',
-    bluegold:'linear-gradient(135deg,#0c4a6e,#0369a1 55%,#d4a017)',
-    darkteal:'linear-gradient(135deg,#022c22,#0f766e 55%,#d4a017)',
+    emerald:'linear-gradient(135deg,#075e54,#0f766e 55%,#f59e0b)',
+    teal:'linear-gradient(135deg,#064e3b,#10b981 55%,#84cc16)',
+    bluegold:'linear-gradient(135deg,#0c4a6e,#0f766e 55%,#f59e0b)',
+    darkteal:'linear-gradient(135deg,#022c22,#075e54 55%,#f59e0b)',
     purple:'linear-gradient(135deg,#4c1d95,#0f766e 60%,#eab308)',
     amber:'linear-gradient(135deg,#78350f,#0f766e 62%,#f59e0b)'
   }; return map[theme] || map.emerald;
+}
+const FALLBACK_COVERS={
+  aqidah:new URL('../img/covers/aqidah.svg',import.meta.url).href,
+  fiqih:new URL('../img/covers/fiqih.svg',import.meta.url).href,
+  tafsir:new URL('../img/covers/tafsir.svg',import.meta.url).href,
+  adab:new URL('../img/covers/adab.svg',import.meta.url).href
+};
+export function fallbackCoverUrl(classData={}){
+  const hay=`${classData.category||''} ${classData.title||''}`.toLowerCase();
+  if(hay.includes('fiqih')||hay.includes('fikih')) return FALLBACK_COVERS.fiqih;
+  if(hay.includes('tafsir')||hay.includes('qur')) return FALLBACK_COVERS.tafsir;
+  if(hay.includes('adab')||hay.includes('akhlak')||hay.includes('sirah')) return FALLBACK_COVERS.adab;
+  return FALLBACK_COVERS.aqidah;
 }
 export function toast(message='Berhasil',type='default'){
   const el=qs('#toast'); if(!el) return;
@@ -110,16 +123,30 @@ export async function saveClass(payload,classId=null){
   return id;
 }
 export async function archiveClass(classId){ await update(ref(db,`classes/${classId}`),{status:'archived',updatedAt:Date.now()}); }
+export async function fetchClassCover(classId){ const s=await get(ref(db,`classCovers/${classId}`)); return s.val()||null; }
+export async function saveClassCover(classId,dataUrl){
+  if(!dataUrl || !String(dataUrl).startsWith('data:image/')) throw new Error('Cover kelas tidak valid');
+  await set(ref(db,`classCovers/${classId}`),{data:dataUrl,updatedAt:Date.now()});
+  await update(ref(db,`classes/${classId}`),{hasCover:true,coverUpdatedAt:Date.now(),updatedAt:Date.now()});
+}
+export async function deleteClassCover(classId){ await remove(ref(db,`classCovers/${classId}`)); await update(ref(db,`classes/${classId}`),{hasCover:false,coverUpdatedAt:null,updatedAt:Date.now()}); }
 export async function fetchVideos(classId){ const s=await get(ref(db,`videos/${classId}`)); const data=s.val()||{}; return Object.entries(data).map(([id,v])=>({id,...v})).sort((a,b)=>(a.order??999)-(b.order??999)); }
+export async function refreshClassStats(classId){
+  const [vs,qs]=await Promise.all([get(ref(db,`videos/${classId}`)),get(ref(db,`quizzes/${classId}`))]);
+  const totalVideos=Object.keys(vs.val()||{}).length;
+  const totalQuizzes=Object.values(qs.val()||{}).filter(q=>q?.questions&&Object.keys(q.questions).length).length;
+  await update(ref(db,`classes/${classId}`),{totalVideos,totalQuizzes,updatedAt:Date.now()});
+  return {totalVideos,totalQuizzes};
+}
 export async function saveVideo(classId,payload,videoId=null){
   const id=videoId || payload.id || `v${Date.now()}`;
   const current=videoId ? (await get(ref(db,`videos/${classId}/${id}`))).val() : null;
   const sourceType=payload.sourceType||current?.sourceType||'youtube';
   const rawUrl=payload.embedUrl||current?.embedUrl||'';
   await set(ref(db,`videos/${classId}/${id}`),{...(current||{}),...payload,sourceType,embedUrl:normalizeVideoUrl(sourceType,rawUrl),updatedAt:Date.now(),createdAt:current?.createdAt||Date.now()});
-  return id;
+  await refreshClassStats(classId); return id;
 }
-export async function deleteVideo(classId,videoId){ await remove(ref(db,`videos/${classId}/${videoId}`)); }
+export async function deleteVideo(classId,videoId){ await remove(ref(db,`videos/${classId}/${videoId}`)); await refreshClassStats(classId); }
 
 export async function fetchEnrollment(uid,classId){ const s=await get(ref(db,`enrollments/${uid}/${classId}`)); return s.val(); }
 export async function joinFreeClass(uid,classId){
@@ -153,31 +180,34 @@ function loadImage(src){
     img.src=src;
   });
 }
-export async function uploadProof(file){
-  if(!file || !String(file.type||'').startsWith('image/')) throw new Error('Bukti transfer harus berupa foto/gambar');
-  if(file.size>10*1024*1024) throw new Error('Ukuran foto maksimal 10 MB sebelum kompresi');
-  const original=await fileToDataUrl(file);
-  const img=await loadImage(original);
-  let maxSide=1500;
-  let quality=.82;
-  const targetChars=460000; // sekitar 340 KB file JPEG setelah Base64
-  let result='';
-  for(let attempt=0;attempt<10;attempt++){
-    const ratio=Math.min(1,maxSide/Math.max(img.naturalWidth||img.width,img.naturalHeight||img.height));
-    const w=Math.max(1,Math.round((img.naturalWidth||img.width)*ratio));
-    const h=Math.max(1,Math.round((img.naturalHeight||img.height)*ratio));
-    const canvas=document.createElement('canvas');
-    canvas.width=w; canvas.height=h;
-    const ctx=canvas.getContext('2d',{alpha:false});
-    ctx.fillStyle='#ffffff'; ctx.fillRect(0,0,w,h);
-    ctx.drawImage(img,0,0,w,h);
-    result=canvas.toDataURL('image/jpeg',quality);
-    if(result.length<=targetChars) break;
-    if(quality>.56) quality-=.08; else maxSide=Math.round(maxSide*.82);
+async function compressImage(file,{maxBytes=360000,maxSide=1500,quality=.84,aspectRatio=null,mime='image/jpeg'}={}){
+  if(!file || !String(file.type||'').startsWith('image/')) throw new Error('File harus berupa gambar');
+  if(file.size>12*1024*1024) throw new Error('Ukuran gambar maksimal 12 MB sebelum kompresi');
+  const original=await fileToDataUrl(file); const img=await loadImage(original);
+  const iw=img.naturalWidth||img.width, ih=img.naturalHeight||img.height;
+  let targetW,targetH,sx=0,sy=0,sw=iw,sh=ih;
+  if(aspectRatio){
+    const srcRatio=iw/ih;
+    if(srcRatio>aspectRatio){ sw=Math.round(ih*aspectRatio); sx=Math.round((iw-sw)/2); }
+    else { sh=Math.round(iw/aspectRatio); sy=Math.round((ih-sh)/2); }
+    targetW=Math.min(maxSide,sw); targetH=Math.round(targetW/aspectRatio);
+  }else{
+    const scale=Math.min(1,maxSide/Math.max(iw,ih)); targetW=Math.max(1,Math.round(iw*scale)); targetH=Math.max(1,Math.round(ih*scale));
   }
-  if(!result || result.length>650000) throw new Error('Foto masih terlalu besar. Silakan pilih foto lain atau screenshot bukti transfer.');
+  let result='',q=quality,w=targetW,h=targetH;
+  for(let attempt=0;attempt<11;attempt++){
+    const canvas=document.createElement('canvas'); canvas.width=w; canvas.height=h;
+    const ctx=canvas.getContext('2d',{alpha:false}); ctx.fillStyle='#ffffff'; ctx.fillRect(0,0,w,h); ctx.drawImage(img,sx,sy,sw,sh,0,0,w,h);
+    result=canvas.toDataURL(mime,q);
+    const approx=Math.ceil(result.length*0.75);
+    if(approx<=maxBytes) break;
+    if(q>.58) q-=.07; else { w=Math.max(640,Math.round(w*.88)); h=aspectRatio?Math.round(w/aspectRatio):Math.max(1,Math.round(h*.88)); }
+  }
+  if(!result || Math.ceil(result.length*.75)>maxBytes*1.35) throw new Error('Gambar masih terlalu besar setelah kompresi. Pilih gambar lain.');
   return result;
 }
+export async function compressClassCover(file){ return compressImage(file,{maxBytes:260000,maxSide:1280,quality:.82,aspectRatio:16/9,mime:'image/webp'}); }
+export async function uploadProof(file){ return compressImage(file,{maxBytes:340000,maxSide:1500,quality:.82}); }
 export async function submitPayment({uid,classId,amount,senderName,senderBank,proofData}){
   const p=push(ref(db,'payments')); const id=p.key; const now=Date.now();
   if(!proofData || !String(proofData).startsWith('data:image/jpeg;base64,')) throw new Error('Bukti transfer tidak valid');
@@ -229,8 +259,8 @@ export async function fetchAllProgress(){ const s=await get(ref(db,'lessonProgre
 
 export async function fetchQuiz(classId,videoId){ const s=await get(ref(db,`quizzes/${classId}/${videoId}`)); return s.val()||null; }
 export async function fetchQuizzesForClass(classId){ const s=await get(ref(db,`quizzes/${classId}`)); return s.val()||{}; }
-export async function saveQuizQuestion(classId,videoId,q,passScore=70){ const p=push(ref(db,`quizzes/${classId}/${videoId}/questions`)); await set(p,q); await update(ref(db,`quizzes/${classId}/${videoId}`),{passScore:Number(passScore||70),updatedAt:Date.now()}); return p.key; }
-export async function deleteQuizQuestion(classId,videoId,qid){ await remove(ref(db,`quizzes/${classId}/${videoId}/questions/${qid}`)); }
+export async function saveQuizQuestion(classId,videoId,q,passScore=70){ const p=push(ref(db,`quizzes/${classId}/${videoId}/questions`)); await set(p,q); await update(ref(db,`quizzes/${classId}/${videoId}`),{passScore:Number(passScore||70),updatedAt:Date.now()}); await refreshClassStats(classId); return p.key; }
+export async function deleteQuizQuestion(classId,videoId,qid){ await remove(ref(db,`quizzes/${classId}/${videoId}/questions/${qid}`)); await refreshClassStats(classId); }
 export async function submitQuizResult(uid,classId,videoId,result){ await set(ref(db,`quizResults/${uid}/${classId}/${videoId}`),{...result,attemptedAt:Date.now()}); }
 export async function fetchQuizResult(uid,classId,videoId){ const s=await get(ref(db,`quizResults/${uid}/${classId}/${videoId}`)); return s.val()||null; }
 export async function fetchAllQuizResults(uid,classId=null){ const s=await get(ref(db,classId?`quizResults/${uid}/${classId}`:`quizResults/${uid}`)); return s.val()||{}; }

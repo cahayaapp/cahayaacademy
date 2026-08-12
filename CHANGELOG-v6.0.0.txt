@@ -1,0 +1,27 @@
+BELAJARISLAM.ONLINE LMS v6.0.0 FINAL — FULL REBUILD
+
+PEROMBAKAN VISUAL
+- Landing page dibangun ulang mengikuti master mockup final.
+- Logo dibuat ulang dalam SVG agar presisi dan tajam di favicon, header, PWA, dan mobile.
+- Warna brand disatukan: emerald, teal, gold, white, soft gray.
+- Kartu kelas dibuat visual-first dengan cover 16:9.
+- Dashboard member desktop dan mobile dibangun ulang.
+- Halaman video / forum / kuis / pembayaran dibangun ulang.
+- Admin Center dibangun ulang dengan bahasa visual yang sama.
+- Mobile tidak menggunakan scroll horizontal untuk frame video/kartu utama.
+
+FITUR BARU / PENYEMPURNAAN
+- Upload cover kelas dari form admin.
+- Preview cover langsung.
+- Crop otomatis rasio 16:9 dan kompres sebelum simpan.
+- Cover disimpan di Realtime Database path terpisah `classCovers/{classId}`.
+- Tidak membutuhkan Firebase Storage.
+- Kartu publik, dashboard, kelas saya, dan admin otomatis memakai cover terbaru.
+- Statistik jumlah video/kuis otomatis diperbarui ketika konten diubah.
+- Forum diskusi per video tetap aktif dengan reply.
+- Live chat, pembayaran, notifikasi, kuis, progress, sertifikat tetap dipertahankan.
+
+STABILITAS
+- Service worker dinaikkan ke cache `belajarislam-v6.0.0-shell`.
+- Asset version query dinaikkan ke v600 agar cache lama tidak menahan UI baru.
+- Firebase Storage SDK tidak digunakan.

@@ -1,21 +1,25 @@
-VALIDASI PACKAGE — belajarislam.online LMS v5.2.1
+BELAJARISLAM.ONLINE LMS v6.0.0 — VALIDASI PACKAGE
 
-HOTFIX UTAMA
-[OK] core.js tidak lagi mengekspor variabel Firebase Storage yang sudah dihapus.
-[OK] Semua file JavaScript lulus pemeriksaan sintaks Node.
-[OK] Semua named export core.js memiliki binding yang valid.
-[OK] Semua referensi file script pada HTML tersedia.
-[OK] Cache aset dinaikkan dari v520 ke v521.
-[OK] Service worker cache dinaikkan ke belajarislam-v5.2.1-shell.
-[OK] Service worker hanya memakai index.html sebagai fallback navigasi, bukan fallback JS/CSS.
-[OK] Firebase Storage tetap tidak diperlukan.
-[OK] Database Rules tetap disertakan dalam full package.
+- JavaScript files: 10 — syntax checked with node --check
+- JSON files: valid
+- index.html: 16 IDs, duplicate IDs=0
+- pages/certificate.html: 11 IDs, duplicate IDs=0
+- pages/dashboard.html: 38 IDs, duplicate IDs=0
+- pages/class.html: 43 IDs, duplicate IDs=0
+- pages/admin.html: 41 IDs, duplicate IDs=0
+- 404.html: 0 IDs, duplicate IDs=0
+- Login/daftar: OK
+- Dashboard member: OK
+- Live chat member: OK
+- Forum per video: OK
+- Kuis per video: OK
+- Pembayaran: OK
+- Admin Center: OK
+- Upload cover kelas: OK
+- Responsive mobile nav: OK
+- Realtime Database classCovers rules: OK
+- Firebase Storage SDK reference: NONE
+- Service worker cache: belajarislam-v6.0.0-shell
+- Domain CNAME: belajarislam.online
 
-GEJALA YANG DIPERBAIKI
-- Tombol Masuk/Daftar tampak tidak aktif.
-- Tab login/daftar tidak merespons.
-- Tombol/filter/menu yang bergantung pada JavaScript tidak merespons.
-- Katalog dinamis tidak termuat.
-
-AKAR MASALAH
-v5.2.0 masih memiliki export `storage` di core.js meskipun Storage sudah dilepas dari firebase-config.js. Browser gagal melakukan linking ES Module sehingga index.js dan modul lain berhenti sebelum memasang event listener.
+Catatan: rendering visual headless Chromium tidak dapat dipakai di container ini karena proses browser tidak menyelesaikan lifecycle DBus; validasi dilakukan melalui struktur HTML/CSS/JS, syntax JS, JSON, ID DOM, file reference, dan rules.

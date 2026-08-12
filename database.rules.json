@@ -129,6 +129,12 @@
         ".write": "auth != null && ((!data.exists() && newData.child('uid').val() === auth.uid) || root.child('users').child(auth.uid).child('role').val() === 'admin')"
       },
       ".read": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || root.child('users').child(auth.uid).child('role').val() === 'mentor')"
+    },
+    "classCovers": {
+      ".read": true,
+      "$classId": {
+        ".write": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || root.child('users').child(auth.uid).child('role').val() === 'mentor')"
+      }
     }
   }
 }

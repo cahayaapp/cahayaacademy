@@ -1,56 +1,42 @@
-BELAJARISLAM.ONLINE LMS v5.2.1 — FULL UI/UX OVERHAUL
+BELAJARISLAM.ONLINE LMS v6.0.0 — LANGKAH UPDATE
 
-1. UPLOAD
-   Upload seluruh isi folder ini ke root hosting/GitHub Pages.
-
-2. CUSTOM DOMAIN
-   File CNAME sudah berisi:
+1. Backup repository lama jika diperlukan.
+2. Hapus / ganti seluruh file versi lama dengan isi paket v6.0.0. Jangan hanya mengganti index.html.
+3. Pastikan file CNAME tetap berada di root repository dan berisi:
    belajarislam.online
+4. Firebase Console → Authentication → Sign-in method:
+   Email/Password = Enabled.
+5. Firebase Console → Authentication → Settings → Authorized domains:
+   tambahkan belajarislam.online
+   tambahkan www.belajarislam.online hanya bila domain www juga dipakai.
+6. Firebase Console → Realtime Database → Rules:
+   ganti rules lama dengan isi database.rules.json versi v6.0.0 lalu Publish.
+7. Firebase Storage TIDAK PERLU diaktifkan.
+   - Bukti transfer: dikompresi lalu masuk ke Realtime Database pada paymentProofs.
+   - Cover kelas: dikompresi/crop 16:9 lalu masuk ke Realtime Database pada classCovers.
+8. Pastikan akun admin yang sudah ada memiliki:
+   users/{UID}/role = "admin"
+9. Upload ke GitHub Pages / hosting.
+10. Setelah deploy selesai, lakukan hard refresh sekali:
+    Mac: Command + Shift + R
+    Windows: Ctrl + Shift + R
 
-3. FIREBASE AUTHENTICATION
-   - Email/Password: Enabled
-   - Authorized domains:
-     belajarislam.online
-     www.belajarislam.online (jika digunakan)
-
-4. REALTIME DATABASE
-   Buka Realtime Database > Rules.
-   Salin seluruh isi database.rules.json lalu Publish.
-
-5. BUKTI TRANSFER — TANPA FIREBASE STORAGE
-   Tidak perlu mengaktifkan Firebase Storage.
-   Foto bukti transfer dikompres otomatis di browser, lalu disimpan terpisah di Realtime Database pada path paymentProofs/{paymentId}.
-
-6. AKUN ADMIN
-   Pastikan akun admin mempunyai:
-   users/{UID}/role = admin
-
-7. PENGATURAN ADMIN
-   Login admin > Pengaturan:
-   - Nama bank
-   - Nomor rekening
-   - Nama pemilik rekening
-   - WhatsApp admin
-   - Penandatangan sertifikat
-
-8. KELAS & VIDEO
-   Admin > Kelola Kelas:
-   - buat kelas Gratis atau Berbayar
-   - tambah video YouTube atau Google Drive
-
-9. KUIS
-   Admin > Kuis > pilih kelas dan video > masukkan soal + nilai lulus.
-
-10. ALUR PESERTA
-    Daftar > login > pilih kelas > belajar > forum/kuis > sertifikat.
-    Untuk kelas berbayar: transfer > upload bukti > admin approve > akses aktif otomatis.
-
-11. CACHE / FAVICON
-    Service worker sudah dinaikkan ke cache v5.2.1.
-    Setelah upload, lakukan hard refresh satu kali agar UI/favikon versi lama tidak tertahan browser.
-
-DATA LAMA
-Data pengguna, kelas, pembayaran, chat, progres, forum, dan kuis tetap menggunakan jalur database yang kompatibel dengan v5.1.1.
-
-HOTFIX v5.2.1
-Jika sebelumnya sudah mengupload v5.2.0, ganti SELURUH file dengan paket v5.2.1 (jangan hanya index.html), lalu lakukan hard refresh sekali. Cache service worker sudah dinaikkan ke v5.2.1 agar modul lama tidak digunakan lagi.
+TEST WAJIB SETELAH DEPLOY
+A. Public
+- Landing page tampil.
+- Tombol Masuk dan Daftar membuka modal.
+- Katalog kelas tampil.
+B. Member
+- Login berhasil.
+- Katalog dan Kelas Saya bisa diklik.
+- Video mobile tidak geser horizontal.
+- Forum per video bisa kirim & reply.
+- Chat admin bisa kirim.
+- Profil WA saat diubah ikut terlihat di admin.
+C. Admin
+- Tambah/edit kelas.
+- Upload cover kelas dan preview.
+- Tambah YouTube/Google Drive.
+- Buat kuis.
+- Lihat pembayaran & bukti transfer.
+- Approve pembayaran membuka akses kelas.

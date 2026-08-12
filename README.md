@@ -1,66 +1,35 @@
-# belajarislam.online LMS v5.2.1
+# belajarislam.online LMS v6.0.0 FINAL
 
-Full package LMS berbasis HTML/CSS/JavaScript + Firebase Authentication dan Realtime Database. Versi 5.2.1 merupakan **UI/UX overhaul penuh** yang diarahkan ke gaya LMS nasional: modern, fresh, islami, ringan, dan responsif di desktop maupun mobile.
+Full rebuild UI/UX berdasarkan master visual belajarislam.online: hijau emerald, teal, emas, putih, clean, premium, dan responsive.
 
-## Identitas visual
-- Nama: **belajarislam.online**
-- Domain: `belajarislam.online`
-- Palet: hijau emerald/teal, putih lembut, aksen emas
-- Logo dan favicon presisi: ICO + PNG 16/32/48/64/128/180/192/256/512
-- Dark mode tetap tersedia
-- PWA/service worker dasar
-
-## UI/UX v5.2.1
-- Landing hero besar dengan visual islami modern dan panel daftar/masuk
-- Header lebih ringkas dan premium
-- Katalog kelas bergaya kartu modern
-- Dashboard pelajar dengan sidebar desktop, hero personal, progres, lanjut belajar, aktivitas terbaru
-- Mobile bottom navigation yang ringkas
-- Live chat mobile tetap melalui tombol mengambang kanan bawah
-- Ruang kelas dengan video besar, daftar materi di kanan (desktop), forum/kuis/pembayaran di bawah video
-- Video full-width responsif di mobile tanpa scroll horizontal
-- Admin Center bergaya dashboard operasional modern
-- Semua layout menggunakan komponen konsisten: card, badge, form, table, modal, progress, chat bubble
-
-## Modul Pelajar
-- Registrasi mandiri dan login
-- Katalog kelas gratis / berbayar
-- Kelas Saya
-- Video YouTube atau Google Drive
-- Tracking progres YouTube + tombol tandai selesai
-- Kuis pilihan ganda per video
-- Forum diskusi khusus setiap video + reply thread
-- Sertifikat setelah kelas selesai dan kuis wajib lulus
-- Pembayaran transfer, copy rekening dan nominal, upload bukti
-- Upload bukti transfer tanpa Firebase Storage: foto dikompres otomatis dan disimpan di Realtime Database
-- Notifikasi pembayaran
-- Live chat realtime dengan admin
-- Profil peserta tersinkron ke admin
-
-## Modul Admin/Pembimbing
-- Dashboard statistik dan analitik pembelajaran
-- Buat/edit/arsip kelas
-- Tambah/edit/hapus video
-- Kelas gratis/berbayar
-- Verifikasi pembayaran + lihat bukti transfer saat diperlukan
-- Kelola kuis per video
-- Data pengguna + ubah role student/mentor/admin
-- Live chat peserta
-- Pengaturan rekening, WhatsApp admin, dan sertifikat
+## Fitur utama
+- Landing page modern + katalog kelas publik
+- Registrasi pelajar mandiri dan login Firebase Authentication
+- Dashboard member desktop & mobile
+- Katalog kelas gratis / premium
+- Upload cover kelas langsung dari Admin Center
+- Cover otomatis crop 16:9 dan kompres, tanpa Firebase Storage
+- YouTube / Google Drive sebagai sumber video
+- Progres belajar per video
+- Forum diskusi per video + reply
+- Kuis per video
+- Sertifikat penyelesaian
+- Pembayaran transfer + copy rekening/nominal + upload bukti transfer
+- Approval pembayaran admin membuka kelas otomatis
+- Bukti transfer dikompres dan disimpan terpisah di Realtime Database
+- Profil member tersinkron ke admin
+- Notifikasi realtime
+- Live chat member ↔ admin
+- Admin Center responsive
+- PWA + dark mode
 
 ## Firebase
-Konfigurasi project ada di `assets/js/firebase-config.js`.
+Project yang dipakai tetap `cahayaacademy-f8787` sesuai konfigurasi sebelumnya.
 
-Sebelum produksi:
-1. Firebase Authentication > Sign-in method > aktifkan Email/Password.
-2. Authentication > Settings > Authorized domains: tambahkan `belajarislam.online` dan `www.belajarislam.online` jika dipakai.
-3. Realtime Database > Rules: ganti seluruh rules dengan `database.rules.json` lalu Publish.
-4. Firebase Storage **tidak diperlukan** untuk bukti transfer pada paket ini.
-5. Pastikan akun admin memiliki `users/{uid}/role = "admin"`.
-6. Login admin lalu isi rekening, WhatsApp admin, dan identitas sertifikat di Pengaturan.
+Wajib:
+1. Authentication Email/Password aktif.
+2. Realtime Database aktif.
+3. Publish `database.rules.json` versi v6.0.0.
+4. Tambahkan `belajarislam.online` dan bila dipakai `www.belajarislam.online` di Authentication → Authorized domains.
 
-## Bukti transfer tanpa Storage
-Foto dikompresi di browser menjadi JPEG ringan dan disimpan terpisah pada `paymentProofs/{paymentId}`. Bukti tidak ikut dimuat saat daftar transaksi dibuka; baru diambil saat admin menekan tombol lihat.
-
-## Catatan video
-YouTube memakai embed `youtube-nocookie.com`. Elemen tertentu dari YouTube masih dapat tampil sesuai kebijakan player YouTube. Google Drive memakai mode preview/embed.
+Firebase Storage tidak diperlukan untuk versi ini.

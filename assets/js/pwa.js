@@ -1,7 +1,7 @@
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', async () => {
     try {
-      const registration = await navigator.serviceWorker.register('../sw.js?v=521');
+      const registration = await navigator.serviceWorker.register('../sw.js?v=600');
       await registration.update();
     } catch (_) {}
   });
