@@ -1,51 +1,24 @@
-BELAJARISLAM.ONLINE LMS v5.1.0 — FULL PACKAGE
+BELAJARISLAM.ONLINE LMS v6.4.1 — UPDATE EBOOK GOOGLE DRIVE
 
-1. UPLOAD
-   Upload seluruh isi folder ini ke root hosting/GitHub Pages.
+1. Upload seluruh isi paket v6.4.1 menggantikan versi sebelumnya.
+2. Firebase Console > Realtime Database > Rules.
+3. Ganti Rules dengan database.rules.json v6.4.1 lalu Publish.
+4. Lakukan hard refresh sekali setelah deploy.
 
-2. CUSTOM DOMAIN
-   File CNAME sudah berisi:
-   belajarislam.online
+MEMBUAT EBOOK DARI GOOGLE DRIVE
+1. Upload PDF ke Google Drive.
+2. Atur file agar dapat diakses melalui link sesuai kebutuhan LMS.
+3. Admin > Ebook > Buat/Edit Ebook.
+4. Pada Sumber file ebook pilih Google Drive.
+5. Tempel link file Drive atau File ID.
+6. Isi nama file download, contoh: quranic-luck-mastery.pdf.
+7. Simpan Ebook.
+8. Untuk ebook berbayar, setelah pembayaran di-approve peserta memperoleh akses dan tombol Download Ebook aktif.
 
-3. FIREBASE AUTHENTICATION
-   - Email/Password: Enabled
-   - Authorized domains:
-     belajarislam.online
-     www.belajarislam.online (jika digunakan)
+HASIL
+- Peserta tidak diarahkan ke halaman Google Drive ketika menekan Download.
+- Link Drive tidak ditulis di HTML halaman publik.
+- Sumber disimpan di Firebase path privat ebookSources/{ebookId}.
 
-4. REALTIME DATABASE
-   Buka Realtime Database > Rules.
-   Salin seluruh isi database.rules.json lalu Publish.
-
-5. FIREBASE STORAGE
-   Aktifkan Storage jika bukti transfer memakai upload gambar.
-   Salin seluruh isi storage.rules lalu Publish.
-
-6. AKUN ADMIN
-   Pastikan akun admin yang sudah ada mempunyai:
-   users/{UID}/role = admin
-
-7. PENGATURAN ADMIN
-   Login admin > Pengaturan:
-   - Nama bank
-   - Nomor rekening
-   - Nama pemilik rekening
-   - WhatsApp admin
-   - Penandatangan sertifikat
-
-8. KELAS & VIDEO
-   Admin > Kelola Kelas:
-   - buat kelas Gratis atau Berbayar
-   - tambah video YouTube atau Google Drive
-   Link YouTube biasa akan dinormalisasi otomatis menjadi embed youtube-nocookie.
-   Link Google Drive biasa akan dinormalisasi menjadi preview bila format ID dapat dikenali.
-
-9. KUIS
-   Admin > Kuis > pilih kelas dan video > masukkan soal + nilai lulus.
-
-10. ALUR PESERTA
-    Daftar > login > pilih kelas > belajar > kuis > forum > sertifikat.
-    Untuk kelas berbayar: transfer > upload bukti > admin approve > akses aktif otomatis.
-
-CATATAN UPGRADE
-Data pengguna, kelas, pembayaran, dan chat versi sebelumnya tetap memakai jalur database yang kompatibel.
+BATAS TEKNIS
+Browser harus mengetahui endpoint yang dipakai untuk mengunduh file. Karena itu pengguna yang sangat teknis masih dapat melihat request Google Drive melalui DevTools Network. Untuk menyembunyikan origin secara penuh diperlukan backend proxy/server.

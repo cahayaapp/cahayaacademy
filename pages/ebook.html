@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>Ebook — belajarislam.online</title><meta name="theme-color" content="#075e54">
+  <link rel="icon" href="../assets/img/favicon.ico?v=641" sizes="any"><link rel="icon" type="image/svg+xml" href="../assets/img/logo-icon.svg?v=641"><link rel="apple-touch-icon" href="../assets/img/icon-180.png?v=641"><link rel="manifest" href="../manifest.webmanifest?v=641"><link rel="stylesheet" href="../assets/css/styles.css?v=641">
+</head>
+<body class="app-body ebook-page-body">
+  <div class="toast" id="toast"></div>
+  <header class="app-header"><div class="app-header-inner"><a class="brand brand-public compact" href="dashboard.html#ebooks"><img src="../assets/img/logo-icon.svg?v=641" alt=""><div class="brand-word"><b>belajarislam</b><strong>.online</strong><small>PERPUSTAKAAN DIGITAL</small></div></a><div class="header-actions"><button class="icon-btn" data-theme-toggle>☾</button><a class="btn small subtle" href="dashboard.html#ebooks">Ebook Saya</a><button class="btn small subtle desktop-only" id="ebookLogoutBtn">Keluar</button></div></div></header>
+  <main class="container ebook-main">
+    <div class="lesson-breadcrumb"><a href="dashboard.html#ebooks">← Kembali ke Ebook Saya</a></div>
+    <div class="ebook-layout">
+      <section class="surface-card ebook-product-card">
+        <div class="ebook-cover-large" id="ebookCoverLarge"><span>PDF</span></div>
+        <div class="ebook-product-copy">
+          <div class="utility-row"><span class="badge student">EBOOK</span><span id="ebookPriceBadge" class="badge paid">-</span><span id="ebookAccessBadge" class="badge pending">-</span></div>
+          <h1 id="ebookTitle">Memuat ebook...</h1>
+          <p class="ebook-author" id="ebookAuthor">-</p>
+          <p class="ebook-description" id="ebookDescription">-</p>
+          <div class="ebook-meta-row"><span id="ebookFileMeta">PDF digital</span><span>Unduh dari akun Anda</span></div>
+          <div id="ebookDownloadArea" class="ebook-download-area hidden"><button class="btn primary large" id="downloadEbookBtn">↓ Download Ebook PDF</button><p class="muted mini">File diambil setelah akun memiliki akses. Jika sumbernya Google Drive, unduhan diproses tanpa membuka halaman Drive.</p></div>
+        </div>
+      </section>
+      <aside class="surface-card ebook-access-card">
+        <div class="section-head"><div><span class="section-kicker">AKSES PRODUK</span><h2 id="ebookAccessTitle">Akses Ebook</h2></div></div>
+        <div id="ebookFreeBox" class="hidden"><div class="empty-state">Ebook ini gratis. Klik tombol di bawah untuk memasukkannya ke perpustakaan Anda.</div><div style="height:12px"></div><button class="btn primary full-btn" id="claimFreeEbookBtn">Ambil Ebook Gratis</button></div>
+        <div id="ebookPaidBox" class="hidden"><div class="payment-cards ebook-payment-cards"><article><small>REKENING</small><b id="ebookBankName">-</b><div class="copy-line"><strong id="ebookBankNumber">-</strong><button type="button" class="btn tiny subtle" id="copyEbookAccountBtn">Salin</button></div><span id="ebookAccountName">-</span></article><article><small>NOMINAL</small><b id="ebookAmountText">-</b><button type="button" class="btn tiny subtle" id="copyEbookAmountBtn">Salin Nominal</button></article><article><small>STATUS</small><b id="ebookPaymentStatus">Belum ada pembayaran</b></article></div><form id="ebookPaymentForm" class="payment-upload-form"><div class="form-grid"><div class="field"><label>Nama pengirim</label><input id="ebookSenderName" required></div><div class="field"><label>Bank pengirim</label><input id="ebookSenderBank" required></div><div class="field full"><label>Foto bukti transfer</label><input id="ebookProofFile" type="file" accept="image/*" required><span class="field-note">Foto dikompresi otomatis dan disimpan di Firebase.</span></div></div><button class="btn primary full-btn">Kirim Bukti Pembayaran</button></form></div>
+      </aside>
+    </div>
+  </main>
+  <nav class="mobile-bottom-nav"><a href="dashboard.html"><span>⌂</span>Beranda</a><a href="dashboard.html#catalog"><span>▦</span>Katalog</a><a href="dashboard.html#ebooks" class="active"><span>▤</span>Ebook</a><a href="dashboard.html#profile"><span>◎</span>Profil</a></nav>
+  <script type="module" src="../assets/js/theme.js?v=641"></script><script type="module" src="../assets/js/pwa.js?v=641"></script><script type="module" src="../assets/js/ebook.js?v=641"></script>
+</body>
+</html>
