@@ -1,4 +1,4 @@
-BELAJARISLAM.ONLINE LMS v5.2.0 — FULL UI/UX OVERHAUL
+BELAJARISLAM.ONLINE LMS v5.2.1 — FULL UI/UX OVERHAUL
 
 1. UPLOAD
    Upload seluruh isi folder ini ke root hosting/GitHub Pages.
@@ -46,8 +46,11 @@ BELAJARISLAM.ONLINE LMS v5.2.0 — FULL UI/UX OVERHAUL
     Untuk kelas berbayar: transfer > upload bukti > admin approve > akses aktif otomatis.
 
 11. CACHE / FAVICON
-    Service worker sudah dinaikkan ke cache v5.2.0.
+    Service worker sudah dinaikkan ke cache v5.2.1.
     Setelah upload, lakukan hard refresh satu kali agar UI/favikon versi lama tidak tertahan browser.
 
 DATA LAMA
 Data pengguna, kelas, pembayaran, chat, progres, forum, dan kuis tetap menggunakan jalur database yang kompatibel dengan v5.1.1.
+
+HOTFIX v5.2.1
+Jika sebelumnya sudah mengupload v5.2.0, ganti SELURUH file dengan paket v5.2.1 (jangan hanya index.html), lalu lakukan hard refresh sekali. Cache service worker sudah dinaikkan ke v5.2.1 agar modul lama tidak digunakan lagi.

@@ -1,4 +1,4 @@
-BELAJARISLAM.ONLINE LMS v5.2.0
+BELAJARISLAM.ONLINE LMS v5.2.1
 
 UI/UX OVERHAUL PENUH
 - Landing page dirombak agar mendekati mockup LMS nasional: hero besar, visual islami, login/register card, trust strip, katalog premium, CTA.
@@ -9,7 +9,7 @@ UI/UX OVERHAUL PENUH
 - Frame video mobile dipastikan 16:9, width 100%, tidak perlu geser horizontal.
 - Live chat mobile tetap berupa tombol mengambang kanan bawah, bukan item bottom menu.
 - Palet brand diselaraskan: emerald/teal + aksen emas.
-- Cache service worker dinaikkan ke v5.2.0.
+- Cache service worker dinaikkan ke v5.2.1.
 - Favicon dan logo presisi dari v5.1.1 dipertahankan.
 - Firebase Storage tetap tidak diperlukan; bukti transfer memakai kompresi browser + Realtime Database.
 

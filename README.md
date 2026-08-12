@@ -1,6 +1,6 @@
-# belajarislam.online LMS v5.2.0
+# belajarislam.online LMS v5.2.1
 
-Full package LMS berbasis HTML/CSS/JavaScript + Firebase Authentication dan Realtime Database. Versi 5.2.0 merupakan **UI/UX overhaul penuh** yang diarahkan ke gaya LMS nasional: modern, fresh, islami, ringan, dan responsif di desktop maupun mobile.
+Full package LMS berbasis HTML/CSS/JavaScript + Firebase Authentication dan Realtime Database. Versi 5.2.1 merupakan **UI/UX overhaul penuh** yang diarahkan ke gaya LMS nasional: modern, fresh, islami, ringan, dan responsif di desktop maupun mobile.
 
 ## Identitas visual
 - Nama: **belajarislam.online**
@@ -10,7 +10,7 @@ Full package LMS berbasis HTML/CSS/JavaScript + Firebase Authentication dan Real
 - Dark mode tetap tersedia
 - PWA/service worker dasar
 
-## UI/UX v5.2.0
+## UI/UX v5.2.1
 - Landing hero besar dengan visual islami modern dan panel daftar/masuk
 - Header lebih ringkas dan premium
 - Katalog kelas bergaya kartu modern

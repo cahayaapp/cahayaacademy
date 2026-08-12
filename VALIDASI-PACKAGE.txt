@@ -1,21 +1,21 @@
-VALIDASI PACKAGE — belajarislam.online LMS v5.2.0
+VALIDASI PACKAGE — belajarislam.online LMS v5.2.1
 
-Status: LULUS
+HOTFIX UTAMA
+[OK] core.js tidak lagi mengekspor variabel Firebase Storage yang sudah dihapus.
+[OK] Semua file JavaScript lulus pemeriksaan sintaks Node.
+[OK] Semua named export core.js memiliki binding yang valid.
+[OK] Semua referensi file script pada HTML tersedia.
+[OK] Cache aset dinaikkan dari v520 ke v521.
+[OK] Service worker cache dinaikkan ke belajarislam-v5.2.1-shell.
+[OK] Service worker hanya memakai index.html sebagai fallback navigasi, bukan fallback JS/CSS.
+[OK] Firebase Storage tetap tidak diperlukan.
+[OK] Database Rules tetap disertakan dalam full package.
 
-Pemeriksaan yang dijalankan:
-- Sintaks seluruh JavaScript: OK
-- database.rules.json: JSON valid
-- manifest.webmanifest: JSON valid
-- Duplikasi ID pada HTML: tidak ditemukan
-- Referensi file lokal HTML (CSS/JS/img/link): tidak ada yang hilang
-- Referensi getElementById / helper $() JS terhadap HTML: cocok
-- Service worker cache: belajarislam-v5.2.0-shell
-- CNAME: belajarislam.online
-- Firebase Storage SDK: tidak diperlukan untuk bukti transfer
-- Bukti transfer: kompresi client-side + Realtime Database
-- Layout mobile: breakpoint 1000/700/430 px, overflow-x dinonaktifkan, player 16:9 width 100%
-- Live chat mobile: tombol mengambang kanan bawah; bukan item bottom navigation
+GEJALA YANG DIPERBAIKI
+- Tombol Masuk/Daftar tampak tidak aktif.
+- Tab login/daftar tidak merespons.
+- Tombol/filter/menu yang bergantung pada JavaScript tidak merespons.
+- Katalog dinamis tidak termuat.
 
-Catatan:
-- YouTube tetap mengikuti kemampuan dan kebijakan embed player YouTube.
-- Database Rules perlu dipublish setelah deployment bila belum menggunakan rules terbaru paket.
+AKAR MASALAH
+v5.2.0 masih memiliki export `storage` di core.js meskipun Storage sudah dilepas dari firebase-config.js. Browser gagal melakukan linking ES Module sehingga index.js dan modul lain berhenti sebelum memasang event listener.

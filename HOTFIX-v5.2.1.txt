@@ -1,0 +1,13 @@
+BELAJARISLAM.ONLINE LMS v5.2.1 — HOTFIX INTERAKTIVITAS
+
+Penyebab v5.2.0 tidak dapat diklik/login:
+core.js masih mengekspor binding `storage` padahal Firebase Storage sudah dihapus pada v5.1.1. Browser menolak memuat modul JavaScript tersebut, sehingga seluruh event handler halaman tidak aktif.
+
+Perbaikan:
+- Hapus export `storage` yang sudah tidak ada.
+- Cache-bust seluruh aset ke v521.
+- Service worker dinaikkan ke v5.2.1.
+- Fallback service worker diperketat agar file JS/CSS tidak pernah diganti HTML fallback.
+- PWA registration memaksa pengecekan update service worker.
+
+Tidak ada perubahan struktur database yang diwajibkan dari v5.2.0 ke v5.2.1.

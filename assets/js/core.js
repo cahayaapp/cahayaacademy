@@ -258,4 +258,4 @@ export async function fetchCertificate(uid,classId){ const s=await get(ref(db,`c
 export async function logActivity(uid,payload){ const p=push(ref(db,`activities/${uid}`)); await set(p,{...payload,createdAt:Date.now()}); }
 export async function fetchActivities(uid,limit=12){ const s=await get(ref(db,`activities/${uid}`)); const data=s.val()||{}; return Object.entries(data).map(([id,v])=>({id,...v})).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0)).slice(0,limit); }
 
-export { auth, db, storage, onAuthStateChanged, ref, get, set, update, push, remove };
+export { auth, db, onAuthStateChanged, ref, get, set, update, push, remove };
