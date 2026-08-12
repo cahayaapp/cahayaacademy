@@ -1,12 +1,26 @@
-# belajarislam.online LMS v5.1.0
+# belajarislam.online LMS v5.2.0
 
-Paket penuh LMS berbasis HTML/CSS/JavaScript + Firebase Authentication, Realtime Database, dan Storage. Tidak membutuhkan proses build.
+Full package LMS berbasis HTML/CSS/JavaScript + Firebase Authentication dan Realtime Database. Versi 5.2.0 merupakan **UI/UX overhaul penuh** yang diarahkan ke gaya LMS nasional: modern, fresh, islami, ringan, dan responsif di desktop maupun mobile.
 
-## Identitas
+## Identitas visual
 - Nama: **belajarislam.online**
 - Domain: `belajarislam.online`
-- UI: emerald/teal + aksen emas, responsive desktop/mobile, dark mode
-- Logo/app icon sudah termasuk dalam `assets/img/`
+- Palet: hijau emerald/teal, putih lembut, aksen emas
+- Logo dan favicon presisi: ICO + PNG 16/32/48/64/128/180/192/256/512
+- Dark mode tetap tersedia
+- PWA/service worker dasar
+
+## UI/UX v5.2.0
+- Landing hero besar dengan visual islami modern dan panel daftar/masuk
+- Header lebih ringkas dan premium
+- Katalog kelas bergaya kartu modern
+- Dashboard pelajar dengan sidebar desktop, hero personal, progres, lanjut belajar, aktivitas terbaru
+- Mobile bottom navigation yang ringkas
+- Live chat mobile tetap melalui tombol mengambang kanan bawah
+- Ruang kelas dengan video besar, daftar materi di kanan (desktop), forum/kuis/pembayaran di bawah video
+- Video full-width responsif di mobile tanpa scroll horizontal
+- Admin Center bergaya dashboard operasional modern
+- Semua layout menggunakan komponen konsisten: card, badge, form, table, modal, progress, chat bubble
 
 ## Modul Pelajar
 - Registrasi mandiri dan login
@@ -18,46 +32,35 @@ Paket penuh LMS berbasis HTML/CSS/JavaScript + Firebase Authentication, Realtime
 - Forum diskusi khusus setiap video + reply thread
 - Sertifikat setelah kelas selesai dan kuis wajib lulus
 - Pembayaran transfer, copy rekening dan nominal, upload bukti
+- Upload bukti transfer tanpa Firebase Storage: foto dikompres otomatis dan disimpan di Realtime Database
 - Notifikasi pembayaran
 - Live chat realtime dengan admin
 - Profil peserta tersinkron ke admin
-- Dark mode
-- PWA/service worker dasar
 
 ## Modul Admin/Pembimbing
 - Dashboard statistik dan analitik pembelajaran
 - Buat/edit/arsip kelas
 - Tambah/edit/hapus video
 - Kelas gratis/berbayar
-- Verifikasi pembayaran
+- Verifikasi pembayaran + lihat bukti transfer saat diperlukan
 - Kelola kuis per video
 - Data pengguna + ubah role student/mentor/admin
 - Live chat peserta
 - Pengaturan rekening, WhatsApp admin, dan sertifikat
 
-## Struktur penting
-- `index.html` — landing, login, daftar, katalog publik
-- `pages/dashboard.html` — dashboard pelajar
-- `pages/class.html` — ruang belajar video, kuis, forum, pembayaran
-- `pages/admin.html` — panel admin/pembimbing
-- `pages/certificate.html` — sertifikat
-- `database.rules.json` — Realtime Database Rules
-- `storage.rules` — Storage Rules
-- `CNAME` — custom domain GitHub Pages
-
 ## Firebase
-Konfigurasi project yang sudah digunakan ada di `assets/js/firebase-config.js`.
+Konfigurasi project ada di `assets/js/firebase-config.js`.
 
 Sebelum produksi:
 1. Firebase Authentication > Sign-in method > aktifkan Email/Password.
 2. Authentication > Settings > Authorized domains: tambahkan `belajarislam.online` dan `www.belajarislam.online` jika dipakai.
 3. Realtime Database > Rules: ganti seluruh rules dengan `database.rules.json` lalu Publish.
-4. Firebase Storage > Rules: ganti dengan `storage.rules` lalu Publish.
-5. Pastikan akun admin lama memiliki `users/{uid}/role = "admin"`.
-6. Admin masuk lalu isi rekening dan WhatsApp admin pada Pengaturan.
+4. Firebase Storage **tidak diperlukan** untuk bukti transfer pada paket ini.
+5. Pastikan akun admin memiliki `users/{uid}/role = "admin"`.
+6. Login admin lalu isi rekening, WhatsApp admin, dan identitas sertifikat di Pengaturan.
+
+## Bukti transfer tanpa Storage
+Foto dikompresi di browser menjadi JPEG ringan dan disimpan terpisah pada `paymentProofs/{paymentId}`. Bukti tidak ikut dimuat saat daftar transaksi dibuka; baru diambil saat admin menekan tombol lihat.
 
 ## Catatan video
-YouTube diputar melalui `youtube-nocookie.com` dengan embed yang lebih bersih. YouTube tetap dapat menampilkan elemen platform tertentu karena batasan player YouTube. Google Drive memakai mode preview/embed; pembatasan download tetap bergantung pada pengaturan file Google Drive.
-
-## Upgrade dari v4/v5
-Struktur data utama tetap memakai path lama (`users`, `classes`, `videos`, `enrollments`, `payments`, `liveChats`, `notifications`), sehingga data lama dapat dilanjutkan. v5.1 menambahkan `lessonProgress`, `quizzes`, `quizResults`, `certificates`, dan `activities`.
+YouTube memakai embed `youtube-nocookie.com`. Elemen tertentu dari YouTube masih dapat tampil sesuai kebijakan player YouTube. Google Drive memakai mode preview/embed.

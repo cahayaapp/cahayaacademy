@@ -20,9 +20,10 @@ function card(item){
     <div class="class-body">
       <div class="class-title">${escapeHtml(item.title)}</div>
       <div class="muted class-desc">${escapeHtml(item.description||'')}</div>
+      <div class="class-meta"><span>◈ ${escapeHtml(item.level||'Semua level')}</span><span>● ${escapeHtml(item.category||'Kelas Islam')}</span></div>
       <div class="card-footer-row">
-        <div>${paid?`<div class="course-price">${rupiah(item.price)}</div>`:'<div class="course-price free-price">Gratis</div>'}<div class="muted mini">${escapeHtml(item.level||'Semua level')}</div></div>
-        <a href="#auth" class="btn small primary">Mulai Belajar</a>
+        <div>${paid?`<div class="course-price">${rupiah(item.price)}</div>`:'<div class="course-price free-price">Gratis</div>'}<div class="muted mini">Akses belajar fleksibel</div></div>
+        <a href="#auth" class="btn small primary">Mulai</a>
       </div>
     </div>
   </article>`;

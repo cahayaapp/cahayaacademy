@@ -1,7 +1,7 @@
 import {
   auth,onAuthStateChanged,fetchProfile,logoutUser,fetchUsers,setUserRole,fetchAllPayments,
   fetchClasses,saveClass,archiveClass,fetchVideos,saveVideo,deleteVideo,fetchSettings,saveSettings,
-  approvePayment,rejectPayment,toast,rupiah,initials,escapeHtml,subscribeLiveChat,sendLiveChatMessage,
+  approvePayment,rejectPayment,fetchPaymentProof,toast,rupiah,initials,escapeHtml,subscribeLiveChat,sendLiveChatMessage,
   saveQuizQuestion,fetchQuiz,deleteQuizQuestion,fetchAllProgress,fetchAllQuizResultsAdmin,fetchAllEnrollments,
   subscribeNotifications,markAllNotifRead
 } from './core.js';
@@ -39,7 +39,16 @@ function renderAnalytics(){
 }
 function renderPayments(){
   const wrap=document.getElementById('paymentTableWrap');if(!payments.length){wrap.innerHTML='<div class="empty-state">Belum ada pembayaran.</div>';return;}
-  wrap.innerHTML=`<table><thead><tr><th>Tanggal</th><th>Peserta</th><th>Kelas</th><th>Nominal</th><th>Status</th><th>Bukti</th><th>Aksi</th></tr></thead><tbody>${payments.map(p=>{const u=users.find(x=>x.uid===p.uid),c=classes.find(x=>x.id===p.classId);return `<tr><td>${new Date(p.createdAt||Date.now()).toLocaleString('id-ID')}</td><td><strong>${escapeHtml(u?.name||p.senderName||'-')}</strong><div class="muted mini">${escapeHtml(u?.whatsapp||'-')}</div></td><td>${escapeHtml(c?.title||p.classId)}</td><td>${rupiah(p.amount)}</td><td><span class="badge ${p.status==='approved'?'free':p.status==='rejected'?'pending':'paid'}">${escapeHtml(p.status)}</span></td><td>${p.proofUrl?`<a class="btn small" href="${escapeHtml(p.proofUrl)}" target="_blank" rel="noopener">Lihat</a>`:'-'}</td><td><div class="utility-row"><button class="btn small primary" data-approve="${p.id}" ${p.status==='approved'?'disabled':''}>Setujui</button><button class="btn small" data-reject="${p.id}" ${p.status==='rejected'?'disabled':''}>Tolak</button></div></td></tr>`;}).join('')}</tbody></table>`;
+  wrap.innerHTML=`<table><thead><tr><th>Tanggal</th><th>Peserta</th><th>Kelas</th><th>Nominal</th><th>Status</th><th>Bukti</th><th>Aksi</th></tr></thead><tbody>${payments.map(p=>{const u=users.find(x=>x.uid===p.uid),c=classes.find(x=>x.id===p.classId);return `<tr><td>${new Date(p.createdAt||Date.now()).toLocaleString('id-ID')}</td><td><strong>${escapeHtml(u?.name||p.senderName||'-')}</strong><div class="muted mini">${escapeHtml(u?.whatsapp||'-')}</div></td><td>${escapeHtml(c?.title||p.classId)}</td><td>${rupiah(p.amount)}</td><td><span class="badge ${p.status==='approved'?'free':p.status==='rejected'?'pending':'paid'}">${escapeHtml(p.status)}</span></td><td>${p.hasProof?`<button class="btn small" data-proof="${p.id}">Lihat</button>`:(p.proofUrl?`<a class="btn small" href="${escapeHtml(p.proofUrl)}" target="_blank" rel="noopener">Lihat</a>`:'-')}</td><td><div class="utility-row"><button class="btn small primary" data-approve="${p.id}" ${p.status==='approved'?'disabled':''}>Setujui</button><button class="btn small" data-reject="${p.id}" ${p.status==='rejected'?'disabled':''}>Tolak</button></div></td></tr>`;}).join('')}</tbody></table>`;
+  wrap.querySelectorAll('[data-proof]').forEach(b=>b.addEventListener('click',async()=>{
+    const preview=window.open('about:blank','_blank');
+    try{
+      const proof=await fetchPaymentProof(b.dataset.proof);
+      const src=String(proof?.data||'');
+      if(!src.startsWith('data:image/jpeg;base64,')) throw new Error('Bukti transfer tidak tersedia');
+      if(preview){preview.document.open();preview.document.write(`<title>Bukti Transfer</title><style>html,body{margin:0;background:#071a1a;display:grid;place-items:center;min-height:100%;}img{max-width:100%;max-height:100vh;object-fit:contain;}</style><img src="${src}" alt="Bukti transfer">`);preview.document.close();}
+    }catch(err){try{preview?.close();}catch(_){}toast(err.message||'Gagal membuka bukti transfer','error');}
+  }));
   wrap.querySelectorAll('[data-approve]').forEach(b=>b.addEventListener('click',async()=>{await approvePayment(b.dataset.approve);toast('Pembayaran disetujui');await reload();}));
   wrap.querySelectorAll('[data-reject]').forEach(b=>b.addEventListener('click',async()=>{await rejectPayment(b.dataset.reject);toast('Pembayaran ditolak');await reload();}));
 }

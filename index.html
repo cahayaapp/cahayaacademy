@@ -4,120 +4,107 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>belajarislam.online — Belajar Islam Kapan Saja, di Mana Saja</title>
-  <meta name="description" content="Platform pembelajaran Islam modern, fresh, dan memudahkan pengguna untuk belajar kapan saja, di mana saja." />
-  <link rel="icon" type="image/png" href="assets/img/icon-64.png" />
-  <meta name="theme-color" content="#0f766e" />
-  <link rel="manifest" href="manifest.webmanifest" />
-  <link rel="stylesheet" href="assets/css/styles.css" />
+  <meta name="description" content="Platform pembelajaran Islam modern untuk kelas video, forum diskusi, kuis, progres, dan sertifikat." />
+  <meta name="theme-color" content="#086c63" />
+  <link rel="icon" href="assets/img/favicon.ico?v=520" sizes="any" />
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/img/icon-32.png?v=520" />
+  <link rel="icon" type="image/png" sizes="64x64" href="assets/img/icon-64.png?v=520" />
+  <link rel="apple-touch-icon" sizes="180x180" href="assets/img/icon-180.png?v=520" />
+  <link rel="manifest" href="manifest.webmanifest?v=520" />
+  <link rel="stylesheet" href="assets/css/styles.css?v=520" />
 </head>
 <body>
   <div class="toast" id="toast"></div>
   <header class="topbar">
     <div class="container topbar-inner">
-      <a href="index.html" class="brand">
-        <img src="assets/img/logo-icon.png" alt="belajarislam.online" />
+      <a href="index.html" class="brand" aria-label="belajarislam.online">
+        <img src="assets/img/logo-icon.png?v=520" alt="Logo belajarislam.online" />
         <div>
-          <div class="brand-title">belajarislam.online</div>
-          <div class="brand-sub">Belajar Islam kapan saja, di mana saja.</div>
+          <div class="brand-title">belajarislam<span class="dot-online">.online</span></div>
+          <div class="brand-sub">Ilmu • Amal • Akhlak</div>
         </div>
       </a>
-      <nav class="nav">
+      <nav class="nav" aria-label="Navigasi utama">
         <a href="#beranda" class="active">Beranda</a>
         <a href="#kelas">Kelas</a>
-        <a href="#fitur">Forum Video</a>
         <a href="#fitur">Fitur</a>
+        <a href="#auth">Masuk</a>
       </nav>
       <div class="search-shell">
         <div class="search-box">
-          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 10.5A6.5 6.5 0 1 1 4 10.5a6.5 6.5 0 0 1 13 0Z"/></svg>
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 10.5A6.5 6.5 0 1 1 4 10.5a6.5 6.5 0 0 1 13 0Z"/></svg>
           <input id="landingSearch" type="search" placeholder="Cari kelas, materi, atau ustadz..." />
         </div>
         <div class="header-actions">
-          <button class="icon-btn" data-theme-toggle aria-label="Ganti tema">🌙</button>
-          <a href="#auth" class="btn">Masuk / Daftar</a>
-          <a href="pages/dashboard.html" class="btn primary">Dashboard Saya</a>
+          <button class="icon-btn" data-theme-toggle aria-label="Ganti tema">☾</button>
+          <a href="#auth" class="btn">Masuk</a>
+          <a href="#auth" class="btn primary">Daftar</a>
         </div>
       </div>
     </div>
   </header>
 
   <main>
-    <section class="container landing-grid" id="beranda">
-      <div class="hero-card">
-        <span class="badge" style="background:rgba(255,255,255,.14); color:#fff;">Platform pembelajaran Islam modern</span>
-        <h1 class="hero-title">Belajar Islam lebih mudah, terarah, dan menyenangkan.</h1>
-        <p class="hero-sub">Satu platform untuk kelas gratis dan berbayar, video pembelajaran, forum diskusi di setiap video, progres belajar, dan pengalaman yang nyaman di desktop maupun mobile.</p>
-        <div class="hero-actions">
-          <a href="#kelas" class="btn gold">Lihat Kelas</a>
-          <a href="#auth" class="btn" style="background:rgba(255,255,255,.12); color:#fff; border-color: rgba(255,255,255,.15);">Daftar Gratis</a>
+    <section class="container landing-shell" id="beranda">
+      <div class="landing-hero">
+        <div class="hero-stage">
+          <div class="hero-copy">
+            <span class="hero-kicker">✦ Platform belajar Islam yang terarah</span>
+            <h1 class="hero-title">Belajar Islam lebih mudah, kapan pun dan di mana pun.</h1>
+            <p class="hero-sub">Temukan ilmu yang bermanfaat, perbaiki diri, kuatkan iman, lalu amalkan dalam kehidupan. Semua disusun dalam pengalaman belajar yang sederhana dan menyenangkan.</p>
+            <div class="hero-actions">
+              <a href="#kelas" class="btn gold">Mulai Belajar</a>
+              <a href="#kelas" class="btn hero-outline">Lihat Kelas</a>
+            </div>
+          </div>
+          <div class="hero-art" aria-hidden="true">
+            <div class="mosque-window"></div>
+            <div class="open-book"></div>
+          </div>
         </div>
-        <div class="hero-points">
-          <div class="point-card"><strong>Ustadz Terpercaya</strong><span>Dibimbing asatidz kompeten.</span></div>
-          <div class="point-card"><strong>Video Berkualitas</strong><span>Tampilan bersih dan responsif.</span></div>
-          <div class="point-card"><strong>Forum Per Video</strong><span>Tanya jawab dengan pembimbing.</span></div>
-          <div class="point-card"><strong>Belajar Fleksibel</strong><span>Kapan saja, di mana saja.</span></div>
-        </div>
-        <div class="stats-row">
-          <div class="stat-card"><strong id="publicClassCount">0</strong>Kelas tersedia</div>
-          <div class="stat-card"><strong>Gratis</strong>Kelas terbuka untuk mulai belajar</div>
-          <div class="stat-card"><strong>Forum</strong>Tanya jawab di setiap video</div>
-          <div class="stat-card"><strong>Sertifikat</strong>Untuk kelas yang dituntaskan</div>
-        </div>
+
+        <aside class="panel auth-panel" id="auth">
+          <div class="auth-heading">
+            <img class="auth-logo" src="assets/img/logo-icon.png?v=520" alt="" />
+            <div>
+              <h3>Mulai belajar hari ini</h3>
+              <p>Masuk atau buat akun pelajar baru.</p>
+            </div>
+          </div>
+          <div class="auth-tabs">
+            <button id="tabLogin" class="active" type="button">Masuk</button>
+            <button id="tabRegister" type="button">Daftar Pelajar</button>
+          </div>
+          <form id="loginForm">
+            <div class="field"><label>Email</label><input type="email" name="email" required placeholder="contoh@email.com" /></div>
+            <div class="field"><label>Password</label><input type="password" name="password" required placeholder="Masukkan password" /></div>
+            <button class="btn primary" style="width:100%;">Masuk ke akun saya</button>
+          </form>
+          <form id="registerForm" class="hidden">
+            <div class="form-grid">
+              <div class="field full"><label>Nama lengkap</label><input type="text" name="name" required placeholder="Nama lengkap" /></div>
+              <div class="field full"><label>Email</label><input type="email" name="email" required placeholder="contoh@email.com" /></div>
+              <div class="field full"><label>Nomor WhatsApp</label><input type="text" name="whatsapp" required placeholder="08xxxxxxxxxx" /></div>
+              <div class="field"><label>Password</label><input type="password" name="password" required placeholder="Minimal 6 karakter" /></div>
+              <div class="field"><label>Ulangi password</label><input type="password" name="confirmPassword" required placeholder="Ulangi password" /></div>
+            </div>
+            <button class="btn primary" style="width:100%;">Buat akun pelajar</button>
+          </form>
+          <div class="note" style="margin-top:14px;">Satu akun untuk mengikuti kelas gratis maupun berbayar, progres belajar, forum, kuis, dan sertifikat.</div>
+        </aside>
       </div>
-      <aside class="panel auth-panel" id="auth">
-        <div class="auth-tabs">
-          <button id="tabLogin" class="active">Masuk</button>
-          <button id="tabRegister">Daftar Pelajar</button>
-        </div>
-        <form id="loginForm">
-          <div class="field">
-            <label>Email</label>
-            <input type="email" name="email" required placeholder="contoh@email.com" />
-          </div>
-          <div class="field">
-            <label>Password</label>
-            <input type="password" name="password" required placeholder="Masukkan password" />
-          </div>
-          <button class="btn primary" style="width:100%;">Masuk ke akun saya</button>
-        </form>
-        <form id="registerForm" class="hidden">
-          <div class="form-grid">
-            <div class="field full">
-              <label>Nama lengkap</label>
-              <input type="text" name="name" required placeholder="Nama lengkap" />
-            </div>
-            <div class="field">
-              <label>Email</label>
-              <input type="email" name="email" required placeholder="contoh@email.com" />
-            </div>
-            <div class="field">
-              <label>Nomor WhatsApp</label>
-              <input type="text" name="whatsapp" required placeholder="08xxxxxxxxxx" />
-            </div>
-            <div class="field">
-              <label>Password</label>
-              <input type="password" name="password" required placeholder="Minimal 6 karakter" />
-            </div>
-            <div class="field">
-              <label>Konfirmasi password</label>
-              <input type="password" name="confirmPassword" required placeholder="Ulangi password" />
-            </div>
-          </div>
-          <div class="note">Setelah daftar, pelajar dapat langsung login sendiri, melihat kelas gratis atau berbayar, dan mulai belajar dari dashboard.</div>
-          <div style="height:12px"></div>
-          <button class="btn primary" style="width:100%;">Buat akun pelajar</button>
-        </form>
-        <hr class="sep" />
-        <div class="muted" style="font-size:14px; line-height:1.7;">Admin/pembimbing dapat masuk memakai akun yang sudah diberi role di Firebase. Halaman admin tersedia otomatis sesuai role pengguna.</div>
-      </aside>
+
+      <div class="trust-strip">
+        <div class="trust-item"><div class="trust-icon">✓</div><div><strong><span id="publicClassCount">0</span> Kelas Terstruktur</strong><span>Materi runtut dan mudah diikuti</span></div></div>
+        <div class="trust-item"><div class="trust-icon">▶</div><div><strong>Video Pembelajaran</strong><span>YouTube & Google Drive</span></div></div>
+        <div class="trust-item"><div class="trust-icon">?</div><div><strong>Forum Aktif</strong><span>Tanya jawab di setiap video</span></div></div>
+        <div class="trust-item"><div class="trust-icon">★</div><div><strong>Progres & Sertifikat</strong><span>Belajar sampai tuntas</span></div></div>
+      </div>
     </section>
 
     <section class="container catalog-section" id="kelas">
       <div class="section-head">
-        <div>
-          <h2>Katalog Kelas</h2>
-          <p class="muted">Temukan kelas gratis dan berbayar yang rapi, mudah dicari, dan siap dipelajari.</p>
-        </div>
+        <div><h2>Kelas Pilihan</h2><p class="muted">Pilih materi terbaik untuk perjalanan belajar Islam Anda.</p></div>
         <div class="filters">
           <button class="pill active" data-filter="all">Semua</button>
           <button class="pill" data-filter="free">Gratis</button>
@@ -128,18 +115,23 @@
     </section>
 
     <section class="container catalog-section" id="fitur">
-      <div class="section-head"><div><h2>Belajar tanpa terasa rumit</h2><p class="muted">Alur dibuat ringkas dari daftar, pilih kelas, belajar, berdiskusi, sampai sertifikat.</p></div></div>
+      <div class="section-head"><div><h2>Belajar tanpa terasa rumit</h2><p class="muted">Dari daftar sampai sertifikat, alurnya dibuat sesederhana mungkin.</p></div></div>
       <div class="feature-grid">
-        <div class="feature-card"><div class="feature-icon">▶</div><h3>Video Pembelajaran</h3><p>Video YouTube atau Google Drive ditampilkan responsif langsung di ruang belajar.</p></div>
-        <div class="feature-card"><div class="feature-icon">?</div><h3>Forum per Video</h3><p>Pertanyaan peserta tetap menempel pada materi yang sedang dibahas dan dapat dijawab pembimbing.</p></div>
-        <div class="feature-card"><div class="feature-icon">✓</div><h3>Kuis & Progres</h3><p>Peserta dapat memantau progres, mengerjakan kuis, dan melanjutkan dari materi terakhir.</p></div>
-        <div class="feature-card"><div class="feature-icon">★</div><h3>Sertifikat</h3><p>Sertifikat tersedia setelah seluruh materi selesai dan kuis wajib dinyatakan lulus.</p></div>
+        <div class="feature-card"><div class="feature-icon">▶</div><h3>Video responsif</h3><p>Player otomatis mengikuti layar desktop, tablet, dan HP tanpa geser kiri-kanan.</p></div>
+        <div class="feature-card"><div class="feature-icon">?</div><h3>Forum per video</h3><p>Peserta dan pembimbing berdiskusi langsung pada materi yang sedang dipelajari.</p></div>
+        <div class="feature-card"><div class="feature-icon">✓</div><h3>Kuis & progres</h3><p>Setiap langkah belajar tercatat agar peserta tahu apa yang sudah dan belum tuntas.</p></div>
+        <div class="feature-card"><div class="feature-icon">★</div><h3>Sertifikat otomatis</h3><p>Sertifikat dapat tersedia setelah syarat penyelesaian kelas terpenuhi.</p></div>
       </div>
+    </section>
+
+    <section class="container public-cta">
+      <div><h2>Lebih dekat dengan ilmu, lebih dekat dengan Allah.</h2><p>Daftar gratis, pilih kelas, lalu mulai belajar sesuai waktu Anda.</p></div>
+      <a href="#auth" class="btn gold">Daftar Sekarang</a>
     </section>
   </main>
 
-  <script type="module" src="assets/js/theme.js"></script>
-  <script type="module" src="assets/js/pwa-root.js"></script>
-  <script type="module" src="assets/js/index.js"></script>
+  <script type="module" src="assets/js/theme.js?v=520"></script>
+  <script type="module" src="assets/js/pwa-root.js?v=520"></script>
+  <script type="module" src="assets/js/index.js?v=520"></script>
 </body>
 </html>

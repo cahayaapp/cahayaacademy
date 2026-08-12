@@ -1,4 +1,4 @@
-import { auth, db, storage } from './firebase-config.js';
+import { auth, db } from './firebase-config.js';
 import {
   onAuthStateChanged,
   signInWithEmailAndPassword,
@@ -15,11 +15,6 @@ import {
   onValue,
   remove
 } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js';
-import {
-  ref as storageRef,
-  uploadBytes,
-  getDownloadURL
-} from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js';
 
 export const state = { user:null, profile:null, classes:[], selectedClass:null, selectedVideo:null };
 
@@ -142,18 +137,63 @@ export function subscribeEnrollment(uid,classId,cb){
 export async function fetchUserEnrollments(uid){ const s=await get(ref(db,`enrollments/${uid}`)); return s.val()||{}; }
 export async function fetchAllEnrollments(){ const s=await get(ref(db,'enrollments')); return s.val()||{}; }
 
-export async function uploadProof(file,uid,classId){
-  const safeName=String(file.name||'bukti').replace(/[^a-zA-Z0-9._-]/g,'_');
-  const p=storageRef(storage,`payment-proofs/${uid}/${classId}/${Date.now()}-${safeName}`);
-  await uploadBytes(p,file,{contentType:file.type||'image/jpeg'}); return getDownloadURL(p);
+function fileToDataUrl(file){
+  return new Promise((resolve,reject)=>{
+    const reader=new FileReader();
+    reader.onload=()=>resolve(reader.result);
+    reader.onerror=()=>reject(new Error('Gagal membaca gambar'));
+    reader.readAsDataURL(file);
+  });
 }
-export async function submitPayment({uid,classId,amount,senderName,senderBank,proofUrl}){
-  const p=push(ref(db,'payments')); const id=p.key;
-  const payload={id,uid,classId,amount:Number(amount||0),senderName:String(senderName).trim(),senderBank:String(senderBank).trim(),proofUrl,status:'pending',createdAt:Date.now(),updatedAt:Date.now()};
-  await set(p,payload);
-  await set(ref(db,`enrollments/${uid}/${classId}`),{status:'pending_payment',paymentStatus:'pending',classType:'paid',paymentId:id,createdAt:Date.now(),updatedAt:Date.now()});
-  await push(ref(db,'notifications/admin'),{type:'payment',title:'Bukti pembayaran baru',message:`${payload.senderName} mengirim bukti pembayaran.`,paymentId:id,uid,classId,read:false,createdAt:Date.now()});
+function loadImage(src){
+  return new Promise((resolve,reject)=>{
+    const img=new Image();
+    img.onload=()=>resolve(img);
+    img.onerror=()=>reject(new Error('Format gambar tidak dapat dibaca'));
+    img.src=src;
+  });
+}
+export async function uploadProof(file){
+  if(!file || !String(file.type||'').startsWith('image/')) throw new Error('Bukti transfer harus berupa foto/gambar');
+  if(file.size>10*1024*1024) throw new Error('Ukuran foto maksimal 10 MB sebelum kompresi');
+  const original=await fileToDataUrl(file);
+  const img=await loadImage(original);
+  let maxSide=1500;
+  let quality=.82;
+  const targetChars=460000; // sekitar 340 KB file JPEG setelah Base64
+  let result='';
+  for(let attempt=0;attempt<10;attempt++){
+    const ratio=Math.min(1,maxSide/Math.max(img.naturalWidth||img.width,img.naturalHeight||img.height));
+    const w=Math.max(1,Math.round((img.naturalWidth||img.width)*ratio));
+    const h=Math.max(1,Math.round((img.naturalHeight||img.height)*ratio));
+    const canvas=document.createElement('canvas');
+    canvas.width=w; canvas.height=h;
+    const ctx=canvas.getContext('2d',{alpha:false});
+    ctx.fillStyle='#ffffff'; ctx.fillRect(0,0,w,h);
+    ctx.drawImage(img,0,0,w,h);
+    result=canvas.toDataURL('image/jpeg',quality);
+    if(result.length<=targetChars) break;
+    if(quality>.56) quality-=.08; else maxSide=Math.round(maxSide*.82);
+  }
+  if(!result || result.length>650000) throw new Error('Foto masih terlalu besar. Silakan pilih foto lain atau screenshot bukti transfer.');
+  return result;
+}
+export async function submitPayment({uid,classId,amount,senderName,senderBank,proofData}){
+  const p=push(ref(db,'payments')); const id=p.key; const now=Date.now();
+  if(!proofData || !String(proofData).startsWith('data:image/jpeg;base64,')) throw new Error('Bukti transfer tidak valid');
+  const payload={id,uid,classId,amount:Number(amount||0),senderName:String(senderName).trim(),senderBank:String(senderBank).trim(),hasProof:true,proofMode:'rtdb-compressed',status:'pending',createdAt:now,updatedAt:now};
+  const notif=push(ref(db,'notifications/admin')).key;
+  const updates={};
+  updates[`payments/${id}`]=payload;
+  updates[`paymentProofs/${id}`]={paymentId:id,uid,classId,data:proofData,mime:'image/jpeg',createdAt:now};
+  updates[`enrollments/${uid}/${classId}`]={status:'pending_payment',paymentStatus:'pending',classType:'paid',paymentId:id,createdAt:now,updatedAt:now};
+  updates[`notifications/admin/${notif}`]={type:'payment',title:'Bukti pembayaran baru',message:`${payload.senderName} mengirim bukti pembayaran.`,paymentId:id,uid,classId,read:false,createdAt:now};
+  await update(ref(db),updates);
   return payload;
+}
+export async function fetchPaymentProof(paymentId){
+  const s=await get(ref(db,`paymentProofs/${paymentId}`));
+  return s.val();
 }
 export async function fetchAllPayments(){ const s=await get(ref(db,'payments')); return Object.values(s.val()||{}).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0)); }
 export async function approvePayment(paymentId){

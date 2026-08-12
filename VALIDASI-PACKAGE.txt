@@ -1,14 +1,21 @@
-VALIDASI PAKET v5.1.0
+VALIDASI PACKAGE — belajarislam.online LMS v5.2.0
 
-Pemeriksaan yang dilakukan sebelum paket dibuat:
-- Seluruh file JavaScript lulus pemeriksaan sintaks Node.js.
-- database.rules.json, manifest.webmanifest, dan firebase.json valid JSON.
-- Tidak ada duplicate HTML id pada index, dashboard, class, admin, dan certificate.
-- Semua getElementById utama pada JavaScript memiliki target elemen HTML.
-- Tidak ditemukan sisa branding Izzuddin Academy / Cahaya Academy pada antarmuka.
-- Tidak ditemukan teks lama "Verifikasi sederhana" atau "tayangan ulang".
-- Domain CNAME: belajarislam.online.
+Status: LULUS
 
-Catatan pengujian produksi:
-- Firebase Authentication, Realtime Database, Storage, YouTube, dan Google Drive membutuhkan koneksi internet serta konfigurasi Firebase aktif.
-- Setelah upload, lakukan hard refresh sekali agar service worker/cache versi lama tidak menahan asset sebelumnya.
+Pemeriksaan yang dijalankan:
+- Sintaks seluruh JavaScript: OK
+- database.rules.json: JSON valid
+- manifest.webmanifest: JSON valid
+- Duplikasi ID pada HTML: tidak ditemukan
+- Referensi file lokal HTML (CSS/JS/img/link): tidak ada yang hilang
+- Referensi getElementById / helper $() JS terhadap HTML: cocok
+- Service worker cache: belajarislam-v5.2.0-shell
+- CNAME: belajarislam.online
+- Firebase Storage SDK: tidak diperlukan untuk bukti transfer
+- Bukti transfer: kompresi client-side + Realtime Database
+- Layout mobile: breakpoint 1000/700/430 px, overflow-x dinonaktifkan, player 16:9 width 100%
+- Live chat mobile: tombol mengambang kanan bawah; bukan item bottom navigation
+
+Catatan:
+- YouTube tetap mengikuti kemampuan dan kebijakan embed player YouTube.
+- Database Rules perlu dipublish setelah deployment bila belum menggunakan rules terbaru paket.

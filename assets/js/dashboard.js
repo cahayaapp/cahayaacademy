@@ -35,6 +35,7 @@ function courseCard(c){
     <div class="class-cover" style="background:${coverGradient(c.coverTheme)}"><div><span class="badge ${paid?'paid':'free'}">${paid?'Berbayar':'Gratis'}</span><div class="cover-title">${escapeHtml(c.title)}</div><div class="cover-meta">${escapeHtml(c.teacherName||'Pembimbing')}</div></div></div>
     <div class="class-body"><div class="class-title">${escapeHtml(c.title)}</div><div class="muted class-desc">${escapeHtml(c.description||'')}</div>
       ${completion?.totalVideos?`<div class="course-progress-line"><div class="progress-track"><span style="width:${completion.percent}%"></span></div><strong>${completion.percent}%</strong></div>`:''}
+      <div class="class-meta"><span>◈ ${escapeHtml(c.level||'Semua level')}</span><span>● ${escapeHtml(c.category||'Kelas Islam')}</span></div>
       <div class="card-footer-row"><div>${paid?`<div class="course-price">${rupiah(c.price)}</div>`:'<div class="course-price free-price">Gratis</div>'}<div class="muted mini">${status}</div></div><button class="btn small primary course-cta" data-course="${c.id}" data-paid="${paid?1:0}">${cta}</button></div>
     </div></article>`;
 }
@@ -78,6 +79,7 @@ function renderProfile(){
   document.getElementById('profileName').value=profile.name||''; document.getElementById('profileEmail').value=profile.email||''; document.getElementById('profileWhatsApp').value=profile.whatsapp||''; document.getElementById('profileBio').value=profile.bio||'';
   if(['admin','mentor'].includes(profile.role)) document.getElementById('goAdminBtn').style.display='inline-flex';
   const initialsEl=document.getElementById('mobileUserInitials'); if(initialsEl) initialsEl.textContent=initials(profile.name);
+  const sideAvatar=document.getElementById('sideAvatar'); if(sideAvatar) sideAvatar.textContent=initials(profile.name);
 }
 function renderLearningSummary(){
   const active=Object.values(completionByClass).filter(x=>x.totalVideos>0); const avg=active.length?Math.round(active.reduce((a,b)=>a+b.percent,0)/active.length):0;

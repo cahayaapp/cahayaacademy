@@ -1,0 +1,19 @@
+BELAJARISLAM.ONLINE LMS v5.2.0
+
+UI/UX OVERHAUL PENUH
+- Landing page dirombak agar mendekati mockup LMS nasional: hero besar, visual islami, login/register card, trust strip, katalog premium, CTA.
+- Dashboard pelajar dirombak: sidebar desktop, hero personal, progress ring, lanjut belajar, aktivitas, katalog, kelas saya, profil.
+- Ruang kelas dirombak: video besar, daftar materi kanan, progress video, forum, kuis, pembayaran, sertifikat.
+- Admin Center dirombak: dashboard operasional modern, quick actions, kelas/video, kuis, pembayaran, users, chat, settings.
+- Navigasi mobile diperhalus dan dibuat bebas overflow.
+- Frame video mobile dipastikan 16:9, width 100%, tidak perlu geser horizontal.
+- Live chat mobile tetap berupa tombol mengambang kanan bawah, bukan item bottom menu.
+- Palet brand diselaraskan: emerald/teal + aksen emas.
+- Cache service worker dinaikkan ke v5.2.0.
+- Favicon dan logo presisi dari v5.1.1 dipertahankan.
+- Firebase Storage tetap tidak diperlukan; bukti transfer memakai kompresi browser + Realtime Database.
+
+KOMPATIBILITAS
+- Tidak mengubah Firebase project/config.
+- Tidak mengubah struktur data utama sehingga data v5.1.1 tetap dapat digunakan.
+- database.rules.json tetap disertakan sebagai rules produksi yang wajib dipublish.

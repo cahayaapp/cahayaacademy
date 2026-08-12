@@ -1,4 +1,4 @@
-BELAJARISLAM.ONLINE LMS v5.1.0 — FULL PACKAGE
+BELAJARISLAM.ONLINE LMS v5.2.0 — FULL UI/UX OVERHAUL
 
 1. UPLOAD
    Upload seluruh isi folder ini ke root hosting/GitHub Pages.
@@ -17,12 +17,12 @@ BELAJARISLAM.ONLINE LMS v5.1.0 — FULL PACKAGE
    Buka Realtime Database > Rules.
    Salin seluruh isi database.rules.json lalu Publish.
 
-5. FIREBASE STORAGE
-   Aktifkan Storage jika bukti transfer memakai upload gambar.
-   Salin seluruh isi storage.rules lalu Publish.
+5. BUKTI TRANSFER — TANPA FIREBASE STORAGE
+   Tidak perlu mengaktifkan Firebase Storage.
+   Foto bukti transfer dikompres otomatis di browser, lalu disimpan terpisah di Realtime Database pada path paymentProofs/{paymentId}.
 
 6. AKUN ADMIN
-   Pastikan akun admin yang sudah ada mempunyai:
+   Pastikan akun admin mempunyai:
    users/{UID}/role = admin
 
 7. PENGATURAN ADMIN
@@ -37,15 +37,17 @@ BELAJARISLAM.ONLINE LMS v5.1.0 — FULL PACKAGE
    Admin > Kelola Kelas:
    - buat kelas Gratis atau Berbayar
    - tambah video YouTube atau Google Drive
-   Link YouTube biasa akan dinormalisasi otomatis menjadi embed youtube-nocookie.
-   Link Google Drive biasa akan dinormalisasi menjadi preview bila format ID dapat dikenali.
 
 9. KUIS
    Admin > Kuis > pilih kelas dan video > masukkan soal + nilai lulus.
 
 10. ALUR PESERTA
-    Daftar > login > pilih kelas > belajar > kuis > forum > sertifikat.
+    Daftar > login > pilih kelas > belajar > forum/kuis > sertifikat.
     Untuk kelas berbayar: transfer > upload bukti > admin approve > akses aktif otomatis.
 
-CATATAN UPGRADE
-Data pengguna, kelas, pembayaran, dan chat versi sebelumnya tetap memakai jalur database yang kompatibel.
+11. CACHE / FAVICON
+    Service worker sudah dinaikkan ke cache v5.2.0.
+    Setelah upload, lakukan hard refresh satu kali agar UI/favikon versi lama tidak tertahan browser.
+
+DATA LAMA
+Data pengguna, kelas, pembayaran, chat, progres, forum, dan kuis tetap menggunakan jalur database yang kompatibel dengan v5.1.1.
