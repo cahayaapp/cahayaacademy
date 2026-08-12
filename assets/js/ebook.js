@@ -1,5 +1,5 @@
 import {
-  auth,onAuthStateChanged,fetchProfile,fetchEbook,fetchEbookCover,fetchEbookFile,fetchUserEbookAccess,subscribeUserEbookAccess,
+  auth,onAuthStateChanged,fetchProfile,fetchEbook,fetchEbookCover,fetchEbookFile,fetchEbookSource,fetchUserEbookAccess,subscribeUserEbookAccess,
   acquireFreeEbook,fetchSettings,uploadProof,submitPurchasePayment,logoutUser,rupiah,toast,normalizeWa
 } from './core.js';
 
@@ -12,43 +12,26 @@ function safeFileName(name='ebook.pdf'){
   const clean=String(name||'ebook.pdf').replace(/[\\/:*?"<>|]+/g,'-').trim();
   return /\.pdf$/i.test(clean)?clean:`${clean||'ebook'}.pdf`;
 }
-function gatewayEndpoint(){
-  return String(settings?.downloadGateway?.endpoint||'').trim().replace(/\/+$/,'');
-}
 function setDownloadButtonState(){
   const btn=$('downloadEbookBtn');
   if(!btn)return;
-  if(!active()){btn.disabled=true;btn.textContent='↓ Download Ebook PDF';return;}
-  if(book?.fileMode==='gdrive'&&!gatewayEndpoint()){
-    btn.disabled=true;btn.textContent='Download belum dikonfigurasi';return;
-  }
-  btn.disabled=downloadPreparing;
-  btn.textContent=downloadPreparing?'Menyiapkan download...':'↓ Download Ebook PDF';
+  btn.disabled=!active()||downloadPreparing;
+  btn.textContent=downloadPreparing?'Membuka download...':'↓ Download Ebook PDF';
 }
-async function startGatewayDownload(){
-  const endpoint=gatewayEndpoint();
-  if(!endpoint)throw new Error('Download Gateway belum diaktifkan admin.');
+function directDriveDownloadUrl(source){
+  const fileId=String(source?.fileId||'').trim();
+  if(!fileId)throw new Error('File ebook belum tersedia.');
+  const q=new URLSearchParams({export:'download',id:fileId});
+  const resourceKey=String(source?.resourceKey||'').trim();
+  if(resourceKey)q.set('resourcekey',resourceKey);
+  return `https://drive.google.com/uc?${q.toString()}`;
+}
+async function openDriveDownload(){
   downloadPreparing=true;setDownloadButtonState();
-  const idToken=await user.getIdToken(true);
-  const ctrl=new AbortController();
-  const timer=setTimeout(()=>ctrl.abort(),20000);
-  let res;
-  try{
-    res=await fetch(`${endpoint}/prepare`,{
-      method:'POST',mode:'cors',credentials:'omit',signal:ctrl.signal,
-      headers:{'Content-Type':'application/json','Authorization':`Bearer ${idToken}`},
-      body:JSON.stringify({ebookId})
-    });
-  }finally{clearTimeout(timer);}
-  if(!res?.ok){
-    let msg='Gateway download gagal menyiapkan file.';
-    try{const data=await res.json();if(data?.error)msg=data.error;}catch(_){}
-    throw new Error(msg);
-  }
-  const data=await res.json();
-  if(!data?.downloadUrl)throw new Error('URL download aman tidak tersedia.');
-  // Top-level navigation to an attachment response triggers the browser/device native download manager.
-  window.location.assign(data.downloadUrl);
+  const source=await fetchEbookSource(ebookId);
+  const url=directDriveDownloadUrl(source);
+  // Versi sederhana: arahkan langsung ke endpoint download Google Drive.
+  window.location.assign(url);
 }
 function renderMeta(){
   $('ebookTitle').textContent=book.title||'Ebook';
@@ -106,8 +89,7 @@ $('downloadEbookBtn').addEventListener('click',async()=>{
   const btn=$('downloadEbookBtn');
   try{
     if(book.fileMode==='gdrive'){
-      await startGatewayDownload();
-      toast('Download dimulai di perangkat Anda');
+      await openDriveDownload();
       return;
     }
     btn.disabled=true;btn.textContent='Menyiapkan PDF...';

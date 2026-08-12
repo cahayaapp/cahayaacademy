@@ -1,16 +1,11 @@
-BELAJARISLAM.ONLINE LMS v6.4.5 — NATIVE DOWNLOAD FIX
+BELAJARISLAM.ONLINE LMS v6.4.6 — UPDATE SEDERHANA EBOOK
 
-1. Upload SELURUH isi paket v6.4.5 menggantikan versi sebelumnya.
-2. Database Rules v6.4.4 tetap dapat dipakai; tidak wajib publish ulang hanya untuk update ini.
-3. Deploy folder cloudflare-worker mengikuti cloudflare-worker/PASANG-GATEWAY.txt.
-4. Salin URL workers.dev hasil deploy.
-5. Masuk Admin > Pengaturan > Download Gateway URL > tempel URL Worker > Simpan.
-6. Pastikan file ebook Google Drive adalah PDF biasa dan sharing mengizinkan akses/download.
-7. Hard refresh browser sekali setelah upload paket.
-8. Uji dari akun member yang status ebooknya aktif: klik Download Ebook PDF.
-
-Tujuan v6.4.5:
-- klik Download -> browser/device memulai unduhan native,
-- progres unduhan muncul di download manager/bar perangkat,
-- halaman member tidak membuka Google Drive,
-- source Google Drive tidak lagi di-fetch langsung oleh JavaScript member.
+1. Upload seluruh isi paket v6.4.6 menggantikan versi lama.
+2. Tidak perlu memasang Cloudflare Worker / Download Gateway.
+3. Database Rules tetap menggunakan rules v6.4.5/v6.4.4 yang sudah aktif; tidak ada path baru pada v6.4.6.
+4. Di Admin > Kelola Ebook pilih sumber Google Drive.
+5. Tempel link file PDF Google Drive atau File ID.
+6. Pastikan izin Google Drive mengizinkan pengguna yang memiliki link untuk membuka/download file sesuai kebutuhan.
+7. Setelah member memiliki akses ebook, tekan Download Ebook PDF.
+8. Browser akan langsung diarahkan ke proses download Google Drive. Jika Google menampilkan konfirmasi, lanjutkan dari sana.
+9. Lakukan hard refresh sekali setelah deploy agar cache v6.4.5 terhapus.

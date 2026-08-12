@@ -1,0 +1,14 @@
+BELAJARISLAM.ONLINE LMS v6.4.6
+
+1. Sistem download ebook Google Drive disederhanakan total.
+2. Cloudflare Download Gateway dihapus dari paket dan tidak perlu dipasang.
+3. Admin cukup memasukkan link Google Drive / File ID pada produk ebook.
+4. Tombol Download Ebook pada akun member mengambil sumber yang tersimpan privat di Firebase lalu mengarahkan browser ke endpoint download Google Drive.
+5. Jika Google Drive menampilkan halaman konfirmasi/izin, pengguna melanjutkan download dari halaman tersebut.
+6. Mode PDF kecil yang disimpan langsung di Firebase tetap bisa diunduh langsung dari LMS.
+7. Field Download Gateway URL di Admin > Pengaturan dihapus.
+8. Cache/service worker dinaikkan ke v6.4.6.
+
+Catatan keamanan:
+- Link sumber tidak ditulis statis pada HTML member.
+- Karena browser harus diarahkan ke Google Drive untuk mengunduh, File ID/URL pada akhirnya dapat terlihat di Network/DevTools saat tombol ditekan. Ini adalah konsekuensi dari solusi sederhana tanpa server proxy.

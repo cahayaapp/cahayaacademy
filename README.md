@@ -1,12 +1,5 @@
-# belajarislam.online LMS v6.4.5
+# belajarislam.online LMS v6.4.6
 
-Full package LMS dengan Native Ebook Download Gateway.
+Full package LMS dengan download ebook Google Drive versi sederhana.
 
-## Fokus v6.4.5
-- download ebook Google Drive melalui Cloudflare Worker
-- native browser/device download manager
-- encrypted short-lived download ticket
-- tidak membuka halaman Google Drive
-- endpoint gateway dapat diatur dari Admin dan disimpan di Firebase
-
-Baca `LANGKAH-AKTIVASI.txt` dan `cloudflare-worker/PASANG-GATEWAY.txt`.
+Tidak membutuhkan Cloudflare Worker atau Download Gateway. Admin cukup menyimpan link Google Drive pada produk ebook. Member yang sudah memiliki akses dapat menekan tombol Download Ebook PDF dan browser akan diarahkan ke proses download Google Drive.
