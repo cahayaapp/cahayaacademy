@@ -1,4 +1,4 @@
-BELAJARISLAM.ONLINE LMS v6.4.1 — VALIDASI PACKAGE
+BELAJARISLAM.ONLINE LMS v6.4.2 — VALIDASI PACKAGE
 
 Status: LULUS pemeriksaan statis utama.
 
@@ -9,7 +9,7 @@ Pemeriksaan yang dilakukan:
 4. ID elemen statis yang dipanggil JS cocok dengan halaman HTML terkait.
 5. Tidak ditemukan URL video konten YouTube/Google Drive yang di-hardcode pada HTML/source package.
 6. Data belajar tidak menggunakan localStorage/sessionStorage; localStorage hanya dipakai untuk preferensi theme UI.
-7. Service worker cache dinaikkan ke `belajarislam-v6.4.1-shell` dan asset menggunakan query v=641.
+7. Service worker cache dinaikkan ke `belajarislam-v6.4.2-shell` dan asset menggunakan query v=642.
 8. Admin video manager memakai listener realtime untuk tambah/edit/hapus.
 9. Halaman kelas memakai listener realtime untuk daftar video dan progress.
 10. Dashboard memakai listener realtime untuk profil, kelas, enrollment, ebook access, sertifikat, dan recent learning.

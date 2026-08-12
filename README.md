@@ -1,8 +1,8 @@
-# belajarislam.online LMS v6.4.1
+# belajarislam.online LMS v6.4.2
 
 Full package LMS berbasis Firebase Authentication + Firebase Realtime Database.
 
-## Fokus v6.4.1
+## Fokus v6.4.2
 - Seluruh data belajar penting disimpan online di Firebase: profil, nomor WhatsApp, kelas, akses pembelian, progres video, materi terakhir, kuis, hasil kuis, sertifikat, forum, chat, notifikasi, pembayaran, ebook, dan file ebook.
 - Perubahan video pada panel admin memakai listener realtime: tambah/edit/hapus langsung tampil tanpa refresh.
 - Kelas Saya membaca `enrollments/{uid}` realtime sehingga kelas premium yang disetujui admin langsung masuk.

@@ -1,4 +1,4 @@
-BELAJARISLAM.ONLINE LMS v6.4.1
+BELAJARISLAM.ONLINE LMS v6.4.2
 
 PERUBAHAN UTAMA
 1. Ebook kini dapat memakai dua sumber PDF:
@@ -10,7 +10,7 @@ PERUBAHAN UTAMA
 5. Tombol download Google Drive tidak membuka halaman Google Drive; unduhan dipicu melalui iframe tersembunyi dan halaman LMS tetap berada di tempatnya.
 6. Sumber ebook hanya dapat dibaca admin, mentor, atau pemilik ebook yang aksesnya aktif berdasarkan Database Rules.
 7. Ebook lama yang disimpan langsung di Firebase tetap kompatibel.
-8. Cache/service worker dinaikkan ke v6.4.1.
+8. Cache/service worker dinaikkan ke v6.4.2.
 
 CATATAN KEAMANAN
 - Pada aplikasi web statis, URL/file ID yang benar-benar dipakai browser untuk mengambil file masih dapat ditemukan oleh pengguna teknis melalui DevTools Network. Ini merupakan batas browser, bukan bug LMS.
