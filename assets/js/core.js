@@ -34,6 +34,9 @@ export const DEFAULT_SETTINGS = {
     issuer: 'belajarislam.online',
     signerName: 'Admin belajarislam.online',
     signerTitle: 'Pembimbing Program'
+  },
+  downloadGateway: {
+    endpoint: ''
   }
 };
 
@@ -425,7 +428,7 @@ export async function fetchUserEbookAccess(uid){ const s=await get(ref(db,`ebook
 export function subscribeUserEbookAccess(uid,cb){ const off=onValue(ref(db,`ebookAccess/${uid}`),s=>cb(s.val()||{})); return ()=>off(); }
 export async function acquireFreeEbook(uid,ebookId){ const book=await fetchEbook(ebookId); if(!book) throw new Error('Ebook tidak ditemukan'); if(book.isPaid) throw new Error('Ebook ini berbayar'); const payload={status:'active',paymentStatus:'free',createdAt:Date.now(),updatedAt:Date.now()}; await set(ref(db,`ebookAccess/${uid}/${ebookId}`),payload); return payload; }
 
-export async function fetchSettings(){ const s=await get(ref(db,'settings')); const v=s.val()||{}; return { ...DEFAULT_SETTINGS, ...v, payment:{...DEFAULT_SETTINGS.payment,...(v.payment||{})}, certificate:{...DEFAULT_SETTINGS.certificate,...(v.certificate||{})} }; }
+export async function fetchSettings(){ const s=await get(ref(db,'settings')); const v=s.val()||{}; return { ...DEFAULT_SETTINGS, ...v, payment:{...DEFAULT_SETTINGS.payment,...(v.payment||{})}, certificate:{...DEFAULT_SETTINGS.certificate,...(v.certificate||{})}, downloadGateway:{...DEFAULT_SETTINGS.downloadGateway,...(v.downloadGateway||{})} }; }
 export async function saveSettings(payload){ await update(ref(db,'settings'),payload); }
 
 export function subscribeNotifications(path,cb){ const off=onValue(ref(db,path),s=>{ const data=s.val()||{}; cb(Object.entries(data).map(([id,v])=>({id,...v})).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0))); }); return ()=>off(); }

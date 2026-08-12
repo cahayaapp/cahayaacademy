@@ -1,0 +1,10 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "belajarislam-download-gateway",
+  "main": "src/index.js",
+  "compatibility_date": "2026-08-12",
+  "vars": {
+    "FIREBASE_DB_URL": "https://cahayaacademy-f8787-default-rtdb.firebaseio.com",
+    "ALLOWED_ORIGINS": "https://belajarislam.online,https://www.belajarislam.online"
+  }
+}

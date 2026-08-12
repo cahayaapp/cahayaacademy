@@ -1,0 +1,39 @@
+BELAJARISLAM.ONLINE — DOWNLOAD GATEWAY (Cloudflare Worker)
+
+Mengapa diperlukan:
+Versi sebelumnya mencoba memulai unduhan Google Drive langsung dari browser. Pada banyak browser Android/Samsung/Chrome, request tersembunyi ke Google Drive tidak dianggap sebagai download native, sehingga tidak muncul progres unduhan perangkat. Gateway ini mengubahnya menjadi response attachment biasa yang langsung ditangani download manager perangkat.
+
+LANGKAH SEKALI SAJA
+
+1. Buka Terminal di folder cloudflare-worker.
+2. Jalankan:
+   npm install
+   npx wrangler login
+3. Buat secret Worker:
+   npx wrangler secret put DOWNLOAD_SECRET
+   Masukkan string acak minimal 32 karakter. Jangan simpan secret ini di kode website.
+4. Deploy:
+   npm run deploy
+5. Cloudflare akan memberi alamat, contoh:
+   https://belajarislam-download-gateway.NAMA-ANDA.workers.dev
+6. Login ke belajarislam.online sebagai Admin.
+7. Admin > Pengaturan > Download Gateway URL.
+8. Tempel URL Worker tersebut TANPA /prepare atau /download.
+9. Klik Simpan Pengaturan.
+10. Login sebagai member pemilik ebook dan klik Download Ebook PDF.
+
+HASIL YANG DIHARAPKAN
+- Browser/perangkat memulai unduhan native.
+- Progres download muncul di download manager/bar perangkat.
+- Halaman member tidak diarahkan ke halaman Google Drive.
+- Browser hanya melihat endpoint Download Gateway + ticket sementara; URL/File ID Drive tidak dikirim ke halaman member oleh JavaScript.
+- Ticket terenkripsi dan hanya berlaku sekitar 90 detik.
+
+PERSYARATAN FILE GOOGLE DRIVE
+- File harus PDF biasa (bukan Google Docs/Sheets/Slides).
+- Link sharing harus memungkinkan file diakses/download sesuai pengaturan akun Google Drive.
+- Bila Google Drive menolak akses server-side, Worker akan menampilkan pesan bahwa file tidak dapat diunduh.
+
+CATATAN
+- Database Rules v6.4.4 tetap kompatibel dengan v6.4.5.
+- Endpoint Worker disimpan online di Firebase settings/downloadGateway/endpoint.

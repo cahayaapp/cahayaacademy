@@ -1,4 +1,4 @@
-BELAJARISLAM.ONLINE LMS v6.4.4
+BELAJARISLAM.ONLINE LMS v6.4.5
 
 MOBILE HERO HOTFIX
 - Hadith card no longer overlaps CTA, microstats, or the next section on mobile.
@@ -7,4 +7,4 @@ MOBILE HERO HOTFIX
 - Hero microstats use a responsive three-column grid.
 - Decorative mosque/sun are kept behind the hadith card only.
 - Tested for 360px, 390px, 412px, and tablet breakpoints.
-- Cache version bumped to v6.4.4.
+- Cache version bumped to v6.4.5.

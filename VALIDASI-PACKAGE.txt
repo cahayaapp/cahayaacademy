@@ -1,11 +1,13 @@
-BELAJARISLAM.ONLINE LMS v6.4.4 — HASIL VALIDASI
+BELAJARISLAM.ONLINE LMS v6.4.5 — VALIDASI PACKAGE
 
-[OK] ebook.js lulus pemeriksaan sintaks JavaScript.
-[OK] core.js lulus pemeriksaan sintaks JavaScript.
-[OK] admin.js lulus pemeriksaan sintaks JavaScript.
-[OK] database.rules.json valid JSON.
-[OK] Service worker cache version v6.4.4.
-[OK] Halaman member ebook tidak menampilkan label Google Drive.
-[OK] Download sumber eksternal menggunakan preloaded private source agar klik user tetap langsung memicu unduhan.
-[OK] Resource key Google Drive disimpan dan dipertahankan saat edit ebook.
-[OK] PDF Realtime Database tetap dapat diunduh sebagai Blob lokal.
+[OK] ebook.js syntax valid.
+[OK] admin.js syntax valid.
+[OK] core.js syntax valid.
+[OK] Cloudflare Worker syntax valid.
+[OK] Worker /prepare memvalidasi session Firebase + status akses ebook.
+[OK] Worker ticket memakai AES-GCM dan TTL singkat.
+[OK] Worker /download mengirim Content-Disposition attachment.
+[OK] Admin mempunyai Download Gateway URL yang tersimpan di Firebase settings.
+[OK] Hidden iframe Google Drive lama dihapus dari halaman member.
+[OK] Service worker/cache dinaikkan ke v6.4.5.
+[OK] Database Rules tetap kompatibel dengan v6.4.4.

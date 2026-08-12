@@ -1,38 +1,54 @@
 import {
-  auth,onAuthStateChanged,fetchProfile,fetchEbook,fetchEbookCover,fetchEbookFile,fetchEbookSource,fetchUserEbookAccess,subscribeUserEbookAccess,
+  auth,onAuthStateChanged,fetchProfile,fetchEbook,fetchEbookCover,fetchEbookFile,fetchUserEbookAccess,subscribeUserEbookAccess,
   acquireFreeEbook,fetchSettings,uploadProof,submitPurchasePayment,logoutUser,rupiah,toast,normalizeWa
 } from './core.js';
 
 const $=id=>document.getElementById(id),ebookId=new URLSearchParams(location.search).get('ebook');
 let user,profile,book,access={},settings,accessUnsub=null;
-let preparedPrivateSource=null,sourcePreparing=false;
+let downloadPreparing=false;
 
 function active(){return access?.status==='active'||['admin','mentor'].includes(profile?.role);}
 function safeFileName(name='ebook.pdf'){
   const clean=String(name||'ebook.pdf').replace(/[\\/:*?"<>|]+/g,'-').trim();
   return /\.pdf$/i.test(clean)?clean:`${clean||'ebook'}.pdf`;
 }
+function gatewayEndpoint(){
+  return String(settings?.downloadGateway?.endpoint||'').trim().replace(/\/+$/,'');
+}
 function setDownloadButtonState(){
   const btn=$('downloadEbookBtn');
   if(!btn)return;
   if(!active()){btn.disabled=true;btn.textContent='↓ Download Ebook PDF';return;}
-  if(book?.fileMode==='gdrive'&&!preparedPrivateSource){btn.disabled=true;btn.textContent=sourcePreparing?'Menyiapkan download...':'Menyiapkan akses...';return;}
-  btn.disabled=false;btn.textContent='↓ Download Ebook PDF';
-}
-async function preparePrivateSource(){
-  if(!active()||book?.fileMode!=='gdrive'||preparedPrivateSource||sourcePreparing)return;
-  sourcePreparing=true;setDownloadButtonState();
-  try{
-    const source=await fetchEbookSource(ebookId);
-    const fileId=String(source?.fileId||'').trim();
-    if(!fileId)throw new Error('File ebook belum siap diunduh.');
-    preparedPrivateSource={fileId,resourceKey:String(source?.resourceKey||'').trim()};
-  }catch(err){
-    preparedPrivateSource=null;
-    toast(err.message||'File ebook belum siap diunduh.','error');
-  }finally{
-    sourcePreparing=false;setDownloadButtonState();
+  if(book?.fileMode==='gdrive'&&!gatewayEndpoint()){
+    btn.disabled=true;btn.textContent='Download belum dikonfigurasi';return;
   }
+  btn.disabled=downloadPreparing;
+  btn.textContent=downloadPreparing?'Menyiapkan download...':'↓ Download Ebook PDF';
+}
+async function startGatewayDownload(){
+  const endpoint=gatewayEndpoint();
+  if(!endpoint)throw new Error('Download Gateway belum diaktifkan admin.');
+  downloadPreparing=true;setDownloadButtonState();
+  const idToken=await user.getIdToken(true);
+  const ctrl=new AbortController();
+  const timer=setTimeout(()=>ctrl.abort(),20000);
+  let res;
+  try{
+    res=await fetch(`${endpoint}/prepare`,{
+      method:'POST',mode:'cors',credentials:'omit',signal:ctrl.signal,
+      headers:{'Content-Type':'application/json','Authorization':`Bearer ${idToken}`},
+      body:JSON.stringify({ebookId})
+    });
+  }finally{clearTimeout(timer);}
+  if(!res?.ok){
+    let msg='Gateway download gagal menyiapkan file.';
+    try{const data=await res.json();if(data?.error)msg=data.error;}catch(_){}
+    throw new Error(msg);
+  }
+  const data=await res.json();
+  if(!data?.downloadUrl)throw new Error('URL download aman tidak tersedia.');
+  // Top-level navigation to an attachment response triggers the browser/device native download manager.
+  window.location.assign(data.downloadUrl);
 }
 function renderMeta(){
   $('ebookTitle').textContent=book.title||'Ebook';
@@ -58,7 +74,7 @@ async function renderCover(){
   }catch(_){}
 }
 function renderAccess(){
-  if(active()){$('ebookAccessTitle').textContent='Ebook Milik Anda';$('ebookFreeBox').classList.add('hidden');$('ebookPaidBox').classList.add('hidden');preparePrivateSource();return;}
+  if(active()){$('ebookAccessTitle').textContent='Ebook Milik Anda';$('ebookFreeBox').classList.add('hidden');$('ebookPaidBox').classList.add('hidden');setDownloadButtonState();return;}
   if(!book.isPaid){$('ebookFreeBox').classList.remove('hidden');$('ebookPaidBox').classList.add('hidden');return;}
   $('ebookFreeBox').classList.add('hidden');$('ebookPaidBox').classList.remove('hidden');
   $('ebookBankName').textContent=settings.payment.bankName||'-';$('ebookBankNumber').textContent=settings.payment.accountNumber||'-';$('ebookAccountName').textContent=`a.n. ${settings.payment.accountName||'-'}`;$('ebookAmountText').textContent=rupiah(book.price);
@@ -66,31 +82,6 @@ function renderAccess(){
   $('ebookPaymentForm').classList.toggle('hidden',access?.paymentStatus==='pending');
 }
 
-function triggerPrivateRemoteDownload(source){
-  if(!source?.fileId)throw new Error('File ebook belum siap diunduh.');
-  const frameName=`ebook-download-${Date.now()}-${Math.random().toString(36).slice(2)}`;
-  const iframe=document.createElement('iframe');
-  iframe.name=frameName;
-  iframe.setAttribute('aria-hidden','true');
-  iframe.tabIndex=-1;
-  iframe.style.cssText='position:fixed;width:1px;height:1px;opacity:0;pointer-events:none;left:-10000px;top:-10000px;border:0;';
-  document.body.appendChild(iframe);
-
-  const form=document.createElement('form');
-  form.method='GET';
-  form.action='https://drive.usercontent.google.com/download';
-  form.target=frameName;
-  form.style.display='none';
-  const fields={id:source.fileId,export:'download',confirm:'t'};
-  if(source.resourceKey)fields.resourcekey=source.resourceKey;
-  for(const [name,value] of Object.entries(fields)){
-    const input=document.createElement('input');input.type='hidden';input.name=name;input.value=value;form.appendChild(input);
-  }
-  document.body.appendChild(form);
-  form.submit();
-  form.remove();
-  setTimeout(()=>iframe.remove(),90000);
-}
 async function triggerStoredPdfDownload(){
   const file=await fetchEbookFile(ebookId);
   if(!file?.data)throw new Error('File ebook belum siap diunduh.');
@@ -115,9 +106,8 @@ $('downloadEbookBtn').addEventListener('click',async()=>{
   const btn=$('downloadEbookBtn');
   try{
     if(book.fileMode==='gdrive'){
-      if(!preparedPrivateSource){toast('File sedang disiapkan. Silakan coba lagi sebentar.','error');preparePrivateSource();return;}
-      triggerPrivateRemoteDownload(preparedPrivateSource);
-      toast('Download ebook dimulai');
+      await startGatewayDownload();
+      toast('Download dimulai di perangkat Anda');
       return;
     }
     btn.disabled=true;btn.textContent='Menyiapkan PDF...';
@@ -126,6 +116,7 @@ $('downloadEbookBtn').addEventListener('click',async()=>{
   }catch(err){
     toast(err.message||'Gagal mengunduh ebook','error');
   }finally{
+    downloadPreparing=false;
     setDownloadButtonState();
   }
 });
@@ -145,7 +136,6 @@ onAuthStateChanged(auth,async u=>{
   accessUnsub=subscribeUserEbookAccess(u.uid,next=>{
     const wasActive=active();
     access=next?.[ebookId]||{};
-    if(!wasActive&&active()){preparedPrivateSource=null;}
     renderMeta();renderAccess();
   });
 });

@@ -1,0 +1,15 @@
+BELAJARISLAM.ONLINE LMS v6.4.5
+
+NATIVE EBOOK DOWNLOAD GATEWAY
+
+1. Download Google Drive tidak lagi memakai hidden iframe/form dari browser.
+2. Ditambahkan Cloudflare Worker Download Gateway untuk mengubah sumber Drive menjadi response attachment biasa.
+3. Tombol Download Ebook meminta ticket sementara melalui Worker, lalu perangkat melakukan download native.
+4. Ticket download terenkripsi AES-GCM, berlaku singkat, dan tidak memuat link Google Drive yang bisa dibaca sebagai teks biasa.
+5. File PDF ukuran normal dibuffer oleh Worker sampai 64 MB agar response memiliki ukuran tetap sehingga browser lebih mudah menampilkan progres unduhan; file lebih besar tetap di-stream.
+6. Admin > Pengaturan memiliki field Download Gateway URL dan nilainya disimpan online di Firebase.
+7. Halaman member tetap menampilkan istilah PDF Digital / Download Ebook, tanpa nama Google Drive.
+8. Direct Google Drive iframe-download lama dihapus dari ebook.js.
+9. Cache/service worker dinaikkan ke v6.4.5.
+
+Database Rules tidak berubah dari v6.4.4.
