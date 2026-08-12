@@ -1,4 +1,4 @@
-# belajarislam.online LMS v6.0.0 FINAL
+# belajarislam.online LMS v6.0.1 FINAL
 
 Full rebuild UI/UX berdasarkan master visual belajarislam.online: hijau emerald, teal, emas, putih, clean, premium, dan responsive.
 
@@ -29,7 +29,7 @@ Project yang dipakai tetap `cahayaacademy-f8787` sesuai konfigurasi sebelumnya.
 Wajib:
 1. Authentication Email/Password aktif.
 2. Realtime Database aktif.
-3. Publish `database.rules.json` versi v6.0.0.
+3. Publish `database.rules.json` versi v6.0.1.
 4. Tambahkan `belajarislam.online` dan bila dipakai `www.belajarislam.online` di Authentication → Authorized domains.
 
 Firebase Storage tidak diperlukan untuk versi ini.

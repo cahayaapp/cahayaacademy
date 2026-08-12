@@ -1,0 +1,13 @@
+BELAJARISLAM.ONLINE LMS v6.0.1 — COVER WEB HOTFIX
+
+- Sistem upload cover kelas diperkuat.
+- File JPG/PNG/WebP hingga 25 MB dapat dipilih sebagai sumber.
+- Browser otomatis center-crop ke rasio 16:9.
+- Output cover otomatis menjadi 960 × 540 px.
+- Target ukuran hasil ±180 KB agar ringan untuk web dan Realtime Database.
+- Kompresi menggunakan Blob sehingga pengukuran ukuran file lebih akurat.
+- Fallback otomatis ke JPEG bila encoder browser tertentu bermasalah.
+- Preview tampil setelah optimasi selesai.
+- Cover tidak dikompres dua kali ketika form disimpan.
+- Kartu desktop/mobile tetap menggunakan aspect-ratio 16:9 dan background-size: cover.
+- Disertakan contoh cover Syamail Muhammadiyah yang sudah web-optimized.

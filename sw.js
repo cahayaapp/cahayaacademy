@@ -1,4 +1,4 @@
-const CACHE='belajarislam-v6.0.0-shell';
+const CACHE='belajarislam-v6.0.1-shell';
 const ASSETS=[
   './','./index.html','./assets/css/styles.css?v=600','./assets/img/logo-icon.svg?v=600','./assets/img/favicon.ico?v=600',
   './assets/img/icon-32.png?v=600','./assets/img/icon-64.png?v=600','./assets/img/icon-180.png?v=600','./assets/img/icon-192.png?v=600',

@@ -1,4 +1,4 @@
-BELAJARISLAM.ONLINE LMS v6.0.0 FINAL — FULL REBUILD
+BELAJARISLAM.ONLINE LMS v6.0.1 FINAL — FULL REBUILD
 
 PEROMBAKAN VISUAL
 - Landing page dibangun ulang mengikuti master mockup final.
@@ -22,6 +22,6 @@ FITUR BARU / PENYEMPURNAAN
 - Live chat, pembayaran, notifikasi, kuis, progress, sertifikat tetap dipertahankan.
 
 STABILITAS
-- Service worker dinaikkan ke cache `belajarislam-v6.0.0-shell`.
+- Service worker dinaikkan ke cache `belajarislam-v6.0.1-shell`.
 - Asset version query dinaikkan ke v600 agar cache lama tidak menahan UI baru.
 - Firebase Storage SDK tidak digunakan.

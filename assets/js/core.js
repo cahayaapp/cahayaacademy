@@ -180,33 +180,70 @@ function loadImage(src){
     img.src=src;
   });
 }
-async function compressImage(file,{maxBytes=360000,maxSide=1500,quality=.84,aspectRatio=null,mime='image/jpeg'}={}){
+async function blobToDataUrl(blob){
+  return await new Promise((resolve,reject)=>{
+    const reader=new FileReader();
+    reader.onload=()=>resolve(reader.result);
+    reader.onerror=()=>reject(new Error('Gagal membaca hasil kompresi gambar'));
+    reader.readAsDataURL(blob);
+  });
+}
+async function canvasToBlob(canvas,mime,quality){
+  return await new Promise((resolve,reject)=>{
+    canvas.toBlob(blob=>blob?resolve(blob):reject(new Error('Browser gagal mengompresi gambar')),mime,quality);
+  });
+}
+async function compressImage(file,{maxBytes=360000,targetWidth=null,targetHeight=null,maxSide=1500,quality=.84,aspectRatio=null,mime='image/jpeg'}={}){
   if(!file || !String(file.type||'').startsWith('image/')) throw new Error('File harus berupa gambar');
-  if(file.size>12*1024*1024) throw new Error('Ukuran gambar maksimal 12 MB sebelum kompresi');
-  const original=await fileToDataUrl(file); const img=await loadImage(original);
+  if(file.size>25*1024*1024) throw new Error('Ukuran file awal maksimal 25 MB. Pilih gambar yang lebih kecil.');
+  const original=await fileToDataUrl(file);
+  const img=await loadImage(original);
   const iw=img.naturalWidth||img.width, ih=img.naturalHeight||img.height;
-  let targetW,targetH,sx=0,sy=0,sw=iw,sh=ih;
+  let sx=0,sy=0,sw=iw,sh=ih;
   if(aspectRatio){
     const srcRatio=iw/ih;
     if(srcRatio>aspectRatio){ sw=Math.round(ih*aspectRatio); sx=Math.round((iw-sw)/2); }
-    else { sh=Math.round(iw/aspectRatio); sy=Math.round((ih-sh)/2); }
-    targetW=Math.min(maxSide,sw); targetH=Math.round(targetW/aspectRatio);
+    else if(srcRatio<aspectRatio){ sh=Math.round(iw/aspectRatio); sy=Math.round((ih-sh)/2); }
+  }
+  let w,h;
+  if(targetWidth && targetHeight){
+    w=Math.min(targetWidth,sw);
+    h=Math.min(targetHeight,Math.round(w/(aspectRatio||sw/sh)));
+    if(aspectRatio) h=Math.round(w/aspectRatio);
   }else{
-    const scale=Math.min(1,maxSide/Math.max(iw,ih)); targetW=Math.max(1,Math.round(iw*scale)); targetH=Math.max(1,Math.round(ih*scale));
+    const scale=Math.min(1,maxSide/Math.max(sw,sh));
+    w=Math.max(1,Math.round(sw*scale));
+    h=Math.max(1,Math.round(sh*scale));
   }
-  let result='',q=quality,w=targetW,h=targetH;
-  for(let attempt=0;attempt<11;attempt++){
-    const canvas=document.createElement('canvas'); canvas.width=w; canvas.height=h;
-    const ctx=canvas.getContext('2d',{alpha:false}); ctx.fillStyle='#ffffff'; ctx.fillRect(0,0,w,h); ctx.drawImage(img,sx,sy,sw,sh,0,0,w,h);
-    result=canvas.toDataURL(mime,q);
-    const approx=Math.ceil(result.length*0.75);
-    if(approx<=maxBytes) break;
-    if(q>.58) q-=.07; else { w=Math.max(640,Math.round(w*.88)); h=aspectRatio?Math.round(w/aspectRatio):Math.max(1,Math.round(h*.88)); }
+  const minimumWidth=aspectRatio?640:520;
+  let q=quality, bestBlob=null;
+  for(let attempt=0;attempt<18;attempt++){
+    const canvas=document.createElement('canvas');
+    canvas.width=w; canvas.height=h;
+    const ctx=canvas.getContext('2d',{alpha:false});
+    ctx.imageSmoothingEnabled=true;
+    ctx.imageSmoothingQuality='high';
+    ctx.fillStyle='#ffffff';
+    ctx.fillRect(0,0,w,h);
+    ctx.drawImage(img,sx,sy,sw,sh,0,0,w,h);
+    let blob;
+    try{ blob=await canvasToBlob(canvas,mime,q); }
+    catch(_){ blob=await canvasToBlob(canvas,'image/jpeg',q); mime='image/jpeg'; }
+    bestBlob=blob;
+    if(blob.size<=maxBytes) break;
+    if(q>0.54){ q=Math.max(0.54,q-0.06); }
+    else if(w>minimumWidth){
+      w=Math.max(minimumWidth,Math.round(w*0.88));
+      h=aspectRatio?Math.round(w/aspectRatio):Math.max(1,Math.round(h*0.88));
+      q=0.72;
+    }else break;
   }
-  if(!result || Math.ceil(result.length*.75)>maxBytes*1.35) throw new Error('Gambar masih terlalu besar setelah kompresi. Pilih gambar lain.');
-  return result;
+  if(!bestBlob || bestBlob.size>maxBytes*1.15) throw new Error('Gambar tidak dapat dioptimalkan ke ukuran web. Coba gunakan JPG/PNG/WebP lain.');
+  return await blobToDataUrl(bestBlob);
 }
-export async function compressClassCover(file){ return compressImage(file,{maxBytes:260000,maxSide:1280,quality:.82,aspectRatio:16/9,mime:'image/webp'}); }
+export async function compressClassCover(file){
+  return compressImage(file,{maxBytes:180000,targetWidth:960,targetHeight:540,quality:.80,aspectRatio:16/9,mime:'image/jpeg'});
+}
 export async function uploadProof(file){ return compressImage(file,{maxBytes:340000,maxSide:1500,quality:.82}); }
 export async function submitPayment({uid,classId,amount,senderName,senderBank,proofData}){
   const p=push(ref(db,'payments')); const id=p.key; const now=Date.now();

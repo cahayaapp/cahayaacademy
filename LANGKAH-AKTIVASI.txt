@@ -1,7 +1,7 @@
-BELAJARISLAM.ONLINE LMS v6.0.0 — LANGKAH UPDATE
+BELAJARISLAM.ONLINE LMS v6.0.1 — LANGKAH UPDATE
 
 1. Backup repository lama jika diperlukan.
-2. Hapus / ganti seluruh file versi lama dengan isi paket v6.0.0. Jangan hanya mengganti index.html.
+2. Hapus / ganti seluruh file versi lama dengan isi paket v6.0.1. Jangan hanya mengganti index.html.
 3. Pastikan file CNAME tetap berada di root repository dan berisi:
    belajarislam.online
 4. Firebase Console → Authentication → Sign-in method:
@@ -10,7 +10,7 @@ BELAJARISLAM.ONLINE LMS v6.0.0 — LANGKAH UPDATE
    tambahkan belajarislam.online
    tambahkan www.belajarislam.online hanya bila domain www juga dipakai.
 6. Firebase Console → Realtime Database → Rules:
-   ganti rules lama dengan isi database.rules.json versi v6.0.0 lalu Publish.
+   ganti rules lama dengan isi database.rules.json versi v6.0.1 lalu Publish.
 7. Firebase Storage TIDAK PERLU diaktifkan.
    - Bukti transfer: dikompresi lalu masuk ke Realtime Database pada paymentProofs.
    - Cover kelas: dikompresi/crop 16:9 lalu masuk ke Realtime Database pada classCovers.
@@ -40,3 +40,9 @@ C. Admin
 - Buat kuis.
 - Lihat pembayaran & bukti transfer.
 - Approve pembayaran membuka akses kelas.
+
+UPDATE v6.0.1 — COVER KELAS
+- Admin sekarang dapat memilih JPG/PNG/WebP hingga 25 MB sebagai sumber cover.
+- Sistem otomatis memotong tengah ke rasio 16:9, resize ke 960×540, dan mengompres ke target ±180 KB sebelum disimpan.
+- Tidak perlu mengubah gambar secara manual sebelum upload.
+- Firebase Storage tetap tidak diperlukan untuk cover kelas.
