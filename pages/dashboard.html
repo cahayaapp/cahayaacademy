@@ -3,13 +3,13 @@
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <title>Dashboard — belajarislam.online</title><meta name="theme-color" content="#075e54">
-  <link rel="icon" href="../assets/img/favicon.ico?v=600" sizes="any"><link rel="icon" type="image/svg+xml" href="../assets/img/logo-icon.svg?v=600"><link rel="apple-touch-icon" href="../assets/img/icon-180.png?v=600"><link rel="manifest" href="../manifest.webmanifest?v=600"><link rel="stylesheet" href="../assets/css/styles.css?v=600">
+  <link rel="icon" href="../assets/img/favicon.ico?v=640" sizes="any"><link rel="icon" type="image/svg+xml" href="../assets/img/logo-icon.svg?v=640"><link rel="apple-touch-icon" href="../assets/img/icon-180.png?v=640"><link rel="manifest" href="../manifest.webmanifest?v=640"><link rel="stylesheet" href="../assets/css/styles.css?v=640">
 </head>
 <body class="app-body">
   <div class="toast" id="toast"></div>
   <header class="app-header">
     <div class="app-header-inner">
-      <a class="brand brand-public compact" href="dashboard.html"><img src="../assets/img/logo-icon.svg?v=600" alt=""><div class="brand-word"><b>belajarislam</b><strong>.online</strong><small>ILMU • AMAL • AKHLAK</small></div></a>
+      <a class="brand brand-public compact" href="dashboard.html"><img src="../assets/img/logo-icon.svg?v=640" alt=""><div class="brand-word"><b>belajarislam</b><strong>.online</strong><small>ILMU • AMAL • AKHLAK</small></div></a>
       <label class="app-search"><span>⌕</span><input id="dashSearch" placeholder="Cari kelas, materi, ustadz..."></label>
       <div class="header-actions"><button class="icon-btn" data-theme-toggle aria-label="Ganti tema">☾</button><button class="icon-btn notif-icon" id="notifBtn" aria-label="Notifikasi">♢<span class="notif-badge" id="notifCount">0</span></button><a class="btn small primary" id="goAdminBtn" href="admin.html" style="display:none">Admin</a><span class="avatar mobile-avatar" id="mobileUserInitials">BI</span><button class="btn small subtle desktop-only" id="logoutBtn">Keluar</button></div>
     </div>
@@ -17,8 +17,8 @@
 
   <div class="app-shell">
     <aside class="app-sidebar">
-      <div class="side-brand"><img src="../assets/img/logo-icon.svg?v=600" alt=""><div><b>belajarislam<span>.online</span></b><small>Ruang Belajar</small></div></div>
-      <nav class="side-nav"><p>RUANG BELAJAR</p><a class="active" href="#home" data-section="homeSection"><span>⌂</span>Beranda</a><a href="#catalog" data-section="catalogSection"><span>▦</span>Katalog Kelas</a><a href="#myclasses" data-section="myClassSection"><span>▣</span>Kelas Saya</a><p>DUKUNGAN</p><a href="#chat" data-section="chatSection"><span>◌</span>Chat Admin</a><a href="#profile" data-section="profileSection"><span>◎</span>Profil Saya</a></nav>
+      <div class="side-brand"><img src="../assets/img/logo-icon.svg?v=640" alt=""><div><b>belajarislam<span>.online</span></b><small>Ruang Belajar</small></div></div>
+      <nav class="side-nav"><p>RUANG BELAJAR</p><a class="active" href="#home" data-section="homeSection"><span>⌂</span>Beranda</a><a href="#catalog" data-section="catalogSection"><span>▦</span>Katalog Kelas</a><a href="#myclasses" data-section="myClassSection"><span>▣</span>Kelas Saya</a><a href="#ebooks" data-section="ebookSection"><span>▤</span>Ebook Saya</a><a href="#certificates" data-section="certificateSection"><span>★</span>Sertifikat</a><p>DUKUNGAN</p><a href="#chat" data-section="chatSection"><span>◌</span>Chat Admin</a><a href="#profile" data-section="profileSection"><span>◎</span>Profil Saya</a></nav>
       <div class="sidebar-profile"><div class="avatar" id="sideAvatar">BI</div><div><b id="sideUserName">Pelajar</b><small id="sideUserEmail">-</small></div></div>
     </aside>
 
@@ -31,7 +31,7 @@
         </div>
 
         <div class="mobile-quick-grid">
-          <button data-section-trigger="catalogSection"><span>▦</span>Kelas</button><button data-section-trigger="myClassSection"><span>▣</span>Kelas Saya</button><button data-section-trigger="chatSection"><span>?</span>Chat</button><a href="#" onclick="return false"><span>★</span>Sertifikat</a><a href="#" onclick="return false"><span>✓</span>Kuis</a><button data-section-trigger="profileSection"><span>◎</span>Profil</button>
+          <button data-section-trigger="catalogSection"><span>▦</span>Kelas</button><button data-section-trigger="myClassSection"><span>▣</span>Kelas Saya</button><button data-section-trigger="ebookSection"><span>▤</span>Ebook</button><button data-section-trigger="chatSection"><span>?</span>Chat</button><button data-section-trigger="certificateSection"><span>★</span>Sertifikat</button><button data-section-trigger="profileSection"><span>◎</span>Profil</button>
         </div>
 
         <div class="dashboard-grid">
@@ -43,21 +43,27 @@
         <div class="class-grid dashboard-preview-grid" id="homeRecommendedGrid"></div>
       </section>
 
-      <section id="catalogSection" class="hidden"><div class="app-page-title"><div><span class="section-kicker">KATALOG</span><h1>Semua Kelas</h1><p>Pilih kelas gratis atau premium sesuai kebutuhan Anda.</p></div><div class="filters"><button class="pill active" data-filter="all">Semua</button><button class="pill" data-filter="free">Gratis</button><button class="pill" data-filter="paid">Berbayar</button></div></div><div class="class-grid" id="dashboardClassGrid"></div></section>
+      <section id="catalogSection" class="hidden"><div class="app-page-title"><div><span class="section-kicker">KATALOG</span><h1>Kelas & Ebook</h1><p>Pilih kelas video maupun ebook digital, gratis atau premium.</p></div><div class="filters"><button class="pill active" data-filter="all">Semua</button><button class="pill" data-filter="free">Gratis</button><button class="pill" data-filter="paid">Berbayar</button></div></div><div class="section-head catalog-subhead"><div><span class="section-kicker">KELAS VIDEO</span><h2>Belajar lewat materi terstruktur.</h2></div></div><div class="class-grid" id="dashboardClassGrid"></div><div class="section-head catalog-subhead"><div><span class="section-kicker">EBOOK DIGITAL</span><h2>Baca dan unduh setelah memiliki akses.</h2></div></div><div class="class-grid" id="dashboardEbookGrid"></div></section>
 
       <section id="myClassSection" class="hidden"><div class="app-page-title"><div><span class="section-kicker">PEMBELAJARAN</span><h1>Kelas Saya</h1><p>Semua kelas yang sudah Anda ambil dan progresnya.</p></div></div><div class="class-grid" id="myClassGrid"></div></section>
 
+
+      <section id="ebookSection" class="hidden"><div class="app-page-title"><div><span class="section-kicker">PERPUSTAKAAN DIGITAL</span><h1>Ebook Saya</h1><p>Ebook gratis atau berbayar yang sudah Anda miliki akan tampil di sini dan dapat diunduh.</p></div></div><div class="class-grid" id="myEbookGrid"></div></section>
+
+
+      <section id="certificateSection" class="hidden"><div class="app-page-title"><div><span class="section-kicker">PENCAPAIAN</span><h1>Sertifikat Saya</h1><p>Sertifikat yang sudah diterbitkan tersimpan online di Firebase dan tetap tersedia saat Anda login dari perangkat lain.</p></div></div><div class="class-grid" id="certificateGrid"></div></section>
+
       <section id="chatSection" class="hidden"><div class="app-page-title"><div><span class="section-kicker">BANTUAN</span><h1>Chat Admin</h1><p>Tanyakan kendala teknis, pembayaran, atau akses kelas.</p></div></div><div class="surface-card chat-card"><div id="chatMessages" class="chat-stream"></div><div class="chat-compose"><textarea id="chatInput" placeholder="Tulis pesan..."></textarea><button class="btn primary" id="sendChatBtn">Kirim</button></div></div></section>
 
-      <section id="profileSection" class="hidden"><div class="app-page-title"><div><span class="section-kicker">AKUN</span><h1>Profil Saya</h1><p>Perubahan profil langsung terlihat pada panel admin.</p></div></div><div class="surface-card profile-card"><form id="profileForm"><div class="form-grid"><div class="field full"><label>Nama lengkap</label><input id="profileName" required></div><div class="field"><label>Email</label><input id="profileEmail" disabled></div><div class="field"><label>Nomor WhatsApp</label><input id="profileWhatsApp" required></div><div class="field full"><label>Bio singkat</label><textarea id="profileBio" placeholder="Apa tujuan belajar Anda?"></textarea></div></div><div class="utility-row"><button class="btn primary">Simpan Perubahan</button><button class="btn danger" type="button" id="logoutProfileBtn">Keluar dari akun</button></div></form></div></section>
+      <section id="profileSection" class="hidden"><div class="app-page-title"><div><span class="section-kicker">AKUN</span><h1>Profil Saya</h1><p>Nama, WhatsApp, dan bio disimpan di Firebase dan tetap ada setelah halaman direfresh.</p></div></div><div class="profile-stack"><div class="surface-card profile-card"><form id="profileForm"><div class="form-grid"><div class="field full"><label>Nama lengkap</label><input id="profileName" required></div><div class="field"><label>Email</label><input id="profileEmail" disabled></div><div class="field"><label>Nomor WhatsApp</label><input id="profileWhatsApp" required></div><div class="field full"><label>Bio singkat</label><textarea id="profileBio" placeholder="Apa tujuan belajar Anda?"></textarea></div></div><div class="utility-row"><button class="btn primary">Simpan Perubahan</button><button class="btn danger" type="button" id="logoutProfileBtn">Keluar dari akun</button></div></form></div><div class="surface-card profile-card"><div class="section-head"><div><span class="section-kicker">KEAMANAN AKUN</span><h2>Ubah Password</h2></div></div><form id="passwordForm"><div class="form-grid"><div class="field full"><label>Password saat ini</label><input id="currentPassword" type="password" autocomplete="current-password" required></div><div class="field"><label>Password baru</label><input id="newPassword" type="password" minlength="6" autocomplete="new-password" required></div><div class="field"><label>Ulangi password baru</label><input id="confirmNewPassword" type="password" minlength="6" autocomplete="new-password" required></div></div><button class="btn primary">Ubah Password</button></form></div></div></section>
     </main>
   </div>
 
   <button class="floating-chat" id="mobileChatFab" aria-label="Chat admin"><span>◌</span></button>
-  <nav class="mobile-bottom-nav"><a href="#home" class="active" data-section="homeSection"><span>⌂</span>Beranda</a><a href="#catalog" data-section="catalogSection"><span>▦</span>Kelas</a><a href="#myclasses" data-section="myClassSection"><span>▣</span>Kelas Saya</a><a href="#profile" data-section="profileSection"><span>◎</span>Profil</a></nav>
+  <nav class="mobile-bottom-nav five-items"><a href="#home" class="active" data-section="homeSection"><span>⌂</span>Beranda</a><a href="#catalog" data-section="catalogSection"><span>▦</span>Katalog</a><a href="#myclasses" data-section="myClassSection"><span>▣</span>Kelas</a><a href="#ebooks" data-section="ebookSection"><span>▤</span>Ebook</a><a href="#profile" data-section="profileSection"><span>◎</span>Profil</a></nav>
 
   <div class="modal-backdrop" id="notificationModal"><div class="modal notification-modal-card"><button class="modal-close" id="closeNotifBtn">×</button><div class="section-head"><div><span class="section-kicker">NOTIFIKASI</span><h2>Pemberitahuan</h2></div></div><div id="notificationList" class="notification-list"></div><button class="btn subtle full-btn" id="markAllNotifBtn">Tandai semua dibaca</button></div></div>
 
-  <script type="module" src="../assets/js/theme.js?v=600"></script><script type="module" src="../assets/js/pwa.js?v=600"></script><script type="module" src="../assets/js/dashboard.js?v=600"></script>
+  <script type="module" src="../assets/js/theme.js?v=640"></script><script type="module" src="../assets/js/pwa.js?v=640"></script><script type="module" src="../assets/js/dashboard.js?v=640"></script>
 </body>
 </html>

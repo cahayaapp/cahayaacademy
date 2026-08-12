@@ -4,7 +4,10 @@ import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   signOut,
-  updateProfile
+  updateProfile,
+  updatePassword,
+  reauthenticateWithCredential,
+  EmailAuthProvider
 } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
 import {
   ref,
@@ -102,19 +105,45 @@ export async function registerUser({name,email,password,whatsapp}){
 }
 export async function loginUser(email,password){ return (await signInWithEmailAndPassword(auth,email,password)).user; }
 export async function logoutUser(){ await signOut(auth); }
-export async function fetchProfile(uid){ const s=await get(ref(db,`users/${uid}`)); return s.val(); }
+export async function fetchProfile(uid){
+  const s=await get(ref(db,`users/${uid}`));
+  const data=s.val()||null;
+  if(!data) return null;
+  const fallbackName=auth.currentUser?.displayName||'';
+  if(!data.name && fallbackName){
+    try{ await update(ref(db,`users/${uid}`),{name:fallbackName,updatedAt:Date.now()}); }catch(_){}
+    data.name=fallbackName;
+  }
+  return data;
+}
+export function subscribeProfile(uid,cb){ const off=onValue(ref(db,`users/${uid}`),s=>cb(s.val()||null)); return ()=>off(); }
 export async function saveProfile(uid,payload){
-  const clean={...payload}; if('whatsapp' in clean) clean.whatsapp=normalizeWa(clean.whatsapp);
+  const clean={...payload};
+  if('whatsapp' in clean) clean.whatsapp=normalizeWa(clean.whatsapp);
+  if('name' in clean) clean.name=String(clean.name||'').trim();
   await update(ref(db,`users/${uid}`),{...clean,updatedAt:Date.now()});
+  if(auth.currentUser && auth.currentUser.uid===uid && clean.name){
+    await updateProfile(auth.currentUser,{displayName:clean.name});
+  }
+}
+export async function changePassword(currentPassword,newPassword){
+  const current=auth.currentUser;
+  if(!current?.email) throw new Error('Akun tidak tersedia. Silakan login ulang.');
+  if(String(newPassword||'').length<6) throw new Error('Password baru minimal 6 karakter.');
+  const credential=EmailAuthProvider.credential(current.email,String(currentPassword||''));
+  await reauthenticateWithCredential(current,credential);
+  await updatePassword(current,String(newPassword));
 }
 export async function setUserRole(uid,role){ await update(ref(db,`users/${uid}`),{role,updatedAt:Date.now()}); }
 export async function fetchUsers(){ const s=await get(ref(db,'users')); return Object.values(s.val()||{}).sort((a,b)=>(b.updatedAt||0)-(a.updatedAt||0)); }
+export function subscribeUsers(cb){ const off=onValue(ref(db,'users'),s=>cb(Object.values(s.val()||{}).sort((a,b)=>(b.updatedAt||0)-(a.updatedAt||0)))); return ()=>off(); }
 
 export async function fetchClasses(){
   const s=await get(ref(db,'classes')); const data=s.val()||{};
   return Object.entries(data).map(([id,v])=>({id,...v})).filter(x=>x.status!=='archived').sort((a,b)=>(a.order??999)-(b.order??999));
 }
 export async function fetchClass(classId){ const s=await get(ref(db,`classes/${classId}`)); return s.exists()?{id:classId,...s.val()}:null; }
+export function subscribeClasses(cb){ const off=onValue(ref(db,'classes'),s=>{const data=s.val()||{};cb(Object.entries(data).map(([id,v])=>({id,...v})).filter(x=>x.status!=='archived').sort((a,b)=>(a.order??999)-(b.order??999)));}); return ()=>off(); }
 export async function saveClass(payload,classId=null){
   let id=classId || payload.slug || slugify(payload.title) || `kelas-${Date.now()}`;
   let current=classId ? (await get(ref(db,`classes/${id}`))).val() : null;
@@ -130,7 +159,18 @@ export async function saveClassCover(classId,dataUrl){
   await update(ref(db,`classes/${classId}`),{hasCover:true,coverUpdatedAt:Date.now(),updatedAt:Date.now()});
 }
 export async function deleteClassCover(classId){ await remove(ref(db,`classCovers/${classId}`)); await update(ref(db,`classes/${classId}`),{hasCover:false,coverUpdatedAt:null,updatedAt:Date.now()}); }
-export async function fetchVideos(classId){ const s=await get(ref(db,`videos/${classId}`)); const data=s.val()||{}; return Object.entries(data).map(([id,v])=>({id,...v})).sort((a,b)=>(a.order??999)-(b.order??999)); }
+export async function fetchVideos(classId){
+  const s=await get(ref(db,`videos/${classId}`)); const data=s.val()||{};
+  return Object.entries(data).map(([id,v])=>({id,...v,embedUrl:undefined,sourceUrl:undefined})).sort((a,b)=>(a.order??999)-(b.order??999));
+}
+export function subscribeVideos(classId,cb){
+  const off=onValue(ref(db,`videos/${classId}`),s=>{const data=s.val()||{};cb(Object.entries(data).map(([id,v])=>({id,...v,embedUrl:undefined,sourceUrl:undefined})).sort((a,b)=>(a.order??999)-(b.order??999)));});
+  return ()=>off();
+}
+export async function fetchVideoSource(classId,videoId){
+  const s=await get(ref(db,`videoSources/${classId}/${videoId}`));
+  return s.val()||null;
+}
 export async function refreshClassStats(classId){
   const [vs,qs]=await Promise.all([get(ref(db,`videos/${classId}`)),get(ref(db,`quizzes/${classId}`))]);
   const totalVideos=Object.keys(vs.val()||{}).length;
@@ -141,12 +181,39 @@ export async function refreshClassStats(classId){
 export async function saveVideo(classId,payload,videoId=null){
   const id=videoId || payload.id || `v${Date.now()}`;
   const current=videoId ? (await get(ref(db,`videos/${classId}/${id}`))).val() : null;
-  const sourceType=payload.sourceType||current?.sourceType||'youtube';
-  const rawUrl=payload.embedUrl||current?.embedUrl||'';
-  await set(ref(db,`videos/${classId}/${id}`),{...(current||{}),...payload,sourceType,embedUrl:normalizeVideoUrl(sourceType,rawUrl),updatedAt:Date.now(),createdAt:current?.createdAt||Date.now()});
+  const currentSource=videoId ? (await get(ref(db,`videoSources/${classId}/${id}`))).val() : null;
+  const sourceType=payload.sourceType||currentSource?.sourceType||current?.sourceType||'youtube';
+  const rawUrl=String(payload.embedUrl||payload.sourceUrl||currentSource?.url||current?.embedUrl||'').trim();
+  if(!rawUrl && !currentSource?.url) throw new Error('Link sumber video wajib diisi.');
+  const normalized=normalizeVideoUrl(sourceType,rawUrl||currentSource.url);
+  const metadata={...(current||{}),...payload,sourceType,embedUrl:null,sourceUrl:null,hasProtectedSource:true,updatedAt:Date.now(),createdAt:current?.createdAt||Date.now()};
+  delete metadata.embedUrl; delete metadata.sourceUrl;
+  const updates={};
+  updates[`videos/${classId}/${id}`]=metadata;
+  updates[`videoSources/${classId}/${id}`]={sourceType,url:normalized,updatedAt:Date.now()};
+  await update(ref(db),updates);
   await refreshClassStats(classId); return id;
 }
-export async function deleteVideo(classId,videoId){ await remove(ref(db,`videos/${classId}/${videoId}`)); await refreshClassStats(classId); }
+export async function deleteVideo(classId,videoId){
+  const updates={}; updates[`videos/${classId}/${videoId}`]=null; updates[`videoSources/${classId}/${videoId}`]=null;
+  await update(ref(db),updates); await refreshClassStats(classId);
+}
+export async function migrateLegacyVideoSources(){
+  const classes=await fetchClasses();
+  for(const c of classes){
+    const s=await get(ref(db,`videos/${c.id}`)); const data=s.val()||{};
+    const updates={};
+    for(const [vid,v] of Object.entries(data)){
+      if(v?.embedUrl){
+        const st=v.sourceType||'youtube';
+        updates[`videoSources/${c.id}/${vid}`]={sourceType:st,url:normalizeVideoUrl(st,v.embedUrl),updatedAt:Date.now()};
+        const clean={...v,hasProtectedSource:true,updatedAt:Date.now()}; delete clean.embedUrl; delete clean.sourceUrl;
+        updates[`videos/${c.id}/${vid}`]=clean;
+      }
+    }
+    if(Object.keys(updates).length) await update(ref(db),updates);
+  }
+}
 
 export async function fetchEnrollment(uid,classId){ const s=await get(ref(db,`enrollments/${uid}/${classId}`)); return s.val(); }
 export async function joinFreeClass(uid,classId){
@@ -162,6 +229,10 @@ export function subscribeEnrollment(uid,classId,cb){
 }
 
 export async function fetchUserEnrollments(uid){ const s=await get(ref(db,`enrollments/${uid}`)); return s.val()||{}; }
+export function subscribeUserEnrollments(uid,cb){ const off=onValue(ref(db,`enrollments/${uid}`),s=>cb(s.val()||{})); return ()=>off(); }
+export async function saveRecentLearning(uid,classId,videoId){ await set(ref(db,`recentLearning/${uid}`),{classId,videoId,updatedAt:Date.now()}); }
+export async function fetchRecentLearning(uid){ const s=await get(ref(db,`recentLearning/${uid}`)); return s.val()||null; }
+export function subscribeRecentLearning(uid,cb){ const off=onValue(ref(db,`recentLearning/${uid}`),s=>cb(s.val()||null)); return ()=>off(); }
 export async function fetchAllEnrollments(){ const s=await get(ref(db,'enrollments')); return s.val()||{}; }
 
 function fileToDataUrl(file){
@@ -245,19 +316,22 @@ export async function compressClassCover(file){
   return compressImage(file,{maxBytes:180000,targetWidth:960,targetHeight:540,quality:.80,aspectRatio:16/9,mime:'image/jpeg'});
 }
 export async function uploadProof(file){ return compressImage(file,{maxBytes:340000,maxSide:1500,quality:.82}); }
-export async function submitPayment({uid,classId,amount,senderName,senderBank,proofData}){
+export async function submitPurchasePayment({uid,itemType='class',itemId,classId,amount,senderName,senderBank,proofData}){
+  const resolvedId=itemId||classId; if(!resolvedId) throw new Error('Produk tidak ditemukan');
   const p=push(ref(db,'payments')); const id=p.key; const now=Date.now();
   if(!proofData || !String(proofData).startsWith('data:image/jpeg;base64,')) throw new Error('Bukti transfer tidak valid');
-  const payload={id,uid,classId,amount:Number(amount||0),senderName:String(senderName).trim(),senderBank:String(senderBank).trim(),hasProof:true,proofMode:'rtdb-compressed',status:'pending',createdAt:now,updatedAt:now};
+  const payload={id,uid,itemType,itemId:resolvedId,classId:itemType==='class'?resolvedId:null,ebookId:itemType==='ebook'?resolvedId:null,amount:Number(amount||0),senderName:String(senderName).trim(),senderBank:String(senderBank).trim(),hasProof:true,proofMode:'rtdb-compressed',status:'pending',createdAt:now,updatedAt:now};
   const notif=push(ref(db,'notifications/admin')).key;
   const updates={};
   updates[`payments/${id}`]=payload;
-  updates[`paymentProofs/${id}`]={paymentId:id,uid,classId,data:proofData,mime:'image/jpeg',createdAt:now};
-  updates[`enrollments/${uid}/${classId}`]={status:'pending_payment',paymentStatus:'pending',classType:'paid',paymentId:id,createdAt:now,updatedAt:now};
-  updates[`notifications/admin/${notif}`]={type:'payment',title:'Bukti pembayaran baru',message:`${payload.senderName} mengirim bukti pembayaran.`,paymentId:id,uid,classId,read:false,createdAt:now};
+  updates[`paymentProofs/${id}`]={paymentId:id,uid,itemType,itemId:resolvedId,data:proofData,mime:'image/jpeg',createdAt:now};
+  if(itemType==='ebook') updates[`ebookAccess/${uid}/${resolvedId}`]={status:'pending_payment',paymentStatus:'pending',paymentId:id,createdAt:now,updatedAt:now};
+  else updates[`enrollments/${uid}/${resolvedId}`]={status:'pending_payment',paymentStatus:'pending',classType:'paid',paymentId:id,createdAt:now,updatedAt:now};
+  updates[`notifications/admin/${notif}`]={type:'payment',title:'Bukti pembayaran baru',message:`${payload.senderName} mengirim bukti pembayaran ${itemType==='ebook'?'ebook':'kelas'}.`,paymentId:id,uid,itemType,itemId:resolvedId,read:false,createdAt:now};
   await update(ref(db),updates);
   return payload;
 }
+export async function submitPayment(args){ return submitPurchasePayment({...args,itemType:'class',itemId:args.classId}); }
 export async function fetchPaymentProof(paymentId){
   const s=await get(ref(db,`paymentProofs/${paymentId}`));
   return s.val();
@@ -265,16 +339,62 @@ export async function fetchPaymentProof(paymentId){
 export async function fetchAllPayments(){ const s=await get(ref(db,'payments')); return Object.values(s.val()||{}).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0)); }
 export async function approvePayment(paymentId){
   const s=await get(ref(db,`payments/${paymentId}`)); const p=s.val(); if(!p) throw new Error('Pembayaran tidak ditemukan');
-  await update(ref(db,`payments/${paymentId}`),{status:'approved',updatedAt:Date.now()});
-  await update(ref(db,`enrollments/${p.uid}/${p.classId}`),{status:'active',paymentStatus:'approved',approvedAt:Date.now(),updatedAt:Date.now()});
-  await push(ref(db,`notifications/${p.uid}`),{type:'payment-approved',title:'Pembayaran disetujui',message:'Akses kelas Anda sudah aktif.',classId:p.classId,read:false,createdAt:Date.now()});
+  const itemType=p.itemType||'class', itemId=p.itemId||p.ebookId||p.classId; const now=Date.now();
+  const updates={}; updates[`payments/${paymentId}/status`]='approved'; updates[`payments/${paymentId}/updatedAt`]=now;
+  if(itemType==='ebook') updates[`ebookAccess/${p.uid}/${itemId}`]={status:'active',paymentStatus:'approved',paymentId,approvedAt:now,updatedAt:now};
+  else updates[`enrollments/${p.uid}/${itemId}`]={status:'active',paymentStatus:'approved',classType:'paid',paymentId,approvedAt:now,updatedAt:now};
+  const nid=push(ref(db,`notifications/${p.uid}`)).key;
+  updates[`notifications/${p.uid}/${nid}`]={type:'payment-approved',title:'Pembayaran disetujui',message:itemType==='ebook'?'Ebook Anda sudah dapat diunduh.':'Akses kelas Anda sudah aktif.',itemType,itemId,classId:itemType==='class'?itemId:null,ebookId:itemType==='ebook'?itemId:null,read:false,createdAt:now};
+  await update(ref(db),updates);
 }
 export async function rejectPayment(paymentId){
   const s=await get(ref(db,`payments/${paymentId}`)); const p=s.val(); if(!p) throw new Error('Pembayaran tidak ditemukan');
-  await update(ref(db,`payments/${paymentId}`),{status:'rejected',updatedAt:Date.now()});
-  await update(ref(db,`enrollments/${p.uid}/${p.classId}`),{status:'pending_payment',paymentStatus:'rejected',updatedAt:Date.now()});
-  await push(ref(db,`notifications/${p.uid}`),{type:'payment-rejected',title:'Bukti pembayaran perlu diperiksa',message:'Silakan cek kembali bukti transfer dan kirim ulang jika diperlukan.',classId:p.classId,read:false,createdAt:Date.now()});
+  const itemType=p.itemType||'class', itemId=p.itemId||p.ebookId||p.classId; const now=Date.now();
+  const updates={}; updates[`payments/${paymentId}/status`]='rejected'; updates[`payments/${paymentId}/updatedAt`]=now;
+  if(itemType==='ebook') updates[`ebookAccess/${p.uid}/${itemId}`]={status:'pending_payment',paymentStatus:'rejected',paymentId,updatedAt:now};
+  else updates[`enrollments/${p.uid}/${itemId}`]={status:'pending_payment',paymentStatus:'rejected',classType:'paid',paymentId,updatedAt:now};
+  const nid=push(ref(db,`notifications/${p.uid}`)).key;
+  updates[`notifications/${p.uid}/${nid}`]={type:'payment-rejected',title:'Bukti pembayaran perlu diperiksa',message:'Silakan cek kembali bukti transfer dan kirim ulang jika diperlukan.',itemType,itemId,read:false,createdAt:now};
+  await update(ref(db),updates);
 }
+export async function repairApprovedPurchases(){
+  const payments=await fetchAllPayments(); const updates={};
+  for(const p of payments.filter(x=>x.status==='approved')){
+    const itemType=p.itemType||'class', itemId=p.itemId||p.ebookId||p.classId; if(!p.uid||!itemId) continue;
+    if(itemType==='ebook') updates[`ebookAccess/${p.uid}/${itemId}`]={status:'active',paymentStatus:'approved',paymentId:p.id,approvedAt:p.updatedAt||p.createdAt||Date.now(),updatedAt:Date.now()};
+    else updates[`enrollments/${p.uid}/${itemId}`]={status:'active',paymentStatus:'approved',classType:'paid',paymentId:p.id,approvedAt:p.updatedAt||p.createdAt||Date.now(),updatedAt:Date.now()};
+  }
+  if(Object.keys(updates).length) await update(ref(db),updates);
+}
+
+export async function fetchEbooks(){ const s=await get(ref(db,'ebooks')); const data=s.val()||{}; return Object.entries(data).map(([id,v])=>({id,...v})).filter(x=>x.status!=='archived').sort((a,b)=>(b.createdAt||0)-(a.createdAt||0)); }
+export async function fetchEbook(ebookId){ const s=await get(ref(db,`ebooks/${ebookId}`)); return s.exists()?{id:ebookId,...s.val()}:null; }
+export function subscribeEbooks(cb){ const off=onValue(ref(db,'ebooks'),s=>{const data=s.val()||{};cb(Object.entries(data).map(([id,v])=>({id,...v})).filter(x=>x.status!=='archived').sort((a,b)=>(b.createdAt||0)-(a.createdAt||0)));}); return ()=>off(); }
+export async function saveEbook(payload,ebookId=null){
+  let id=ebookId||payload.slug||slugify(payload.title)||`ebook-${Date.now()}`; const current=ebookId?(await get(ref(db,`ebooks/${id}`))).val():null;
+  if(!ebookId){const ex=await get(ref(db,`ebooks/${id}`)); if(ex.exists()) id=`${id}-${Date.now().toString(36).slice(-5)}`;}
+  await set(ref(db,`ebooks/${id}`),{...(current||{}),...payload,productType:'ebook',updatedAt:Date.now(),createdAt:current?.createdAt||Date.now(),status:payload.status||current?.status||'published'}); return id;
+}
+export async function archiveEbook(ebookId){ await update(ref(db,`ebooks/${ebookId}`),{status:'archived',updatedAt:Date.now()}); }
+export async function fetchEbookCover(ebookId){ const s=await get(ref(db,`ebookCovers/${ebookId}`)); return s.val()||null; }
+export async function saveEbookCover(ebookId,dataUrl){ if(!String(dataUrl||'').startsWith('data:image/')) throw new Error('Cover ebook tidak valid'); await set(ref(db,`ebookCovers/${ebookId}`),{data:dataUrl,updatedAt:Date.now()}); await update(ref(db,`ebooks/${ebookId}`),{hasCover:true,coverUpdatedAt:Date.now(),updatedAt:Date.now()}); }
+export async function deleteEbookCover(ebookId){ await remove(ref(db,`ebookCovers/${ebookId}`)); await update(ref(db,`ebooks/${ebookId}`),{hasCover:false,coverUpdatedAt:null,updatedAt:Date.now()}); }
+export async function compressEbookCover(file){ return compressImage(file,{maxBytes:180000,targetWidth:960,targetHeight:540,quality:.80,aspectRatio:16/9,mime:'image/jpeg'}); }
+export async function encodeEbookPdf(file){
+  if(!file || file.type!=='application/pdf') throw new Error('File ebook harus PDF.');
+  if(file.size>5*1024*1024) throw new Error('Ukuran PDF maksimal 5 MB pada mode tanpa Firebase Storage.');
+  const data=await new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(r.result);r.onerror=()=>reject(new Error('Gagal membaca PDF'));r.readAsDataURL(file);});
+  return {data,fileName:file.name,size:file.size,mime:'application/pdf'};
+}
+export async function saveEbookFile(ebookId,filePayload){
+  if(!String(filePayload?.data||'').startsWith('data:application/pdf;base64,')) throw new Error('File PDF tidak valid');
+  await set(ref(db,`ebookFiles/${ebookId}`),{...filePayload,updatedAt:Date.now()});
+  await update(ref(db,`ebooks/${ebookId}`),{hasFile:true,fileName:filePayload.fileName||'ebook.pdf',fileSize:filePayload.size||0,updatedAt:Date.now()});
+}
+export async function fetchEbookFile(ebookId){ const s=await get(ref(db,`ebookFiles/${ebookId}`)); return s.val()||null; }
+export async function fetchUserEbookAccess(uid){ const s=await get(ref(db,`ebookAccess/${uid}`)); return s.val()||{}; }
+export function subscribeUserEbookAccess(uid,cb){ const off=onValue(ref(db,`ebookAccess/${uid}`),s=>cb(s.val()||{})); return ()=>off(); }
+export async function acquireFreeEbook(uid,ebookId){ const book=await fetchEbook(ebookId); if(!book) throw new Error('Ebook tidak ditemukan'); if(book.isPaid) throw new Error('Ebook ini berbayar'); const payload={status:'active',paymentStatus:'free',createdAt:Date.now(),updatedAt:Date.now()}; await set(ref(db,`ebookAccess/${uid}/${ebookId}`),payload); return payload; }
 
 export async function fetchSettings(){ const s=await get(ref(db,'settings')); const v=s.val()||{}; return { ...DEFAULT_SETTINGS, ...v, payment:{...DEFAULT_SETTINGS.payment,...(v.payment||{})}, certificate:{...DEFAULT_SETTINGS.certificate,...(v.certificate||{})} }; }
 export async function saveSettings(payload){ await update(ref(db,'settings'),payload); }
@@ -291,6 +411,7 @@ export function subscribeForum(classId,videoId,cb){ const off=onValue(ref(db,`fo
 
 export async function fetchProgress(uid,classId=null){ const s=await get(ref(db,classId?`lessonProgress/${uid}/${classId}`:`lessonProgress/${uid}`)); return s.val()||{}; }
 export async function saveLessonProgress(uid,classId,videoId,payload){ await update(ref(db,`lessonProgress/${uid}/${classId}/${videoId}`),{...payload,updatedAt:Date.now()}); }
+export function subscribeProgress(uid,classId,cb){ const off=onValue(ref(db,`lessonProgress/${uid}/${classId}`),s=>cb(s.val()||{})); return ()=>off(); }
 export async function markLessonComplete(uid,classId,videoId,completed=true){ await update(ref(db,`lessonProgress/${uid}/${classId}/${videoId}`),{completed,percent:completed?100:0,completedAt:completed?Date.now():null,updatedAt:Date.now()}); }
 export async function fetchAllProgress(){ const s=await get(ref(db,'lessonProgress')); return s.val()||{}; }
 
@@ -300,6 +421,7 @@ export async function saveQuizQuestion(classId,videoId,q,passScore=70){ const p=
 export async function deleteQuizQuestion(classId,videoId,qid){ await remove(ref(db,`quizzes/${classId}/${videoId}/questions/${qid}`)); await refreshClassStats(classId); }
 export async function submitQuizResult(uid,classId,videoId,result){ await set(ref(db,`quizResults/${uid}/${classId}/${videoId}`),{...result,attemptedAt:Date.now()}); }
 export async function fetchQuizResult(uid,classId,videoId){ const s=await get(ref(db,`quizResults/${uid}/${classId}/${videoId}`)); return s.val()||null; }
+export function subscribeQuizResult(uid,classId,videoId,cb){ const off=onValue(ref(db,`quizResults/${uid}/${classId}/${videoId}`),s=>cb(s.val()||null)); return ()=>off(); }
 export async function fetchAllQuizResults(uid,classId=null){ const s=await get(ref(db,classId?`quizResults/${uid}/${classId}`:`quizResults/${uid}`)); return s.val()||{}; }
 export async function fetchAllQuizResultsAdmin(){ const s=await get(ref(db,'quizResults')); return s.val()||{}; }
 
@@ -314,6 +436,9 @@ export async function fetchClassCompletion(uid,classId){
   const percent=Math.round((completedVideos/videos.length)*100);
   return {percent,completedVideos,totalVideos:videos.length,quizzesPassed,eligible:completedVideos===videos.length && quizzesPassed};
 }
+export async function fetchCertificates(uid){ const s=await get(ref(db,`certificates/${uid}`)); return s.val()||{}; }
+export function subscribeCertificates(uid,cb){ const off=onValue(ref(db,`certificates/${uid}`),s=>cb(s.val()||{})); return ()=>off(); }
+
 export async function issueCertificate(uid,classId,profile,classData){
   const completion=await fetchClassCompletion(uid,classId); if(!completion.eligible) throw new Error('Syarat sertifikat belum terpenuhi');
   const r=ref(db,`certificates/${uid}/${classId}`); const existing=await get(r); if(existing.exists()) return existing.val();

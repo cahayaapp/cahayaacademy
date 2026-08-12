@@ -1,53 +1,12 @@
-import { registerUser, loginUser, fetchClasses, fetchProfile, fetchClassCover, fallbackCoverUrl, auth, onAuthStateChanged, rupiah, toast, escapeHtml } from './core.js';
-
+import { registerUser, loginUser, fetchClasses, fetchEbooks, fetchProfile, fetchClassCover, fetchEbookCover, fallbackCoverUrl, auth, onAuthStateChanged, rupiah, toast, escapeHtml } from './core.js';
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
-const grid=$('#landingClassGrid'), search=$('#landingSearch');
-const loginForm=$('#loginForm'), registerForm=$('#registerForm'), tabLogin=$('#tabLogin'), tabRegister=$('#tabRegister');
-const authModal=$('#authModal');
-let classes=[],filter='all';
-
-function renderCard(c){
-  const paid=Boolean(c.isPaid), fallback=fallbackCoverUrl(c);
-  return `<article class="course-card" data-class-card="${c.id}">
-    <div class="course-image" data-cover="${c.id}" style="background-image:url('${fallback}')">
-      <span class="badge ${paid?'paid':'free'}">${paid?'Premium':'Gratis'}</span>
-      <button class="bookmark-btn" aria-label="Simpan kelas">♡</button>
-    </div>
-    <div class="course-body">
-      <h3>${escapeHtml(c.title)}</h3>
-      <div class="teacher-row"><span class="teacher-avatar">${escapeHtml((c.teacherName||'U')[0])}</span><span>${escapeHtml(c.teacherName||'Pembimbing')}</span></div>
-      <p>${escapeHtml(c.description||'Pelajari materi Islam secara runtut dan mudah dipahami.')}</p>
-      <div class="course-info"><span>▶ ${Number(c.totalVideos||0)||'—'} Video</span><span>✓ ${Number(c.totalQuizzes||0)||'—'} Kuis</span><span>? Forum</span></div>
-      <div class="course-foot"><div>${paid?`<strong>${rupiah(c.price)}</strong>`:'<strong class="green-text">Gratis</strong>'}<small>${escapeHtml(c.level||'Semua level')}</small></div><button class="btn small primary" data-open-auth="login">Mulai</button></div>
-    </div>
-  </article>`;
-}
-async function hydrateCovers(list){
-  await Promise.all(list.filter(c=>c.hasCover).map(async c=>{try{const cover=await fetchClassCover(c.id);if(cover?.data){document.querySelectorAll(`[data-cover="${CSS.escape(c.id)}"]`).forEach(el=>el.style.backgroundImage=`url("${cover.data}")`);}}catch(_){}}));
-}
-function render(){
-  const q=(search?.value||'').trim().toLowerCase();
-  const list=classes.filter(c=>{const matchFilter=filter==='all'||(filter==='free'?!c.isPaid:c.isPaid);const hay=`${c.title||''} ${c.teacherName||''} ${c.category||''} ${c.description||''}`.toLowerCase();return matchFilter&&hay.includes(q);});
-  grid.innerHTML=list.length?list.map(renderCard).join(''):'<div class="empty-state span-all">Belum ada kelas yang sesuai.</div>';
-  $('#publicClassCount').textContent=String(classes.length);
-  hydrateCovers(list);
-  bindAuthOpeners();
-}
-function setAuthTab(mode){const login=mode==='login';tabLogin.classList.toggle('active',login);tabRegister.classList.toggle('active',!login);loginForm.classList.toggle('hidden',!login);registerForm.classList.toggle('hidden',login);}
-function openAuth(mode='login'){setAuthTab(mode);authModal.classList.add('show');authModal.setAttribute('aria-hidden','false');document.body.classList.add('modal-open');setTimeout(()=>authModal.querySelector('input')?.focus(),80);}
-function closeAuth(){authModal.classList.remove('show');authModal.setAttribute('aria-hidden','true');document.body.classList.remove('modal-open');}
-function bindAuthOpeners(){$$('[data-open-auth]').forEach(el=>{if(el.dataset.bound)return;el.dataset.bound='1';el.addEventListener('click',e=>{e.preventDefault();openAuth(el.dataset.openAuth||'login');});});}
-
-bindAuthOpeners();
-$('#closeAuthModal').addEventListener('click',closeAuth);authModal.addEventListener('click',e=>{if(e.target===authModal)closeAuth();});
-tabLogin.addEventListener('click',()=>setAuthTab('login'));tabRegister.addEventListener('click',()=>setAuthTab('register'));
-search?.addEventListener('input',render);
-$$('[data-filter]').forEach(btn=>btn.addEventListener('click',()=>{$$('[data-filter]').forEach(x=>x.classList.remove('active'));btn.classList.add('active');filter=btn.dataset.filter;render();}));
-$('#mobilePublicMenu')?.addEventListener('click',()=>$('#mobilePublicPanel').classList.toggle('show'));
-$$('#mobilePublicPanel a').forEach(a=>a.addEventListener('click',()=>$('#mobilePublicPanel').classList.remove('show')));
-
-loginForm.addEventListener('submit',async e=>{e.preventDefault();const fd=new FormData(e.currentTarget);const btn=e.currentTarget.querySelector('button[type=submit],button:not([type])');try{btn.disabled=true;btn.textContent='Memproses...';await loginUser(fd.get('email'),fd.get('password'));toast('Berhasil masuk.');}catch(err){toast(err.message||'Gagal masuk','error');}finally{btn.disabled=false;btn.textContent='Masuk ke Akun Saya';}});
-registerForm.addEventListener('submit',async e=>{e.preventDefault();const fd=new FormData(e.currentTarget);if(fd.get('password')!==fd.get('confirmPassword'))return toast('Konfirmasi password tidak sama','error');const btn=e.currentTarget.querySelector('button[type=submit],button:not([type])');try{btn.disabled=true;btn.textContent='Membuat akun...';await registerUser({name:fd.get('name'),email:fd.get('email'),password:fd.get('password'),whatsapp:fd.get('whatsapp')});toast('Akun berhasil dibuat.');}catch(err){toast(err.message||'Gagal mendaftar','error');}finally{btn.disabled=false;btn.textContent='Buat Akun Pelajar';}});
-
-onAuthStateChanged(auth,async user=>{if(!user)return;const p=await fetchProfile(user.uid);location.href=(p?.role==='admin'||p?.role==='mentor')?'pages/admin.html':'pages/dashboard.html';});
-(async()=>{try{classes=await fetchClasses();render();}catch(err){console.error(err);grid.innerHTML='<div class="empty-state span-all">Katalog belum dapat dimuat. Pastikan koneksi dan Rules Firebase sudah benar.</div>';}})();
+const grid=$('#landingClassGrid'), search=$('#landingSearch'),loginForm=$('#loginForm'),registerForm=$('#registerForm'),tabLogin=$('#tabLogin'),tabRegister=$('#tabRegister'),authModal=$('#authModal');
+let classes=[],ebooks=[],filter='all';
+function classCard(c){const paid=Boolean(c.isPaid),fallback=fallbackCoverUrl(c);return `<article class="course-card"><div class="course-image" data-cover="${c.id}" style="background-image:url('${fallback}')"><span class="badge ${paid?'paid':'free'}">${paid?'Premium':'Gratis'}</span><span class="product-kind">VIDEO</span></div><div class="course-body"><h3>${escapeHtml(c.title)}</h3><div class="teacher-row"><span class="teacher-avatar">${escapeHtml((c.teacherName||'U')[0])}</span><span>${escapeHtml(c.teacherName||'Pembimbing')}</span></div><p>${escapeHtml(c.description||'Pelajari materi Islam secara runtut dan mudah dipahami.')}</p><div class="course-info"><span>▶ ${Number(c.totalVideos||0)||'—'} Video</span><span>✓ ${Number(c.totalQuizzes||0)||'—'} Kuis</span><span>? Forum</span></div><div class="course-foot"><div>${paid?`<strong>${rupiah(c.price)}</strong>`:'<strong class="green-text">Gratis</strong>'}<small>${escapeHtml(c.level||'Semua level')}</small></div><button class="btn small primary" data-open-auth="login">Mulai</button></div></div></article>`;}
+function ebookCard(b){const paid=Boolean(b.isPaid),fallback=fallbackCoverUrl({category:b.category||'Qur’an',title:b.title});return `<article class="course-card"><div class="course-image" data-ebook-cover="${b.id}" style="background-image:url('${fallback}')"><span class="badge ${paid?'paid':'free'}">${paid?'Premium':'Gratis'}</span><span class="product-kind">EBOOK</span></div><div class="course-body"><h3>${escapeHtml(b.title)}</h3><div class="teacher-row"><span class="teacher-avatar">▤</span><span>${escapeHtml(b.author||'belajarislam.online')}</span></div><p>${escapeHtml(b.description||'Ebook digital untuk dibaca dan diunduh setelah login.')}</p><div class="course-info"><span>PDF</span><span>${b.fileSize?`${Math.max(1,Math.round(Number(b.fileSize)/1024/1024*10)/10)} MB`:'Digital'}</span><span>Unduh</span></div><div class="course-foot"><div>${paid?`<strong>${rupiah(b.price)}</strong>`:'<strong class="green-text">Gratis</strong>'}<small>${escapeHtml(b.category||'Ebook')}</small></div><button class="btn small primary" data-open-auth="login">Lihat Ebook</button></div></div></article>`;}
+async function hydrate(listC,listB){await Promise.all(listC.filter(c=>c.hasCover).map(async c=>{try{const cover=await fetchClassCover(c.id);if(cover?.data)document.querySelectorAll(`[data-cover="${CSS.escape(c.id)}"]`).forEach(el=>el.style.backgroundImage=`url("${cover.data}")`);}catch(_){}}));await Promise.all(listB.filter(b=>b.hasCover).map(async b=>{try{const cover=await fetchEbookCover(b.id);if(cover?.data)document.querySelectorAll(`[data-ebook-cover="${CSS.escape(b.id)}"]`).forEach(el=>el.style.backgroundImage=`url("${cover.data}")`);}catch(_){}}));}
+function render(){const q=(search?.value||'').trim().toLowerCase(),cl=classes.filter(c=>{const f=filter==='all'||(filter==='free'?!c.isPaid:c.isPaid),h=`${c.title||''} ${c.teacherName||''} ${c.category||''} ${c.description||''}`.toLowerCase();return f&&h.includes(q);}),eb=ebooks.filter(b=>{const f=filter==='all'||(filter==='free'?!b.isPaid:b.isPaid),h=`${b.title||''} ${b.author||''} ${b.category||''} ${b.description||''}`.toLowerCase();return f&&h.includes(q);});const items=[...cl.map(x=>({type:'class',x})),...eb.map(x=>({type:'ebook',x}))];grid.innerHTML=items.length?items.map(i=>i.type==='class'?classCard(i.x):ebookCard(i.x)).join(''):'<div class="empty-state span-all">Belum ada produk yang sesuai.</div>';$('#publicClassCount').textContent=String(classes.length+ebooks.length);hydrate(cl,eb);bindAuthOpeners();}
+function setAuthTab(mode){const login=mode==='login';tabLogin.classList.toggle('active',login);tabRegister.classList.toggle('active',!login);loginForm.classList.toggle('hidden',!login);registerForm.classList.toggle('hidden',login);}function openAuth(mode='login'){setAuthTab(mode);authModal.classList.add('show');authModal.setAttribute('aria-hidden','false');document.body.classList.add('modal-open');setTimeout(()=>authModal.querySelector('input')?.focus(),80);}function closeAuth(){authModal.classList.remove('show');authModal.setAttribute('aria-hidden','true');document.body.classList.remove('modal-open');}function bindAuthOpeners(){$$('[data-open-auth]').forEach(el=>{if(el.dataset.bound)return;el.dataset.bound='1';el.addEventListener('click',e=>{e.preventDefault();openAuth(el.dataset.openAuth||'login');});});}
+bindAuthOpeners();$('#closeAuthModal').addEventListener('click',closeAuth);authModal.addEventListener('click',e=>{if(e.target===authModal)closeAuth();});tabLogin.addEventListener('click',()=>setAuthTab('login'));tabRegister.addEventListener('click',()=>setAuthTab('register'));search?.addEventListener('input',render);$$('[data-filter]').forEach(btn=>btn.addEventListener('click',()=>{$$('[data-filter]').forEach(x=>x.classList.remove('active'));btn.classList.add('active');filter=btn.dataset.filter;render();}));$('#mobilePublicMenu')?.addEventListener('click',()=>$('#mobilePublicPanel').classList.toggle('show'));$$('#mobilePublicPanel a').forEach(a=>a.addEventListener('click',()=>$('#mobilePublicPanel').classList.remove('show')));
+loginForm.addEventListener('submit',async e=>{e.preventDefault();const fd=new FormData(e.currentTarget),btn=e.currentTarget.querySelector('button[type=submit],button:not([type])');try{btn.disabled=true;btn.textContent='Memproses...';await loginUser(fd.get('email'),fd.get('password'));toast('Berhasil masuk.');}catch(err){toast(err.message||'Gagal masuk','error');}finally{btn.disabled=false;btn.textContent='Masuk ke Akun Saya';}});registerForm.addEventListener('submit',async e=>{e.preventDefault();const fd=new FormData(e.currentTarget);if(fd.get('password')!==fd.get('confirmPassword'))return toast('Konfirmasi password tidak sama','error');const btn=e.currentTarget.querySelector('button[type=submit],button:not([type])');try{btn.disabled=true;btn.textContent='Membuat akun...';await registerUser({name:fd.get('name'),email:fd.get('email'),password:fd.get('password'),whatsapp:fd.get('whatsapp')});toast('Akun berhasil dibuat.');}catch(err){toast(err.message||'Gagal mendaftar','error');}finally{btn.disabled=false;btn.textContent='Buat Akun Pelajar';}});onAuthStateChanged(auth,async user=>{if(!user)return;const p=await fetchProfile(user.uid);location.href=(p?.role==='admin'||p?.role==='mentor')?'pages/admin.html':'pages/dashboard.html';});
+(async()=>{try{[classes,ebooks]=await Promise.all([fetchClasses(),fetchEbooks()]);render();}catch(err){console.error(err);grid.innerHTML='<div class="empty-state span-all">Katalog belum dapat dimuat. Pastikan koneksi dan Rules Firebase sudah benar.</div>';}})();

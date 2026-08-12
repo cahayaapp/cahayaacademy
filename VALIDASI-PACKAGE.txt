@@ -1,16 +1,21 @@
-BELAJARISLAM.ONLINE LMS v6.0.1 — VALIDASI
+BELAJARISLAM.ONLINE LMS v6.4.0 — VALIDASI PACKAGE
 
-Status: LULUS validasi statis.
+Status: LULUS pemeriksaan statis utama.
 
-Pemeriksaan:
-- Semua JavaScript assets/js/*.js lolos node --check.
-- database.rules.json valid JSON.
-- manifest.webmanifest valid JSON.
-- Service worker cache version: v6.0.1.
-- Form admin memiliki input Cover Kelas.
-- Preview cover admin menggunakan rasio 16:9.
-- Kompresi cover: center crop 16:9, target 960x540, target <=180 KB.
-- Input gambar sumber diizinkan hingga 25 MB untuk kemudian dikompresi di browser.
-- Cover disimpan terpisah di Realtime Database classCovers/{classId}; tidak membutuhkan Firebase Storage.
-- Cover kartu desktop/mobile menggunakan background-size: cover dan aspect-ratio 16:9.
-- Sample cover Syamail Muhammadiyah: 960x540, sekitar 78 KB.
+Pemeriksaan yang dilakukan:
+1. Seluruh file JavaScript di assets/js lulus `node --check`.
+2. database.rules.json valid JSON.
+3. Referensi asset lokal dari seluruh HTML tidak ada yang hilang.
+4. ID elemen statis yang dipanggil JS cocok dengan halaman HTML terkait.
+5. Tidak ditemukan URL video konten YouTube/Google Drive yang di-hardcode pada HTML/source package.
+6. Data belajar tidak menggunakan localStorage/sessionStorage; localStorage hanya dipakai untuk preferensi theme UI.
+7. Service worker cache dinaikkan ke `belajarislam-v6.4.0-shell` dan asset menggunakan query v=640.
+8. Admin video manager memakai listener realtime untuk tambah/edit/hapus.
+9. Halaman kelas memakai listener realtime untuk daftar video dan progress.
+10. Dashboard memakai listener realtime untuk profil, kelas, enrollment, ebook access, sertifikat, dan recent learning.
+11. Ebook page dan ebook admin page tersedia.
+12. Mobile CSS memiliki hardening untuk 980px, 720px, dan 420px; video 16:9 full width dan overflow-x diblokir.
+
+Catatan batas teknis:
+- Firebase Security Rules harus dipublish agar pembatasan videoSources/ebookFiles berlaku.
+- YouTube/Google Drive adalah provider eksternal. Browser harus menerima informasi sumber ketika media diputar, sehingga pengguna teknis masih dapat melihat request runtime melalui Network/DevTools. Yang dihilangkan adalah link statis/publik dan jalur klik langsung dari UI.

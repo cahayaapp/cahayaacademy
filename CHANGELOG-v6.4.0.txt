@@ -1,0 +1,55 @@
+BELAJARISLAM.ONLINE LMS v6.4.0
+ONLINE STATE + EBOOK + SECURE PLAYER + MOBILE HARDENING
+
+1. PROFIL & PASSWORD
+- Nama, WhatsApp, bio disimpan ke users/{uid} di Realtime Database.
+- Nama juga disinkronkan ke Firebase Auth displayName.
+- Ganti password memakai re-authentication + Firebase Authentication updatePassword.
+- Admin melihat perubahan data user secara realtime.
+
+2. VIDEO REALTIME
+- Metadata video online: videos/{classId}/{videoId}.
+- Link sumber dipisahkan ke videoSources/{classId}/{videoId}.
+- Form admin tambah/edit/hapus video langsung mengubah UI melalui onValue tanpa refresh.
+- Halaman kelas yang sedang terbuka ikut menerima perubahan daftar video secara realtime.
+
+3. PROGRES ONLINE
+- Progres video: lessonProgress/{uid}/{classId}/{videoId}.
+- Materi terakhir: recentLearning/{uid}.
+- Tandai selesai, posisi YouTube, persen, dan status selesai bertahan setelah refresh/perangkat berganti.
+- Kuis dan hasil kuis disimpan online.
+- Sertifikat disimpan online di certificates/{uid}/{classId}.
+
+4. DASHBOARD
+- Kelas Saya berbasis enrollment online dan update realtime.
+- Materi Terakhir menggunakan recentLearning + lessonProgress.
+- Terbaru menampilkan aktivitas / produk terbaru.
+- Rekomendasi memilih kelas yang belum dimiliki dan memprioritaskan kategori terkait.
+- Sertifikat Saya online.
+
+5. EBOOK
+- Admin dapat menjual ebook-only tanpa video.
+- Gratis atau berbayar.
+- Cover dan PDF dikelola dari Admin Center.
+- PDF maksimal 5 MB pada mode tanpa Firebase Storage.
+- File ebook hanya dapat dibaca setelah ebookAccess aktif.
+- Peserta dapat mengunduh PDF dari halaman ebook setelah akses aktif.
+
+6. VIDEO PRIVACY UX
+- Tidak ada URL video milik admin di HTML statis atau metadata kelas yang dibaca publik.
+- URL sumber baru diambil dari path Firebase terlindungi setelah akses aktif.
+- YouTube memakai IFrame API, kontrol provider disembunyikan, klik langsung ke iframe diblokir, kontrol LMS sendiri digunakan.
+- Google Drive memakai sandbox tanpa allow-downloads/popups/top-navigation dan toolbar provider ditutup oleh shell LMS.
+- Batas teknis: sumber runtime tetap dapat ditemukan oleh pengguna teknis melalui Network/DevTools karena browser harus menerima sumber untuk memutarnya.
+
+7. MOBILE
+- Player 16:9 full-width.
+- Tidak ada horizontal scroll.
+- Form 1 kolom di HP dan ukuran input 16px untuk mencegah zoom iOS.
+- Tabs scroll horizontal internal, bukan seluruh halaman.
+- Bottom navigation dan floating chat memakai safe-area.
+- Admin, dashboard, ebook, forum, pembayaran, dan kurikulum dioptimalkan untuk layar kecil.
+
+8. MIGRASI
+- Admin login menjalankan migrasi URL video lama dari videos/embedUrl ke videoSources.
+- Admin login juga memperbaiki pembelian lama yang sudah approved tetapi enrollment/ebookAccess belum aktif.
